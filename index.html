@@ -1404,13 +1404,20 @@
       const typing = document.createElement("div");
       typing.className = "typing";
       typing.innerHTML = "<span></span><span></span><span></span>";
-      messages.append(typing);
+      messages.appendChild(typing);
       scrollToBottom();
 
-      window.setTimeout(() => {
+      try {
+        const response = makeResponse(input);
+        window.setTimeout(() => {
+          typing.remove();
+          addMessage("bot", response || "...我聽到了。");
+        }, 460 + Math.min(input.length * 8, 600));
+      } catch (err) {
+        console.error("makeResponse error:", err);
         typing.remove();
-        addMessage("bot", makeResponse(input));
-      }, 460 + Math.min(input.length * 8, 600));
+        addMessage("bot", "抱歉，系統有點問題，請再試一次。");
+      }
     }
 
     function resetChat() {
