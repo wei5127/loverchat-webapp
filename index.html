@@ -1011,6 +1011,7 @@
     }
 
     function makeResponse(input) {
+      try {
       const isEnglish = detectEnglish(input);
       const lower = input.toLowerCase();
       const isQuestion = /[?？]$/.test(input.trim()) || lower.includes("why") || lower.includes("怎麼") || lower.includes("為什麼");
@@ -1382,6 +1383,9 @@
 
       // 預設回覆
       return `${opener}\n\n關於「${userMsg}」，我想想再說。`;
+      } catch (err) {
+        return `系統錯誤：${err.message}（輸入：${input}）`;
+      }
     }
 
     function englishPersonaLine(character) {
@@ -1416,7 +1420,9 @@
       } catch (err) {
         console.error("makeResponse error:", err);
         typing.remove();
-        addMessage("bot", "抱歉，系統有點問題，請再試一次。");
+        const char = state.character || "unknown";
+        const errMsg = `系統錯誤（${char}），請截圖回報。錯誤："${err.message}"`;
+        addMessage("bot", errMsg);
       }
     }
 
