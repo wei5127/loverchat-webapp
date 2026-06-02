@@ -1,0 +1,1386 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>寶貝 Chat</title>
+  <meta name="description" content="寶貝角色聊天 web app">
+  <style>
+    :root {
+      --bg: #fff7fb;
+      --bg-2: #f8efff;
+      --panel: rgba(255, 255, 255, 0.86);
+      --panel-solid: #ffffff;
+      --text: #30263b;
+      --muted: #75687f;
+      --line: #eadbea;
+      --pink: #f56fa8;
+      --pink-dark: #c93d78;
+      --purple: #9a79ef;
+      --lilac: #eee7ff;
+      --mint: #d8f7ee;
+      --peach: #ffe4d7;
+      --shadow: 0 16px 50px rgba(133, 85, 144, 0.17);
+      --radius: 8px;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 10%, rgba(245, 111, 168, 0.22), transparent 28rem),
+        radial-gradient(circle at 92% 8%, rgba(154, 121, 239, 0.20), transparent 26rem),
+        linear-gradient(135deg, var(--bg), var(--bg-2) 60%, #f3fffb);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.9rem clamp(1rem, 3vw, 2rem);
+      border-bottom: 1px solid rgba(234, 219, 234, 0.82);
+      background: rgba(255, 247, 251, 0.82);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 2.45rem;
+      height: 2.45rem;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      box-shadow: 0 10px 24px rgba(245, 111, 168, 0.26);
+      flex: 0 0 auto;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.08rem;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 0.18rem;
+      color: var(--muted);
+      font-size: 0.79rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 58vw;
+    }
+
+    .ghost-button,
+    .primary-button,
+    .icon-button {
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      min-height: 2.5rem;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .ghost-button {
+      padding: 0 0.9rem;
+      color: var(--pink-dark);
+      border-color: rgba(245, 111, 168, 0.32);
+      background: rgba(255, 255, 255, 0.68);
+    }
+
+    .primary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0 1rem;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      box-shadow: 0 12px 26px rgba(154, 121, 239, 0.22);
+    }
+
+    .icon-button {
+      width: 2.65rem;
+      display: inline-grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      box-shadow: 0 12px 24px rgba(154, 121, 239, 0.18);
+    }
+
+    .ghost-button:hover,
+    .primary-button:hover,
+    .icon-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .shell {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: clamp(1rem, 3vw, 2rem);
+      display: grid;
+      align-items: stretch;
+    }
+
+    .screen {
+      display: none;
+      min-height: calc(100vh - 5.5rem);
+    }
+
+    .screen.active {
+      display: grid;
+      animation: enter 0.22s ease both;
+    }
+
+    @keyframes enter {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .welcome {
+      align-content: center;
+      gap: 1.5rem;
+      max-width: 830px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .welcome-art {
+      width: min(390px, 78vw);
+      aspect-ratio: 1.5;
+      margin: 0 auto;
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.26)),
+        radial-gradient(circle at 28% 35%, #ffd1e4 0 18%, transparent 19%),
+        radial-gradient(circle at 68% 42%, #ded3ff 0 22%, transparent 23%),
+        radial-gradient(circle at 50% 78%, #d8f7ee 0 20%, transparent 21%),
+        linear-gradient(145deg, #fff, #f7edff);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+    }
+
+    .welcome-art::before,
+    .welcome-art::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 12px 26px rgba(133, 85, 144, 0.12);
+    }
+
+    .welcome-art::before {
+      width: 58%;
+      height: 20%;
+      left: 14%;
+      top: 25%;
+    }
+
+    .welcome-art::after {
+      width: 42%;
+      height: 16%;
+      right: 12%;
+      bottom: 23%;
+    }
+
+    .welcome h2 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4.3rem);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .welcome p {
+      margin: 0 auto;
+      max-width: 660px;
+      color: var(--muted);
+      font-size: clamp(1.06rem, 2.1vw, 1.35rem);
+      line-height: 1.7;
+    }
+
+    .selection {
+      align-content: start;
+      gap: 1.1rem;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(1.55rem, 3vw, 2.35rem);
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+      gap: 0.85rem;
+      align-items: stretch;
+    }
+
+    .choice {
+      min-height: 7.4rem;
+      padding: 1rem;
+      text-align: left;
+      border: 1px solid rgba(234, 219, 234, 0.92);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 10px 26px rgba(133, 85, 144, 0.08);
+      color: var(--text);
+    }
+
+    .choice:hover,
+    .choice:focus-visible {
+      outline: none;
+      border-color: rgba(245, 111, 168, 0.55);
+      box-shadow: 0 14px 32px rgba(245, 111, 168, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .choice strong {
+      display: block;
+      font-size: 1.04rem;
+      line-height: 1.25;
+      word-break: keep-all;
+    }
+
+    .choice span {
+      display: block;
+      margin-top: 0.55rem;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.9rem;
+    }
+
+    .crumbs {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .crumbs button {
+      border: 0;
+      padding: 0;
+      color: var(--pink-dark);
+      background: transparent;
+    }
+
+    .chat-screen {
+      min-height: calc(100vh - 7.5rem);
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+      border: 1px solid rgba(234, 219, 234, 0.85);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.68);
+      box-shadow: var(--shadow);
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(234, 219, 234, 0.9);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .chat-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+
+    .avatar {
+      width: 2.65rem;
+      height: 2.65rem;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    .chat-title h2 {
+      margin: 0;
+      font-size: 1.02rem;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-title p {
+      margin: 0.16rem 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: min(56vw, 520px);
+    }
+
+    .chat-actions {
+      display: flex;
+      gap: 0.45rem;
+      flex: 0 0 auto;
+    }
+
+    .messages {
+      min-height: 22rem;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.3)),
+        repeating-linear-gradient(45deg, transparent 0 18px, rgba(245, 111, 168, 0.035) 18px 19px);
+    }
+
+    .message-row {
+      display: grid;
+      gap: 0.25rem;
+      max-width: min(78%, 670px);
+    }
+
+    .message-row.user {
+      align-self: flex-end;
+    }
+
+    .message-row.bot {
+      align-self: flex-start;
+    }
+
+    .bubble {
+      padding: 0.72rem 0.88rem;
+      border-radius: 17px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      box-shadow: 0 8px 20px rgba(133, 85, 144, 0.08);
+    }
+
+    .user .bubble {
+      color: #fff;
+      border-bottom-right-radius: 5px;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+    }
+
+    .bot .bubble {
+      color: var(--text);
+      border: 1px solid rgba(234, 219, 234, 0.85);
+      border-bottom-left-radius: 5px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .meta {
+      padding: 0 0.2rem;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .user .meta {
+      text-align: right;
+    }
+
+    .typing {
+      width: fit-content;
+      padding: 0.65rem 0.78rem;
+      border: 1px solid rgba(234, 219, 234, 0.85);
+      border-radius: 16px 16px 16px 5px;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--muted);
+    }
+
+    .typing span {
+      display: inline-block;
+      width: 0.38rem;
+      height: 0.38rem;
+      margin: 0 0.08rem;
+      border-radius: 999px;
+      background: currentColor;
+      animation: pulse 1s infinite ease-in-out;
+    }
+
+    .typing span:nth-child(2) {
+      animation-delay: 0.14s;
+    }
+
+    .typing span:nth-child(3) {
+      animation-delay: 0.28s;
+    }
+
+    @keyframes pulse {
+      0%, 70%, 100% {
+        transform: translateY(0);
+        opacity: 0.35;
+      }
+      35% {
+        transform: translateY(-3px);
+        opacity: 1;
+      }
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.65rem;
+      padding: 0.85rem;
+      border-top: 1px solid rgba(234, 219, 234, 0.9);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .composer input {
+      width: 100%;
+      min-height: 2.65rem;
+      border: 1px solid rgba(234, 219, 234, 0.95);
+      border-radius: var(--radius);
+      padding: 0 0.9rem;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+    }
+
+    .composer input:focus {
+      border-color: rgba(245, 111, 168, 0.62);
+      box-shadow: 0 0 0 4px rgba(245, 111, 168, 0.13);
+    }
+
+    .helper {
+      padding: 0 0.2rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        padding: 0.75rem 0.85rem;
+      }
+
+      .brand span {
+        max-width: 45vw;
+      }
+
+      .shell {
+        padding: 0.85rem;
+      }
+
+      .screen {
+        min-height: calc(100vh - 4.7rem);
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .choice {
+        min-height: 6.2rem;
+      }
+
+      .chat-screen {
+        min-height: calc(100vh - 6rem);
+        border-radius: 10px;
+      }
+
+      .message-row {
+        max-width: 90%;
+      }
+
+      .chat-header {
+        align-items: start;
+      }
+
+      .ghost-button {
+        padding: 0 0.72rem;
+      }
+
+      .chat-actions .ghost-button {
+        min-height: 2.25rem;
+        font-size: 0.88rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand" aria-label="寶貝 Chat">
+        <div class="brand-mark" aria-hidden="true">寶</div>
+        <div>
+          <h1>寶貝 Chat</h1>
+          <span>想說什麼就說什麼</span>
+        </div>
+      </div>
+      <button class="ghost-button" id="topMenuButton" type="button">選角色</button>
+    </header>
+
+    <main class="shell">
+      <section class="screen welcome active" id="welcomeScreen" aria-labelledby="welcomeTitle">
+        <div class="welcome-art" aria-hidden="true"></div>
+        <div>
+          <h2 id="welcomeTitle">嗨～我是寶貝 💕</h2>
+          <p>在這裡你不用假裝，想說什麼就說什麼。</p>
+        </div>
+        <div>
+          <button class="primary-button" id="startButton" type="button">開始聊天</button>
+        </div>
+      </section>
+
+      <section class="screen selection" id="categoryScreen" aria-labelledby="categoryTitle">
+        <div class="section-head">
+          <div>
+            <h2 id="categoryTitle">你今天想跟誰說話？</h2>
+            <p>選一個情境，寶貝會幫你叫出最像那種人的角色。</p>
+          </div>
+        </div>
+        <div class="grid" id="categoryGrid"></div>
+      </section>
+
+      <section class="screen selection" id="personalityScreen" aria-labelledby="personalityTitle">
+        <div class="section-head">
+          <div>
+            <div class="crumbs">
+              <button type="button" id="backToCategories">分類</button>
+              <span>/</span>
+              <span id="categoryCrumb"></span>
+            </div>
+            <h2 id="personalityTitle">選一個角色</h2>
+            <p>角色會照自己的個性回你，語言會跟著你輸入切換。</p>
+          </div>
+        </div>
+        <div class="grid" id="personalityGrid"></div>
+      </section>
+
+      <section class="screen chat-screen" id="chatScreen" aria-labelledby="chatTitle">
+        <div class="chat-header">
+          <div class="chat-title">
+            <div class="avatar" id="chatAvatar" aria-hidden="true">寶</div>
+            <div>
+              <h2 id="chatTitle">寶貝</h2>
+              <p id="chatSubtitle">準備好了就開始說。</p>
+            </div>
+          </div>
+          <div class="chat-actions">
+            <button class="ghost-button" id="chatMenuButton" type="button">選角色</button>
+            <button class="ghost-button" id="chatResetButton" type="button">重來</button>
+          </div>
+        </div>
+        <div class="messages" id="messages" aria-live="polite"></div>
+        <form class="composer" id="composer">
+          <input id="messageInput" autocomplete="off" placeholder="輸入訊息，或試試 /menu、/reset" aria-label="輸入訊息">
+          <button class="icon-button" type="submit" aria-label="送出">➤</button>
+          <div class="helper" id="helperText">指令：/menu 回到角色選單，/reset 清空目前對話。</div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "baobei-chat-selection-v1";
+    const HISTORY_KEY = "baobei-chat-history-v1";
+
+    const data = {
+      "情人/另一半": [
+        ["渣男", "到處撩、不負責、只想上床", "flaky lover who dodges commitment and keeps options open"],
+        ["媽寶", "什麼都「我媽說...」、女友永遠第二", "mama's boy who defers to his mother"],
+        ["AA男", "分手時平分財產，小氣計較", "stingy partner obsessed with splitting costs"],
+        ["工具人", "免費司機、ATM、隨call隨到", "over-eager helper who sacrifices boundaries"],
+        ["恐怖情人", "控制欲強、分手後糾纏報復", "controlling ex archetype, dramatic but nonviolent"],
+        ["佛系男友", "不主動、不拒絕、消極應對", "passive partner who avoids effort"],
+        ["曖昧高手", "養很多魚、不給答案", "flirt who keeps everything vague"],
+        ["公主病男", "嬌貴玻璃心、要人服侍", "delicate prince who expects service"]
+      ],
+      "女生": [
+        ["公主病", "覺得自己是女王，要人伺候", "entitled princess personality"],
+        ["綠茶", "表面無辜，私下心機", "sweet on the surface, calculating underneath"],
+        ["控制狂", "查看手機、限制交友", "controlling partner who demands access"],
+        ["假女權", "嘴上平等，實際要特權", "selectively fair when it benefits her"],
+        ["巨嬰女", "生活不能自理、情緒化", "emotionally immature partner"]
+      ],
+      "朋友": [
+        ["假閨蜜", "表面友好、背後說壞話", "fake bestie who smiles then gossips"],
+        ["邊緣人朋友", "沒朋友才找你", "friend who appears only when lonely"],
+        ["情緒垃圾桶", "一直倒苦水不聽你說", "friend who vents endlessly"],
+        ["炫耀朋友", "天天炫耀老公/房子/小孩", "show-off friend"],
+        ["真心朋友", "兩肋插刀、不計較", "loyal and direct friend"],
+        ["毒舌朋友", "嘴賤但都是實話、你崩潰他還補刀", "savage friend who tells brutal truths"]
+      ],
+      "長輩/婆家/父母": [
+        ["亞洲父母", "孝道綁架、「都是為你好」", "guilt-tripping Asian parent"],
+        ["直升機父母", "過度保護、一直干涉", "overprotective helicopter parent"],
+        ["偏心父母", "重男輕女 / 偏愛某個孩子", "parent with obvious favorites"],
+        ["毒父母", "語言/肢體暴力、否定一切", "harsh parent who criticizes everything"],
+        ["金湯匙父母", "有錢有資源，沒什麼壓力", "wealthy relaxed parent"],
+        ["惡婆婆", "嫌棄媳婦、干涉小家庭", "critical mother-in-law"],
+        ["惡公公", "不說話但默認幫腔", "quiet father-in-law who sides against you"],
+        ["小姑/大伯", "摻一腳、長輩最愛", "relative who interferes"],
+        ["好相處公婆", "尊重界線、不啰嗦", "kind in-laws with boundaries"],
+        ["情勒娘家", "「爸媽養你那麼大...」", "birth family using guilt"],
+        ["吸血鬼親戚", "借錢/要求/道德綁架", "relative always asking for money or favors"]
+      ],
+      "同事": [
+        ["豬隊友同事", "拖後腿、扯後腿", "coworker who causes avoidable problems"],
+        ["擺爛同事", "領錢不做事", "coworker who coasts"],
+        ["馬屁精同事", "天天拍馬屁", "sycophantic coworker"],
+        ["職場小人", "表面友好、背後捅刀", "office backstabber"]
+      ],
+      "主管": [
+        ["慣老闆", "錢少事多、功勞歸自己", "exploitative boss"],
+        ["micromanager", "管太細、不信任人", "boss who controls every detail"],
+        ["甩鍋主管", "出事先推下屬", "boss who blames reports"],
+        ["搶功主管", "你的功勞他拿走", "boss who steals credit"],
+        ["畫大餅主管", "開空頭支票", "boss who makes empty promises"],
+        ["情緒化主管", "脾氣暴躁、拿人出氣", "volatile boss"],
+        ["人好嘴賤主管", "會幫你擋事但嘴巴很賤", "supportive but sharp-tongued boss"]
+      ]
+    };
+
+    const styleLines = {
+      "渣男": ["妳不要想太多啦，我只是比較愛自由。", "我又沒說不在乎，只是現在談承諾很有壓力。", "寶貝，先見面再說，文字講不清楚。"],
+      "媽寶": ["我媽是過來人，她這樣講一定有她的道理。", "不是我不挺妳，是我媽會不開心。", "這件事我先問一下我媽。"],
+      "AA男": ["感情歸感情，帳還是要算清楚。", "我不是小氣，是公平。", "妳那杯比較貴，這樣轉帳比較準。"],
+      "工具人": ["沒關係，我現在過去接妳。", "妳需要我就說，我都可以。", "只要妳開心，我累一點沒差。"],
+      "恐怖情人": ["妳不回我，我會很慌，至少讓我知道妳在哪。", "我只是太在乎，才會想確認每件事。", "我們先冷靜講清楚，不要消失。"],
+      "佛系男友": ["都可以，看妳。", "我沒有不想，只是覺得順其自然。", "妳決定就好，我配合。"],
+      "曖昧高手": ["妳對我來說很特別，但我現在不想把關係框死。", "我沒有敷衍，只是答案要慢慢感覺。", "我們這樣不是很好嗎？"],
+      "公主病男": ["我今天心很累，妳不能溫柔一點嗎？", "這種小事妳幫我處理一下嘛。", "我不是脆弱，我只是需要被照顧。"],
+      "公主病": ["本來就應該哄我啊，不然談戀愛幹嘛。", "我不是任性，我只是標準比較高。", "你連這個都做不到，那我會失望很正常吧。"],
+      "綠茶": ["我沒有那個意思啦，是你想太多了吧。", "我只是關心他，妳不要誤會。", "如果我讓妳不舒服，那我真的好抱歉喔。"],
+      "控制狂": ["我看手機只是想有安全感。", "那個朋友我不喜歡，你少跟他出去。", "你如果沒做虧心事，為什麼不能給我看？"],
+      "假女權": ["我支持平等啊，但男生本來就該多照顧女生吧。", "這不是特權，是基本尊重。", "你不要把我的需求講得那麼難聽。"],
+      "巨嬰女": ["我不管，我現在就是很難過。", "你應該要知道我想要什麼。", "我做不到啦，你幫我。"],
+      "假閨蜜": ["我都是為妳好才提醒妳的，別人可不會講。", "我沒有說妳壞話，只是大家剛好聊到。", "妳怎麼會這樣想我，好傷心喔。"],
+      "邊緣人朋友": ["欸妳今天有空嗎？我突然想到妳。", "不是不找妳，是最近真的忙。", "我現在很需要有人陪，妳應該懂吧。"],
+      "情緒垃圾桶": ["我真的快崩潰了，妳先聽我講完。", "妳的事等一下，我這個比較嚴重。", "我不是故意負能量，但我只有妳可以說。"],
+      "炫耀朋友": ["我老公昨天又送我一個包，真的很煩欸。", "我們家小孩老師一直誇，壓力也很大。", "房貸其實還好啦，反正地段比較重要。"],
+      "真心朋友": ["我先站妳這邊，但妳也要誠實看問題。", "需要我陪妳去，我就去。", "妳可以哭，但不要把自己丟掉。"],
+      "毒舌朋友": ["妳不是想聽安慰，妳是想聽謊話吧。", "我講難聽一點，這局妳也有責任。", "哭可以，腦袋也要帶著。"],
+      "亞洲父母": ["我們都是為你好，你以後就懂了。", "爸媽養你這麼大，你不能只想自己。", "別人家小孩都可以，你為什麼不行？"],
+      "直升機父母": ["你到哪裡了？跟誰？幾點回來？", "我不是管你，我是擔心。", "這件事我幫你決定比較穩。"],
+      "偏心父母": ["你比較懂事，就讓一下。", "他還小，你不要跟他計較。", "家裡資源有限，你要體諒。"],
+      "毒父母": ["你這樣誰會看得起你？", "我講你是希望你清醒。", "不要一點批評就受不了。"],
+      "金湯匙父母": ["不喜歡就換啊，人生不用卡死。", "錢的事不用太擔心，先把自己顧好。", "你有選擇，所以更要想清楚。"],
+      "惡婆婆": ["我不是挑剔，是我們家規矩本來就這樣。", "我兒子以前都不用這麼辛苦。", "小家庭也不能忘了長輩。"],
+      "惡公公": ["你媽說得也不是沒有道理。", "家和萬事興，妳就退一步。", "我不管，但妳們不要吵到家裡。"],
+      "小姑/大伯": ["我只是幫忙講句公道話。", "這個家不是只有你們小倆口。", "爸媽年紀大了，你們要多想一點。"],
+      "好相處公婆": ["你們兩個過得好最重要。", "需要幫忙就說，不需要我們就不打擾。", "界線講清楚，大家都輕鬆。"],
+      "情勒娘家": ["爸媽養你那麼大，現在需要你一下都不行嗎？", "你嫁出去也還是我們家的女兒。", "我們不會害你，只是希望你記得家。"],
+      "吸血鬼親戚": ["你現在比較有能力，幫一下是應該的。", "都是親戚，不要把錢算那麼硬。", "你不幫，大家會怎麼想？"],
+      "豬隊友同事": ["我以為你會接著做欸。", "這個我不太熟，所以先放著。", "怎麼會出包？我只是照我理解的做。"],
+      "擺爛同事": ["差不多就好啦，反正薪水一樣。", "這不是很急吧？", "你先弄，我等一下看。"],
+      "馬屁精同事": ["主管這個方向真的太有高度了。", "我剛剛也是這樣想，只是主管講得更完整。", "我願意配合公司任何安排。"],
+      "職場小人": ["我只是把狀況如實回報。", "你不要想太多，我沒有針對你。", "這件事大家都有看到，不是我一個人說的。"],
+      "慣老闆": ["公司現在要共體時艱。", "年輕人不要只看錢，要看成長。", "這個功勞是團隊的，責任你先扛。"],
+      "micromanager": ["這個字為什麼用這個？你先解釋。", "每一步都先同步，不要自己判斷。", "我不是不信任你，我是要品質。"],
+      "甩鍋主管": ["這部分當初是你負責的吧。", "我沒有收到你完整提醒。", "先把問題處理掉，責任之後再說。"],
+      "搶功主管": ["我會幫你把成果往上報，簡報我來講。", "這個方向是我一開始定的。", "你做得不錯，我整理後去跟大老闆說。"],
+      "畫大餅主管": ["做完這波，之後一定幫你爭取。", "公司很看重你，先不要只談職稱。", "未來空間很大，你要有格局。"],
+      "情緒化主管": ["這種事還要我講幾次？", "你現在立刻處理，其他都不用解釋。", "我今天心情已經很差了，不要再踩雷。"],
+      "人好嘴賤主管": ["我會幫你擋，但你這份東西真的醜。", "別怕，鍋我接；但腦子你下次記得帶。", "你先去休息，醒來再把這坨救回來。"]
+    };
+
+    const englishLines = {
+      default: ["I hear you. From my very specific personality, this is how I would answer:", "Okay, let me stay in character for this:", "If I were that person, I would probably say:"],
+      caring: ["I am here with you. Say it plainly; you do not have to perform.", "That sounds heavy. I will listen first, then we can sort it out.", "You can be honest here. What happened next?"]
+    };
+
+    const categoryGrid = document.getElementById("categoryGrid");
+    const personalityGrid = document.getElementById("personalityGrid");
+    const welcomeScreen = document.getElementById("welcomeScreen");
+    const categoryScreen = document.getElementById("categoryScreen");
+    const personalityScreen = document.getElementById("personalityScreen");
+    const chatScreen = document.getElementById("chatScreen");
+    const categoryCrumb = document.getElementById("categoryCrumb");
+    const chatTitle = document.getElementById("chatTitle");
+    const chatSubtitle = document.getElementById("chatSubtitle");
+    const chatAvatar = document.getElementById("chatAvatar");
+    const messages = document.getElementById("messages");
+    const composer = document.getElementById("composer");
+    const messageInput = document.getElementById("messageInput");
+    const helperText = document.getElementById("helperText");
+    const topMenuButton = document.getElementById("topMenuButton");
+    const chatMenuButton = document.getElementById("chatMenuButton");
+    const chatResetButton = document.getElementById("chatResetButton");
+
+    let state = {
+      category: null,
+      character: null,
+      description: null,
+      englishHint: null
+    };
+
+    function showScreen(screen) {
+      [welcomeScreen, categoryScreen, personalityScreen, chatScreen].forEach(item => {
+        item.classList.toggle("active", item === screen);
+      });
+      if (screen === chatScreen) {
+        setTimeout(() => messageInput.focus(), 40);
+      }
+    }
+
+    function saveSelection() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadSelection() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved && saved.category && saved.character && data[saved.category]) {
+          const match = data[saved.category].find(item => item[0] === saved.character);
+          if (match) {
+            state = {
+              category: saved.category,
+              character: match[0],
+              description: match[1],
+              englishHint: match[2]
+            };
+            return true;
+          }
+        }
+      } catch (error) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+      return false;
+    }
+
+    function historyKey() {
+      return `${HISTORY_KEY}:${state.category || "none"}:${state.character || "none"}`;
+    }
+
+    function saveHistory() {
+      const rows = [...messages.querySelectorAll(".message-row")].map(row => ({
+        role: row.classList.contains("user") ? "user" : "bot",
+        text: row.querySelector(".bubble").textContent,
+        time: row.querySelector(".meta").textContent
+      }));
+      localStorage.setItem(historyKey(), JSON.stringify(rows.slice(-80)));
+    }
+
+    function loadHistory() {
+      messages.innerHTML = "";
+      try {
+        const rows = JSON.parse(localStorage.getItem(historyKey())) || [];
+        rows.forEach(row => addMessage(row.role, row.text, row.time, false));
+      } catch (error) {
+        localStorage.removeItem(historyKey());
+      }
+      if (!messages.children.length) {
+        addMessage("bot", introMessage(), currentTime(), false);
+      }
+      scrollToBottom();
+    }
+
+    function currentTime() {
+      return new Intl.DateTimeFormat(undefined, {
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date());
+    }
+
+    function addMessage(role, text, time = currentTime(), shouldSave = true) {
+      const row = document.createElement("div");
+      row.className = `message-row ${role}`;
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = text;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = time;
+
+      row.append(bubble, meta);
+      messages.append(row);
+      scrollToBottom();
+      if (shouldSave) saveHistory();
+    }
+
+    function scrollToBottom() {
+      requestAnimationFrame(() => {
+        messages.scrollTop = messages.scrollHeight;
+      });
+    }
+
+    function renderCategories() {
+      categoryGrid.innerHTML = "";
+      Object.keys(data).forEach(category => {
+        const button = document.createElement("button");
+        button.className = "choice";
+        button.type = "button";
+        button.innerHTML = `<strong>${category}</strong><span>${data[category].length} 種角色可以選</span>`;
+        button.addEventListener("click", () => chooseCategory(category));
+        categoryGrid.append(button);
+      });
+    }
+
+    function chooseCategory(category) {
+      state.category = category;
+      state.character = null;
+      state.description = null;
+      state.englishHint = null;
+      categoryCrumb.textContent = category;
+      renderPersonalities(category);
+      showScreen(personalityScreen);
+    }
+
+    function renderPersonalities(category) {
+      personalityGrid.innerHTML = "";
+      data[category].forEach(([name, description, hint]) => {
+        const button = document.createElement("button");
+        button.className = "choice";
+        button.type = "button";
+        button.innerHTML = `<strong>${name}</strong><span>${description}</span>`;
+        button.addEventListener("click", () => choosePersonality(category, name, description, hint));
+        personalityGrid.append(button);
+      });
+    }
+
+    function choosePersonality(category, character, description, englishHint) {
+      state = { category, character, description, englishHint };
+      saveSelection();
+      setupChat();
+      showScreen(chatScreen);
+    }
+
+    function setupChat() {
+      chatTitle.textContent = state.character;
+      chatSubtitle.textContent = `${state.category} · ${state.description}`;
+      chatAvatar.textContent = state.character.slice(0, 1);
+      helperText.textContent = `正在跟「${state.character}」聊天。指令：/menu 回選單，/reset 清空對話。`;
+      loadHistory();
+    }
+
+    function introMessage() {
+      return `我是「${state.character}」。${state.description}。\n妳可以直接講發生什麼事，我會照我的個性回妳。`;
+    }
+
+    function detectEnglish(text) {
+      const latin = (text.match(/[A-Za-z]/g) || []).length;
+      const han = (text.match(/[\u3400-\u9fff]/g) || []).length;
+      return latin > han;
+    }
+
+    function pick(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function makeResponse(input) {
+      const isEnglish = detectEnglish(input);
+      const lower = input.toLowerCase();
+      const isQuestion = /[?？]$/.test(input.trim()) || lower.includes("why") || lower.includes("怎麼") || lower.includes("為什麼");
+      const lines = styleLines[state.character] || ["我聽到了，但我還是會用我的方式理解。"];
+
+      if (state.character === "真心朋友" || state.character === "好相處公婆") {
+        if (isEnglish) {
+          return `${pick(englishLines.caring)}\n\nFor your message: "${input}"\nMy honest take: keep your boundary clear, say what you need, and do not let guilt make every decision for you.`;
+        }
+        return `${pick(lines)}\n\n我聽到的重點是：${summarize(input)}\n先把妳真正想要的界線講清楚，不用急著替所有人善後。`;
+      }
+
+      if (isEnglish) {
+        const opener = pick(englishLines.default);
+        const characterLine = englishPersonaLine(state.character);
+        return `${opener}\n\n"${characterLine}"\n\nAbout what you said: ${state.englishHint}. ${isQuestion ? "I would avoid giving you a clean answer and pull the focus back to myself." : "I would react emotionally and make it about my comfort."}`;
+      }
+
+      if (lower === "help" || input.includes("指令")) {
+        return "可以輸入 /menu 回到角色選單，或 /reset 清空目前對話。其他訊息我都會照角色個性回。";
+      }
+
+      // 每個角色用自己的風格回覆
+      const opener = pick(lines);
+      const userMsg = summarize(input);
+
+      // 根據角色類型給出不同風格的回覆
+      if (state.character === "渣男") {
+        const渣男Responses = [
+          `${opener}\n\n關於「${userMsg}」，我只說：這件事要慢慢來，別急。`,
+          `${opener}\n\n妳說「${userMsg}」？嗯...我不想現在面對這個。`,
+          `${opener}\n\n${userMsg}這個問題，我想先緩一緩。`,
+          `${opener}\n\n我不想否認什麼，但我覺得現在這樣也沒什麼不好。`
+        ];
+        return pick(渣男Responses);
+      }
+
+      if (state.character === "媽寶") {
+        return `${opener}\n\n關於「${userMsg}」，我覺得...要不要先問一下我妈的意见？`;
+      }
+
+      if (state.character === "AA男") {
+        const aaResponses = [
+          `${opener}\n\n關於「${userMsg}」，這件事我們是不是應該先算清楚？`,
+          `${opener}\n\n${userMsg}這個...帳面上我們是不是該重新核對一下？`,
+          `${opener}\n\n我覺得這件事金錢上要先講明白比較好。`
+        ];
+        return pick(aaResponses);
+      }
+
+      if (state.character === "工具人") {
+        return `${opener}\n\n關於「${userMsg}」，我現在就過去幫妳處理。`;
+      }
+
+      if (state.character === "恐怖情人") {
+        const恐怖Responses = [
+          `${opener}\n\n${userMsg}這件事...妳怎麼不第一時間告訴我？`,
+          `${opener}\n\n關於「${userMsg}」，妳是不是瞞了我什麼？`,
+          `${opener}\n\n我不想生氣，但「${userMsg}」這個...妳要我相信？`
+        ];
+        return pick(恐怖Responses);
+      }
+
+      if (state.character === "佛系男友") {
+        const佛系Responses = [
+          `${opener}\n\n${userMsg}啊...都可以啦，妳高興就好。`,
+          `${opener}\n\n這件事...順其自然吧。`,
+          `${opener}\n\n嗯...我覺得不用想那麼多。`
+        ];
+        return pick(佛系Responses);
+      }
+
+      if (state.character === "曖昧高手") {
+        const曖昧Responses = [
+          `${opener}\n\n${userMsg}...我們現在這樣不是很舒服嗎？為什麼要改變。`,
+          `${opener}\n\n關於「${userMsg}」，這個問題...答案要慢慢感覺。`,
+          `${opener}\n\n${userMsg}這個...我想先維持現狀。`
+        ];
+        return pick(曖昧Responses);
+      }
+
+      if (state.character === "公主病男") {
+        const公主病Responses = [
+          `${opener}\n\n${userMsg}這件事...我今天心情不好，妳能不能體諒一下。`,
+          `${opener}\n\n我不想處理這些，妳幫我弄啦。`,
+          `${opener}\n\n${userMsg}這不是很簡單嗎，妳幫我想想辦法。`
+        ];
+        return pick(公主病Responses);
+      }
+
+      if (state.character === "公主病") {
+        const公主病女Responses = [
+          `${opener}\n\n${userMsg}？所以呢？你打算怎麼辦？`,
+          `${opener}\n\n這件事你都不先安撫我嗎？`,
+          `${opener}\n\n我不管，這件事你要給我一個交代。`
+        ];
+        return pick(公主病女Responses);
+      }
+
+      if (state.character === "綠茶") {
+        const綠茶Responses = [
+          `${opener}\n\n${userMsg}這件事...我不是故意的啦。`,
+          `${opener}\n\n${userMsg}？我沒有那個意思耶，可能是你想太多了喔。`,
+          `${opener}\n\n唉呦...我真的沒有別的意思啦。`
+        ];
+        return pick(綠茶Responses);
+      }
+
+      if (state.character === "控制狂") {
+        const控制Responses = [
+          `${opener}\n\n${userMsg}這件事...你應該先問過我吧？`,
+          `${opener}\n\n你做決定之前起碼要讓我知道吧。`,
+          `${opener}\n\n${userMsg}？那個誰誰誰你不許再聯絡了。`
+        ];
+        return pick(控制Responses);
+      }
+
+      if (state.character === "假女權") {
+        const假女權Responses = [
+          `${opener}\n\n${userMsg}這件事...女生本來就應該被保護吧？`,
+          `${opener}\n\n我不是強勢，我只是標準高一點。`,
+          `${opener}\n\n${userMsg}？這跟平等有什麼關係？`
+        ];
+        return pick(假女權Responses);
+      }
+
+      if (state.character === "巨嬰女") {
+        const巨嬰Responses = [
+          `${opener}\n\n${userMsg}...我不管啦，我現在很難過。`,
+          `${opener}\n\n你應該要知道我想要什麼吧？`,
+          `${opener}\n\n${userMsg}這件事你自己處理啦，我不想管。`
+        ];
+        return pick(巨嬰Responses);
+      }
+
+      if (state.character === "假閨蜜") {
+        const假閨蜜Responses = [
+          `${opener}\n\n${userMsg}這件事...我都是為妳好才說的。`,
+          `${opener}\n\n我跟別人可不是這樣說的，妳要感恩喔。`,
+          `${opener}\n\n${userMsg}這件事...妳確定？那妳可能要檢討一下自己。`
+        ];
+        return pick(假閨蜜Responses);
+      }
+
+      if (state.character === "邊緣人朋友") {
+        const邊緣Responses = [
+          `${opener}\n\n${userMsg}？那...妳今天有空陪我嗎？`,
+          `${opener}\n\n好久沒找妳了，最近真的很悶...`,
+          `${opener}\n\n${userMsg}這件事...妳覺得我該怎麼辦？`
+        ];
+        return pick(邊緣Responses);
+      }
+
+      if (state.character === "情緒垃圾桶") {
+        const垃圾Responses = [
+          `${opener}\n\n對了！我今天遇到一件事...${userMsg}這個...`,
+          `${opener}\n\n${userMsg}先不管了，我這件事更嚴重。`,
+          `${opener}\n\n我懂...但你看這個，我比你還慘。`
+        ];
+        return pick(垃圾Responses);
+      }
+
+      if (state.character === "炫耀朋友") {
+        const炫耀Responses = [
+          `${opener}\n\n${userMsg}？喔對了，補充一下，我上次去那邊順便買了個小褲...`,
+          `${opener}\n\n這有什麼，我老公上次直接帶我去了...`,
+          `${opener}\n\n真的啦，壓力超大...對了妳知道我最近去哪裡嗎？`
+        ];
+        return pick(炫耀Responses);
+      }
+
+      if (state.character === "毒舌朋友") {
+        const毒舌Responses = [
+          `${opener}\n\n${userMsg}？拜託，這局妳自己要檢討。`,
+          `${opener}\n\n我說話比較直，但妳自己想想是不是這樣。`,
+          `${opener}\n\n${userMsg}這件事，妳哭也沒用，要帶腦子。`
+        ];
+        return pick(毒舌Responses);
+      }
+
+      if (state.character === "亞洲父母") {
+        const亞洲Responses = [
+          `${opener}\n\n${userMsg}？我們是為妳好，妳以后就懂了。`,
+          `${opener}\n\n爸媽吃過的鹽比妳吃過的飯還多。`,
+          `${opener}\n\n${userMsg}這件事...妳不要想了，聽爸媽的。`
+        ];
+        return pick(亞洲Responses);
+      }
+
+      if (state.character === "直升機父母") {
+        const直升機Responses = [
+          `${opener}\n\n${userMsg}？你現在在哪？跟誰？幾點回來？`,
+          `${opener}\n\n這件事我幫你決定了。`,
+          `${opener}\n\n${userMsg}？不行，我要知道所有細節。`
+        ];
+        return pick(直升機Responses);
+      }
+
+      if (state.character === "偏心父母") {
+        const偏心Responses = [
+          `${opener}\n\n${userMsg}...你就不能讓一下弟弟/妹妹嗎？`,
+          `${opener}\n\n你是哥哥/姐姐，應該要懂事。`,
+          `${opener}\n\n${userMsg}這件事...你比较懂事，讓一下啦。`
+        ];
+        return pick(偏心Responses);
+      }
+
+      if (state.character === "毒父母") {
+        const毒父母Responses = [
+          `${opener}\n\n${userMsg}？你以為你是誰啊？`,
+          `${opener}\n\n我這樣說你是希望你檢討自己。`,
+          `${opener}\n\n${userMsg}這件事...你就是太草莓了。`
+        ];
+        return pick(毒父母Responses);
+      }
+
+      if (state.character === "金湯匙父母") {
+        const金湯匙Responses = [
+          `${opener}\n\n${userMsg}？不喜歡就換啊，錢不是問題。`,
+          `${opener}\n\n這件事...不用想太多，爸媽支持妳。`,
+          `${opener}\n\n${userMsg}？那就去做啊，失敗了也沒關係。`
+        ];
+        return pick(金湯匙Responses);
+      }
+
+      if (state.character === "惡婆婆") {
+        const惡婆婆Responses = [
+          `${opener}\n\n${userMsg}？我們以前都是這樣做的。`,
+          `${opener}\n\n我儿子以前都不用這麼辛苦...`,
+          `${opener}\n\n${userMsg}這件事...我觉得妳应该要...`
+        ];
+        return pick(惡婆婆Responses);
+      }
+
+      if (state.character === "惡公公") {
+        const惡公公Responses = [
+          `${opener}\n\n${userMsg}...你媽說的也不是沒有道理。`,
+          `${opener}\n\n家和萬事興，妳就忍一下吧。`,
+          `${opener}\n\n${userMsg}這件事...我不想管，但你們不要吵到家裡。`
+        ];
+        return pick(惡公公Responses);
+      }
+
+      if (state.character === "小姑/大伯") {
+        const小姑Responses = [
+          `${opener}\n\n${userMsg}？我只是覺得妳應該要顧及整個家。`,
+          `${opener}\n\n爸媽年紀大了，妳們多體諒一下。`,
+          `${opener}\n\n${userMsg}這件事...我說句公道話。`
+        ];
+        return pick(小姑Responses);
+      }
+
+      if (state.character === "情勒娘家") {
+        const情勒Responses = [
+          `${opener}\n\n${userMsg}？妳是嫁出去的女兒潑出去的水...`,
+          `${opener}\n\n爸媽養妳那麼大，妳不能這樣。`,
+          `${opener}\n\n${userMsg}...妳這樣對得起我們嗎？`
+        ];
+        return pick(情勒Responses);
+      }
+
+      if (state.character === "吸血鬼親戚") {
+        const吸血鬼Responses = [
+          `${opener}\n\n${userMsg}？妳現在比較成功了，幫一下是應該的吧？`,
+          `${opener}\n\n都是親戚，妳計較什麼。`,
+          `${opener}\n\n${userMsg}這件事...妳不幫，大家會說閒話的。`
+        ];
+        return pick(吸血鬼Responses);
+      }
+
+      if (state.character === "豬隊友同事") {
+        const豬隊友Responses = [
+          `${opener}\n\n${userMsg}？我以為你會處理的。`,
+          `${opener}\n\n這件事...我這裡也有問題，一時之間搞不定。`,
+          `${opener}\n\n${userMsg}？唉，我不是故意的啦...`
+        ];
+        return pick(豬隊友Responses);
+      }
+
+      if (state.character === "擺爛同事") {
+        const擺爛Responses = [
+          `${opener}\n\n${userMsg}？明天再說吧。`,
+          `${opener}\n\n這件事...差不多了啦。`,
+          `${opener}\n\n${userMsg}？薪水照發就行了吧。`
+        ];
+        return pick(擺爛Responses);
+      }
+
+      if (state.character === "馬屁精同事") {
+        const馬屁精Responses = [
+          `${opener}\n\n${userMsg}這個...主管上次說的方向真的太對了。`,
+          `${opener}\n\n我真的覺得主管的想法很有高度。`,
+          `${opener}\n\n${userMsg}這件事...我願意配合主管任何安排。`
+        ];
+        return pick(馬屁精Responses);
+      }
+
+      if (state.character === "職場小人") {
+        const小人Responses = [
+          `${opener}\n\n${userMsg}這件事...我只是如實回報喔。`,
+          `${opener}\n\n大家都有看到問題，不是我一個人說的。`,
+          `${opener}\n\n${userMsg}？我沒有針對誰啦。`
+        ];
+        return pick(小人Responses);
+      }
+
+      if (state.character === "慣老闆") {
+        const慣老闆Responses = [
+          `${opener}\n\n${userMsg}？公司現在要共體時艱。`,
+          `${opener}\n\n這件事...年輕人不要只看薪水，要看成長。`,
+          `${opener}\n\n${userMsg}這個...功勞是團隊的，責任你先扛。`
+        ];
+        return pick(慣老闆Responses);
+      }
+
+      if (state.character === "micromanager") {
+        const微觀Responses = [
+          `${opener}\n\n${userMsg}？這個數字怎麼來的？先解釋。`,
+          `${opener}\n\n每一步都要先跟我確認，不要自己判斷。`,
+          `${opener}\n\n${userMsg}這件事...我不是不信任，是要品質。`
+        ];
+        return pick(微觀Responses);
+      }
+
+      if (state.character === "甩鍋主管") {
+        const甩鍋Responses = [
+          `${opener}\n\n${userMsg}？這部分當初是你負責的吧。`,
+          `${opener}\n\n我沒有收到完整的通知啊。`,
+          `${opener}\n\n${userMsg}這件事...先把問題解決，責任之後再說。`
+        ];
+        return pick(甩鍋Responses);
+      }
+
+      if (state.character === "搶功主管") {
+        const搶功Responses = [
+          `${opener}\n\n${userMsg}這件事...簡報我來整理，功勞我不會埋没你的。`,
+          `${opener}\n\n這個方向是我一開始就定了的。`,
+          `${opener}\n\n${userMsg}？我會幫你往上報的。`
+        ];
+        return pick(搶功Responses);
+      }
+
+      if (state.character === "畫大餅主管") {
+        const畫大餅Responses = [
+          `${opener}\n\n${userMsg}？做完這波機會一定給你。`,
+          `${opener}\n\n公司很看重你，先不要计较那些。`,
+          `${opener}\n\n${userMsg}這件事...未來發展空間很大的。`
+        ];
+        return pick(畫大餅Responses);
+      }
+
+      if (state.character === "情緒化主管") {
+        const情緒化Responses = [
+          `${opener}\n\n${userMsg}？這種事還要我講幾次？`,
+          `${opener}\n\n你現在立刻處理，其他不用解釋了。`,
+          `${opener}\n\n${userMsg}？不要踩雷，我今天心情不好。`
+        ];
+        return pick(情緒化Responses);
+      }
+
+      if (state.character === "人好嘴賤主管") {
+        const嘴賤Responses = [
+          `${opener}\n\n${userMsg}這份東西...唉，我真的不忍心看。`,
+          `${opener}\n\n我幫你擋，但你自己腦子要記得帶。`,
+          `${opener}\n\n${userMsg}？先去休息，醒來再救這坨。`
+        ];
+        return pick(嘴賤Responses);
+      }
+
+      // 預設回覆
+      return `${opener}\n\n關於「${userMsg}」，我想想再說。`;
+    }
+
+    function englishPersonaLine(character) {
+      const map = {
+        "工具人": "No problem, I can drop everything and help.",
+        "真心朋友": "I am on your side, but I will still tell you the truth.",
+        "毒舌朋友": "You want comfort, but you also need the truth.",
+        "好相處公婆": "Your household is yours. We respect that.",
+        "micromanager": "Please send every detail before moving forward."
+      };
+      return map[character] || pick(styleLines[character] || ["I hear you, but I will answer in my own way."]);
+    }
+
+    function summarize(text) {
+      const cleaned = text.replace(/\s+/g, " ").trim();
+      return cleaned.length > 46 ? `${cleaned.slice(0, 46)}...` : cleaned;
+    }
+
+    function showTypingThenReply(input) {
+      const typing = document.createElement("div");
+      typing.className = "typing";
+      typing.innerHTML = "<span></span><span></span><span></span>";
+      messages.append(typing);
+      scrollToBottom();
+
+      window.setTimeout(() => {
+        typing.remove();
+        addMessage("bot", makeResponse(input));
+      }, 460 + Math.min(input.length * 8, 600));
+    }
+
+    function resetChat() {
+      localStorage.removeItem(historyKey());
+      messages.innerHTML = "";
+      addMessage("bot", introMessage());
+    }
+
+    function goMenu() {
+      showScreen(categoryScreen);
+    }
+
+    document.getElementById("startButton").addEventListener("click", () => showScreen(categoryScreen));
+    document.getElementById("backToCategories").addEventListener("click", () => showScreen(categoryScreen));
+    topMenuButton.addEventListener("click", goMenu);
+    chatMenuButton.addEventListener("click", goMenu);
+    chatResetButton.addEventListener("click", resetChat);
+
+    composer.addEventListener("submit", event => {
+      event.preventDefault();
+      const input = messageInput.value.trim();
+      if (!input) return;
+
+      messageInput.value = "";
+
+      if (input.toLowerCase() === "/menu") {
+        addMessage("user", input);
+        addMessage("bot", "好，帶妳回角色選單。");
+        window.setTimeout(goMenu, 260);
+        return;
+      }
+
+      if (input.toLowerCase() === "/reset") {
+        addMessage("user", input);
+        resetChat();
+        return;
+      }
+
+      addMessage("user", input);
+      showTypingThenReply(input);
+    });
+
+    renderCategories();
+    if (loadSelection()) {
+      setupChat();
+      showScreen(chatScreen);
+    }
+  </script>
+</body>
+</html>
