@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>寶貝 Chat</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="description" content="寶貝角色聊天 web app">
   <style>
     :root {
@@ -722,8 +725,19 @@
   </div>
 
   <script>
+    const APP_VERSION = "v2.1";
     const STORAGE_KEY = "baobei-chat-selection-v1";
     const HISTORY_KEY = "baobei-chat-history-v1";
+    
+    // Force refresh if version changed
+    const savedVersion = localStorage.getItem("baobei-app-version");
+    if (savedVersion !== APP_VERSION) {
+      localStorage.setItem("baobei-app-version", APP_VERSION);
+      // Clear all baobei localStorage to ensure fresh state
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith("baobei-")) localStorage.removeItem(key);
+      });
+    }
 
     const data = {
       "情人/另一半": [
