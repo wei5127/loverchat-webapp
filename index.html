@@ -1444,6 +1444,7 @@
       "zh-TW": {
         welcomeTitle: "嗨～我是寶貝 💕",
         welcomeText: "在這裡你不用假裝，想說什麼就說什麼。",
+        tagline: "想說什麼就說什麼",
         startBtn: "開始聊天",
         categoryTitle: "你今天想跟誰說話？",
         categorySubtitle: "選一個情境，寶貝會幫你叫出最像那種人的角色。",
@@ -1454,6 +1455,7 @@
       "zh-CN": {
         welcomeTitle: "嗨～我是宝贝 💕",
         welcomeText: "在这里你不用假装，想说什么就说什么。",
+        tagline: "想说什么就说什么",
         startBtn: "开始聊天",
         categoryTitle: "你今天想跟谁说话？",
         categorySubtitle: "选一个情境，宝贝会帮你叫出最像那种人的角色。",
@@ -1464,6 +1466,7 @@
       "en": {
         welcomeTitle: "Hi～I'm Baobei 💕",
         welcomeText: "You don't have to pretend here. Say whatever you want.",
+        tagline: "Say whatever you want",
         startBtn: "Start Chat",
         categoryTitle: "Who do you want to talk to today?",
         categorySubtitle: "Pick a scenario and I'll bring out the character that fits best.",
@@ -1479,16 +1482,25 @@
       currentLang = lang;
       localStorage.setItem("baobei-lang", lang);
       const d = langData[lang];
-      currentLangDisplay.textContent = d.welcomeTitle.split(" �")[0].replace("嗨～我是", "").replace("嗨～I'm", "") || langLabels[lang];
+      currentLangDisplay.textContent = langLabels[lang];
+
+      // Update tagline in header
+      const brandSpan = document.querySelector(".brand span");
+      if (brandSpan) brandSpan.textContent = d.tagline;
 
       document.getElementById("welcomeTitle").textContent = d.welcomeTitle;
-      document.querySelector("#welcomeScreen p").textContent = d.welcomeText;
+      const welcomeP = document.querySelector("#welcomeScreen > div:nth-child(2) > p");
+      if (welcomeP) welcomeP.textContent = d.welcomeText;
       document.getElementById("startButton").textContent = d.startBtn;
       document.getElementById("categoryTitle").textContent = d.categoryTitle;
-      document.querySelector("#categoryScreen .section-head p")?.remove();
-      const subTitle = document.createElement("p");
-      subTitle.textContent = d.categorySubtitle;
-      document.querySelector("#categoryScreen .section-head").appendChild(subTitle);
+      const sectionHead = document.querySelector("#categoryScreen .section-head");
+      if (sectionHead) {
+        const existingP = sectionHead.querySelector("p");
+        if (existingP) existingP.remove();
+        const subTitle = document.createElement("p");
+        subTitle.textContent = d.categorySubtitle;
+        sectionHead.appendChild(subTitle);
+      }
       topMenuButton.textContent = d.selectText;
       if (state.character) {
         helperText.textContent = d.helperText.replace("{name}", state.character);
