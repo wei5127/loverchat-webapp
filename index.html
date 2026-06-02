@@ -73,6 +73,12 @@
       backdrop-filter: blur(18px);
     }
 
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
     .brand {
       display: flex;
       align-items: center;
@@ -517,6 +523,64 @@
       line-height: 1.45;
     }
 
+    .lang-switch {
+      position: relative;
+      display: inline-block;
+    }
+
+    .lang-switch-btn {
+      padding: 0 0.6rem;
+      height: 2.2rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .lang-switch-btn:hover {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: var(--purple);
+    }
+
+    .lang-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 0.35rem;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-width: 110px;
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .lang-dropdown button {
+      width: 100%;
+      padding: 0.55rem 0.8rem;
+      text-align: left;
+      font-size: 0.82rem;
+      color: var(--text);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .lang-dropdown button:hover {
+      background: var(--lilac);
+    }
+
+    .lang-dropdown button.active {
+      color: var(--purple);
+      font-weight: 600;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -580,7 +644,20 @@
           <span>想說什麼就說什麼</span>
         </div>
       </div>
-      <button class="ghost-button" id="topMenuButton" type="button">選角色</button>
+      <div class="topbar-actions">
+        <div class="lang-switch">
+          <button class="lang-switch-btn" id="langSwitchBtn" type="button">
+            <span id="currentLang">繁體中文</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <div class="lang-dropdown hidden" id="langDropdown">
+            <button data-lang="zh-TW">繁體中文</button>
+            <button data-lang="zh-CN">簡體中文</button>
+            <button data-lang="en">English</button>
+          </div>
+        </div>
+        <button class="ghost-button" id="topMenuButton" type="button">選角色</button>
+      </div>
     </header>
 
     <main class="shell">
@@ -1352,6 +1429,94 @@
     chatMenuButton.addEventListener("click", goMenu);
     chatResetButton.addEventListener("click", resetChat);
 
+    // Language switcher
+    const langSwitchBtn = document.getElementById("langSwitchBtn");
+    const langDropdown = document.getElementById("langDropdown");
+    const currentLangDisplay = document.getElementById("currentLang");
+
+    const langLabels = {
+      "zh-TW": "繁體中文",
+      "zh-CN": "簡體中文",
+      "en": "English"
+    };
+
+    const langData = {
+      "zh-TW": {
+        welcomeTitle: "嗨～我是寶貝 💕",
+        welcomeText: "在這裡你不用假裝，想說什麼就說什麼。",
+        startBtn: "開始聊天",
+        categoryTitle: "你今天想跟誰說話？",
+        categorySubtitle: "選一個情境，寶貝會幫你叫出最像那種人的角色。",
+        selectText: "選角色",
+        menuText: "好，帶妳回角色選單。",
+        helperText: "正在跟「{name}」聊天。指令：/menu 回選單，/reset 清空對話。"
+      },
+      "zh-CN": {
+        welcomeTitle: "嗨～我是宝贝 💕",
+        welcomeText: "在这里你不用假装，想说什么就说什么。",
+        startBtn: "开始聊天",
+        categoryTitle: "你今天想跟谁说话？",
+        categorySubtitle: "选一个情境，宝贝会帮你叫出最像那种人的角色。",
+        selectText: "选角色",
+        menuText: "好，带你回角色选单。",
+        helperText: "正在跟「{name}」聊天。指令：/menu 回选单，/reset 清空对话。"
+      },
+      "en": {
+        welcomeTitle: "Hi～I'm Baobei 💕",
+        welcomeText: "You don't have to pretend here. Say whatever you want.",
+        startBtn: "Start Chat",
+        categoryTitle: "Who do you want to talk to today?",
+        categorySubtitle: "Pick a scenario and I'll bring out the character that fits best.",
+        selectText: "Select Role",
+        menuText: "Sure, taking you back to the menu.",
+        helperText: "Chatting with '{name}'. Commands: /menu for menu, /reset to clear."
+      }
+    };
+
+    let currentLang = localStorage.getItem("baobei-lang") || "zh-TW";
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem("baobei-lang", lang);
+      const d = langData[lang];
+      currentLangDisplay.textContent = d.welcomeTitle.split(" �")[0].replace("嗨～我是", "").replace("嗨～I'm", "") || langLabels[lang];
+
+      document.getElementById("welcomeTitle").textContent = d.welcomeTitle;
+      document.querySelector("#welcomeScreen p").textContent = d.welcomeText;
+      document.getElementById("startButton").textContent = d.startBtn;
+      document.getElementById("categoryTitle").textContent = d.categoryTitle;
+      document.querySelector("#categoryScreen .section-head p")?.remove();
+      const subTitle = document.createElement("p");
+      subTitle.textContent = d.categorySubtitle;
+      document.querySelector("#categoryScreen .section-head").appendChild(subTitle);
+      topMenuButton.textContent = d.selectText;
+      if (state.character) {
+        helperText.textContent = d.helperText.replace("{name}", state.character);
+      }
+
+      document.querySelectorAll(".lang-dropdown button").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.lang === lang);
+      });
+    }
+
+    langSwitchBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      langDropdown.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", () => {
+      langDropdown.classList.add("hidden");
+    });
+
+    document.querySelectorAll(".lang-dropdown button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        applyLanguage(btn.dataset.lang);
+        langDropdown.classList.add("hidden");
+      });
+    });
+
+    applyLanguage(currentLang);
+
     composer.addEventListener("submit", event => {
       event.preventDefault();
       const input = messageInput.value.trim();
@@ -1361,7 +1526,7 @@
 
       if (input.toLowerCase() === "/menu") {
         addMessage("user", input);
-        addMessage("bot", "好，帶妳回角色選單。");
+        addMessage("bot", langData[currentLang].menuText);
         window.setTimeout(goMenu, 260);
         return;
       }
