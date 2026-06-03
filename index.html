@@ -1476,6 +1476,7 @@
         categoryTitle: "你今天想跟誰說話？",
         categorySubtitle: "選一個情境，寶貝會幫你叫出最像那種人的角色。",
         selectText: "選角色",
+        resetText: "重來",
         menuText: "好，帶妳回角色選單。",
         helperText: "正在跟「{name}」聊天。指令：/menu 回選單，/reset 清空對話。"
       },
@@ -1487,6 +1488,7 @@
         categoryTitle: "你今天想跟谁说话？",
         categorySubtitle: "选一个情境，宝贝会帮你叫出最像那种人的角色。",
         selectText: "选角色",
+        resetText: "重来",
         menuText: "好，带你回角色选单。",
         helperText: "正在跟「{name}」聊天。指令：/menu 回选单，/reset 清空对话。"
       },
@@ -1498,6 +1500,7 @@
         categoryTitle: "Who do you want to talk to today?",
         categorySubtitle: "Pick a scenario and I'll bring out the character that fits best.",
         selectText: "Select Role",
+        resetText: "Reset",
         menuText: "Sure, taking you back to the menu.",
         helperText: "Chatting with '{name}'. Commands: /menu for menu, /reset to clear."
       }
@@ -1529,6 +1532,7 @@
         sectionHead.appendChild(subTitle);
       }
       topMenuButton.textContent = d.selectText;
+      chatResetButton.textContent = d.resetText;
       if (state.character) {
         helperText.textContent = d.helperText.replace("{name}", state.character);
       }
