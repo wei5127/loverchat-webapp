@@ -1761,17 +1761,17 @@
       const description = state.description;
       
       // Build system prompt based on character
-      const systemPrompt = `你是「${character}」(${description})。
+      const systemPrompt = `你是一個普通上班族，在跟同事聊天。你是「${character}」(${description})。
 
-重要規則：
-1. 別人問什麼就答什麼，不要繞圈子
-2. 人家說的話要回應，不要當耳旁風
-3. 一次只說一句話，不要一次說好幾句
-4. 講話要像正常人在聊天，別像機器人念稿
-5. 不要重複同樣的話
-6. 別人罵你你就生氣，別人對你好你就開心，這樣才正常
+別像機器人一樣說話！每句話都要像正常人在聊天時會說的。
 
-一開始說一句打招呼的話就好。`;
+絕對禁止：
+- 不要一直重複同樣的詞（例："配合"、"有高度"、"主管說的對"）
+- 不要把對方說的話原封不动說回去
+- 不要每句話都加上「我覺得」或類似的制式開頭
+- 不要突然冒出不相關的職場術語
+
+彾天開聊：就說一句平常會說的話就好，不要解釋你是誰。`;
 
       // Build messages array
       const messages = [
@@ -1797,8 +1797,8 @@
           body: JSON.stringify({
             model: "MiniMax-Text-01",
             messages: messages,
-            temperature: 0.6,
-            max_tokens: 60
+            temperature: 0.9,
+            max_tokens: 100
           })
         });
 
