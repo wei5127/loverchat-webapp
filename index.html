@@ -742,7 +742,7 @@
     }
 
     const data = {
-      "情人/另一半": [
+          "情人/另一半": [
         ["渣男", "到處撩、不負責、只想上床", "flaky lover who dodges commitment and keeps options open"],
         ["媽寶", "什麼都「我媽說...」、女友永遠第二", "mama's boy who defers to his mother"],
         ["AA男", "分手時平分財產，小氣計較", "stingy partner obsessed with splitting costs"],
@@ -796,6 +796,92 @@
         ["人好嘴賤主管", "會幫你擋事但嘴巴很賤", "supportive but sharp-tongued boss"]
       ]
     };
+
+    // Character name/description translations for i18n
+    const charI18n = {
+      "zh-TW": {}, "zh-CN": {}, "en": {}
+    };
+    
+    // Override with translations (English)
+    charI18n["en"]["情人/另一半"] = { "渣男": { name: "Scumbag", description: "Flaky lover who dodges commitment", hint: "flaky lover" }, "媽寶": { name: "Mama's Boy", description: "Always defers to his mother", hint: "mama's boy" }, "AA男": { name: "AA Guy", description: "Stingy partner obsessed with splitting costs", hint: "stingy partner" }, "工具人": { name: "Tool", description: "Over-eager helper who sacrifices boundaries", hint: "helper" }, "恐怖情人": { name: "Possessive Ex", description: "Controlling and obsessive", hint: "possessive" }, "佛系男友": { name: "Laid-Back BF", description: "Passive partner who avoids effort", hint: "passive" }, "曖昧高手": { name: "Flirt Master", description: "Keeps things vague", hint: "flirt" }, "公主病男": { name: "Princely Man", description: "Delicate prince who expects service", hint: "prince" } };
+    charI18n["en"]["女生"] = { "公主病": { name: "Princess", description: "Entitled princess personality", hint: "princess" }, "綠茶": { name: "Green Tea Girl", description: "Sweet on surface, calculating underneath", hint: "green tea" }, "控制狂": { name: "Controller", description: "Controlling partner", hint: "controller" }, "假女權": { name: "Fake Feminist", description: "Selectively fair", hint: "fake feminist" }, "巨嬰女": { name: "Big Baby", description: "Emotionally immature", hint: "immature" } };
+    charI18n["en"]["朋友"] = { "假閨蜜": { name: "Fake BFF", description: "Fake bestie who gossips", hint: "fake friend" }, "邊緣人朋友": { name: "Loner Friend", description: "Appears only when lonely", hint: "loner" }, "情緒垃圾桶": { name: "Vent Friend", description: "Friend who vents endlessly", hint: "venter" }, "炫耀朋友": { name: "Brag Friend", description: "Show-off friend", hint: "bragger" }, "真心朋友": { name: "True Friend", description: "Loyal and direct", hint: "loyal friend" }, "毒舌朋友": { name: "Savage Friend", description: "Blunt and honest", hint: "savage" } };
+    charI18n["en"]["長輩/婆家/父母"] = { "亞洲父母": { name: "Asian Parent", description: "Guilt-tripping parent", hint: "guilt parent" }, "直升機父母": { name: "Helicopter Parent", description: "Overprotective", hint: "helicopter" }, "偏心父母": { name: "Biased Parent", description: "Has obvious favorites", hint: "biased" }, "毒父母": { name: "Toxic Parent", description: "Harsh and critical", hint: "toxic" }, "金湯匙父母": { name: "Silver Spoon Parent", description: "Wealthy and relaxed", hint: "rich parent" }, "惡婆婆": { name: "Devil Mother-in-Law", description: "Critical MIL", hint: "evil MIL" }, "惡公公": { name: "Quiet FIL", description: "Quiet but sides with wife", hint: "quiet FIL" }, "小姑/大伯": { name: "Nosy Relative", description: "Interfering relative", hint: "nosy" }, "好相處公婆": { name: "Kind In-Laws", description: "Respectful with boundaries", hint: "kind" }, "情勒娘家": { name: "Guilt-Tripping Family", description: "Uses guilt for leverage", hint: "guilt family" }, "吸血鬼親戚": { name: "Vampire Relative", description: "Always asking for favors", hint: "vampire" } };
+    charI18n["en"]["同事"] = { "豬隊友同事": { name: "Bad Coworker", description: "Causes avoidable problems", hint: "bad coworker" }, "擺爛同事": { name: "Slacker", description: "Coasts at work", hint: "slacker" }, "馬屁精同事": { name: "Yes-Man", description: "Sycophantic coworker", hint: "sycophant" }, "職場小人": { name: "Backstabber", description: "Office backstabber", hint: "backstabber" } };
+    charI18n["en"]["主管"] = { "慣老闆": { name: "Exploitative Boss", description: "Exploits employees", hint: "exploiter" }, "micromanager": { name: "Micromanager", description: "Controls every detail", hint: "micro" }, "甩鍋主管": { name: "Blame-Shifter", description: "Blaming boss", hint: "blamer" }, "搶功主管": { name: "Credit-Thief Boss", description: "Steals credit", hint: "thief" }, "畫大餅主管": { name: "Pie-in-the-Sky Boss", description: "Makes empty promises", hint: "promiser" }, "情緒化主管": { name: "Volatile Boss", description: "Explosive temper", hint: "volatile" }, "人好嘴賤主管": { name: "Sharp-Tongued Boss", description: "Blunt but supportive", hint: "sharp" } };
+    
+    // Category translations
+    const catI18n = {
+      "zh-TW": { "情人/另一半": "情人/另一半", "女生": "女生", "朋友": "朋友", "長輩/婆家/父母": "長輩/婆家/父母", "同事": "同事", "主管": "主管" },
+      "zh-CN": { "情人/另一半": "情人/另一半", "女生": "女生", "朋友": "朋友", "長輩/婆家/父母": "长辈/婆家/父母", "同事": "同事", "主管": "主管" },
+      "en": { "情人/另一半": "Lovers/Partners", "女生": "Female Types", "朋友": "Friends", "長輩/婆家/父母": "Elders/In-Laws", "同事": "Coworkers", "主管": "Bosses" }
+    };
+    
+    // English intro messages per character
+    const introI18n = {
+      "en": {
+        "渣男": ["Hey, what's up?", "You busy?"],
+        "媽寶": ["Oh hey, wanted to tell you something...", "You around?"],
+        "AA男": ["Should we split the bill again?", "Let's settle up."],
+        "工具人": ["I'm here if you need anything.", "What can I help with?"],
+        "恐怖情人": ["Babe, where are you?", "Why aren't you responding?"],
+        "佛系男友": ["Meh...", "Whatever you say."],
+        "曖昧高手": ["Just thinking about you...", "How's it going?"],
+        "公主病男": ["I'm in a bad mood today.", "Don't you think I deserve better?"],
+        "公主病": ["I'm not happy.", "You never know what I want."],
+        "綠茶": ["I was just checking in, don't misunderstand.", "You doing okay?"],
+        "控制狂": ["Where are you? With who?", "Why taking so long to reply?"],
+        "假女權": ["I want equality, you know?", "You're such a sexist."],
+        "巨嬰女": ["I don't know what to do...", "I'm in a bad mood."],
+        "假閨蜜": ["Girl, let me tell you something...", "You heard what I heard?"],
+        "邊緣人朋友": ["Hey, long time no chat...", "You free to hang out?"],
+        "情緒垃圾桶": ["I'm about to explode.", "I need to vent about something."],
+        "炫耀朋友": ["OMG, listen to this...", "Our trip was amazing."],
+        "真心朋友": ["You okay?", "You can tell me anything."],
+        "毒舌朋友": ["What now?", "Not to be mean, but you messed up this time."],
+        "亞洲父母": ["How's work going?", "You're not getting younger, you know."],
+        "直升機父母": ["You there yet?", "Be careful out there."],
+        "偏心父母": ["Can't you just let your sibling have it?", "Be more understanding."],
+        "毒父母": ["Look at yourself.", "I'm saying this for your own good."],
+        "金湯匙父母": ["Just ask if you need money.", "Don't worry, be happy."],
+        "惡婆婆": ["Not to rain on your parade but...", "Things were different in my day."],
+        "惡公公": ["(Silence)...", "Your mother has a point."],
+        "小姑/大伯": ["Let me say something fair.", "I'm not trying to meddle but..."],
+        "好相處公婆": ["You two are doing fine.", "Just let us know if you need help."],
+        "情勒娘家": ["Daughter...", "We raised you so big..."],
+        "吸血鬼親戚": ["Things are tight right now...", "We're family, right?"],
+        "豬隊友同事": ["That wasn't on purpose, I swear.", "I thought you'd handle it."],
+        "擺爛同事": ["Let's deal with it tomorrow.", "Good enough, right?"],
+        "馬屁精同事": ["Our manager is truly brilliant.", "I'll back whatever the boss decides."],
+        "職場小人": ["I was just reporting accurately.", "Everyone saw the issue."],
+        "慣老闆": ["We need to tighten our belts.", "Young people need to think long-term."],
+        "micromanager": ["Every step needs to be approved.", "Where did these numbers come from?"],
+        "甩鍋主管": ["That part was your responsibility.", "I never got your update."],
+        "搶功主管": ["That direction was mine to begin with.", "Credit goes to the team."],
+        "畫大餅主管": ["Finish this round and opportunities will follow.", "There's huge potential ahead."],
+        "情緒化主管": ["How many times do I have to tell you?", "Don't step on mines today."],
+        "人好嘴賤主管": ["I'll back you up, but bring your brain next time.", "This report though... ugh."],
+        "default": ["Hey.", "Hi there."]
+      }
+    };
+    
+    function getCharI18n(charName) {
+      const lang = currentLang;
+      if (lang === "zh-TW" || lang === "zh-CN") {
+        return { name: charName, description: data[state.category]?.find(r => r[0] === charName)?.[1] || "", hint: "" };
+      }
+      return charI18n[lang]?.[state.category]?.[charName] || charI18n["en"]?.[state.category]?.[charName] || { name: charName, description: charName, hint: "" };
+    }
+    
+    function getIntroMsg(charName) {
+      const lang = currentLang;
+      if (lang === "en") {
+        const msgs = introI18n.en[charName] || introI18n.en.default;
+        return msgs[Math.floor(Math.random() * msgs.length)];
+      }
+      return introMessageFallback(charName);
+    }
+
 
     const styleLines = {
       "渣男": ["妳不要想太多啦，我只是比較愛自由。", "我又沒說不在乎，只是現在談承諾很有壓力。", "寶貝，先見面再說，文字講不清楚。"],
@@ -1005,14 +1091,25 @@
     }
 
     function setupChat() {
-      chatTitle.textContent = state.character;
-      chatSubtitle.textContent = `${state.category} · ${state.description}`;
-      chatAvatar.textContent = state.character.slice(0, 1);
-      helperText.textContent = `正在跟「${state.character}」聊天。指令：/menu 回選單，/reset 清空對話。`;
+      const charInfo = getCharI18n(state.character);
+      const catName = catI18n[currentLang]?.[state.category] || state.category;
+      chatTitle.textContent = charInfo.name;
+      chatSubtitle.textContent = `${catName} · ${charInfo.description}`;
+      chatAvatar.textContent = charInfo.name.slice(0, 1);
+      const helperKey = currentLang === "en" ? "helperText" : (currentLang === "zh-CN" ? "helperTextCN" : "helperText");
+      helperText.textContent = currentLang === "en" 
+        ? `Chatting with "${charInfo.name}". Commands: /menu for menu, /reset to clear.`
+        : (currentLang === "zh-CN" 
+          ? `正在跟「${charInfo.name}」聊天。指令：/menu 回選單，/reset 清空對話。`
+          : `正在跟「${charInfo.name}」聊天。指令：/menu 回選單，/reset 清空對話。`);
       loadHistory();
     }
 
     function introMessage() {
+      return getIntroMsg(state.character);
+    }
+    
+    function getIntroFallback(charName) {
       const intros = {
         "渣男": ["在忙啥？", "最近好嗎？"],
         "媽寶": ["喔對了，我想跟你說個事...", "欸，你在幹嘛？"],
@@ -1757,26 +1854,31 @@
 
     // MiniMax AI API call
     async function callMinimaxAI(userInput, conversationHistory = []) {
-      const character = state.character;
-      const description = state.description;
+      const charInfo = getCharI18n(state.character);
+      const catName = catI18n[currentLang]?.[state.category] || state.category;
       
-      // Build system prompt based on character
-      const systemPrompt = `你是一個普通上班族，在跟同事聊天。你是「${character}」(${description})。
+      // Build language-specific system prompt
+      const langInstruction = currentLang === "en" 
+        ? `You are a normal person chatting. You are "${charInfo.name}" (${charInfo.description}). Reply in English only.`
+        : currentLang === "zh-CN"
+        ? `你是一个普通上班族，在跟同事聊天。你是「${charInfo.name}」（${charInfo.description}）。请用简体中文回复。`
+        : `你是一个普通上班族，在跟同事聊天。你是「${charInfo.name}」（${charInfo.description}）。请用繁体中文回复。`;
+      
+      const systemPrompt = `${langInstruction}
 
-別像機器人一樣說話！每句話都要像正常人在聊天時會說的。
+别像机器人一样说话！每句话都要像正常人在聊天时会说的。
 
-重要原則：
-- 準確比迎合重要，适当的時後可以不同意對方
-- 如果對方說的有問題，直接說出哪裡不對
-- 解释你的想法，而不是重複結論
+重要原则：
+- 准确比迎合重要，适当的时候可以不同意对方
+- 如果对方说的有问题，直接说出哪里不对
+- 解释你的想法，而不是重复结论
 
-絕對禁止：
-- 不要一直重複同樣的詞（例："配合"、"有高度"、"主管說的對"）
-- 不要把對方說的話原封不动說回去
-- 不要每句話都加上「我覺得」或類似的制式開頭
-- 不要突然冒出不相關的職場術語
+绝对禁止：
+- 不要一直重复同样的词（例："配合"、"有高度"、"主管说的对"）
+- 不要把对方说的话原封不动说回去
+- 不要每句话都加上「我觉得」或类似的制式开头
 
-就說一句平常會說的話就好，不要解釋你是誰。`;
+就说一句平常会说的话就好，不要解释你是谁。`;
 
       // Build messages array
       const messages = [
@@ -1832,9 +1934,10 @@
           
           // If repeating or echoing, rewrite with different prompt
           if (isRepeating || isEchoingUser) {
+            const rewriteLang = currentLang === "en" ? "Answer in English." : (currentLang === "zh-CN" ? "请用简体中文回答。" : "请用繁体中文回答。");
             const rewriteMessages = [
-              { role: "system", content: `你是「${character}」。
-直接回答問題，不要說廢話，只說一句話。` },
+              { role: "system", content: `你是「${charInfo.name}」。${rewriteLang}
+直接回答问题，不要说废话，只说一句话。` },
               { role: "user", content: userInput }
             ];
             
@@ -2008,7 +2111,13 @@
       topMenuButton.textContent = d.selectText;
       chatResetButton.textContent = d.resetText;
       if (state.character) {
-        helperText.textContent = d.helperText.replace("{name}", state.character);
+        // Refresh character display with new language
+        const charInfo = getCharI18n(state.character);
+        const catName = catI18n[lang]?.[state.category] || state.category;
+        chatTitle.textContent = charInfo.name;
+        chatSubtitle.textContent = `${catName} · ${charInfo.description}`;
+        chatAvatar.textContent = charInfo.name.slice(0, 1);
+        helperText.textContent = d.helperText.replace("{name}", charInfo.name);
       }
 
       document.querySelectorAll(".lang-dropdown button").forEach(btn => {
