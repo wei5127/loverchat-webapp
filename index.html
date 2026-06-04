@@ -1051,12 +1051,13 @@
 
     function renderCategories() {
       categoryGrid.innerHTML = "";
-      Object.keys(data).forEach(category => {
+      Object.keys(data).forEach(catKey => {
+        const catName = catI18n[currentLang]?.[catKey] || catKey;
         const button = document.createElement("button");
         button.className = "choice";
         button.type = "button";
-        button.innerHTML = `<strong>${category}</strong><span>${data[category].length} 種角色可以選</span>`;
-        button.addEventListener("click", () => chooseCategory(category));
+        button.innerHTML = `<strong>${catName}</strong><span>${data[catKey].length} ${currentLang === "en" ? "characters" : "種角色可以選"}</span>`;
+        button.addEventListener("click", () => chooseCategory(catKey));
         categoryGrid.append(button);
       });
     }
@@ -1074,10 +1075,11 @@
     function renderPersonalities(category) {
       personalityGrid.innerHTML = "";
       data[category].forEach(([name, description, hint]) => {
+        const charInfo = currentLang === "en" ? (charI18n["en"][category]?.[name] || { name, description }) : { name, description };
         const button = document.createElement("button");
         button.className = "choice";
         button.type = "button";
-        button.innerHTML = `<strong>${name}</strong><span>${description}</span>`;
+        button.innerHTML = `<strong>${charInfo.name}</strong><span>${charInfo.description}</span>`;
         button.addEventListener("click", () => choosePersonality(category, name, description, hint));
         personalityGrid.append(button);
       });
@@ -2171,6 +2173,8 @@
     if (loadSelection()) {
       setupChat();
       showScreen(chatScreen);
+      // Refresh character display with current language
+      applyLanguage(currentLang);
     }
   </script>
 </body>
