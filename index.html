@@ -1834,8 +1834,8 @@
         try {
           const parsed = JSON.parse(saved);
           parsed.forEach(msg => {
-            if (msg.role && msg.content) {
-              historyMsgs.push({ role: msg.role, content: msg.content });
+            if (msg.role && msg.text) {
+              historyMsgs.push({ role: msg.role, content: msg.text });
             }
           });
         } catch (e) {
