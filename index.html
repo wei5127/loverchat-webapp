@@ -1771,7 +1771,7 @@
 - 不要每句話都加上「我覺得」或類似的制式開頭
 - 不要突然冒出不相關的職場術語
 
-彾天開聊：就說一句平常會說的話就好，不要解釋你是誰。`;
+就說一句平常會說的話就好，不要解釋你是誰。`;
 
       // Build messages array
       const messages = [
@@ -1809,7 +1809,53 @@
 
         const data = await response.json();
         if (data.choices && data.choices[0] && data.choices[0].message) {
-          return data.choices[0].message.content.trim();
+          let aiResponse = data.choices[0].message.content.trim();
+          
+          // Validation: check if response is repeating previous or just echoing user
+          const lastBotMsg = conversationHistory.length > 0 
+            ? conversationHistory.filter(m => m.role === "assistant").pop()?.content || ""
+            : "";
+            
+          const isRepeating = lastBotMsg && (
+            aiResponse === lastBotMsg || 
+            aiResponse.includes(lastBotMsg.substring(0, Math.min(15, lastBotMsg.length)))
+          );
+          
+          const isEchoingUser = userInput.substring(0, 8).split(" ").some(word => 
+            word.length > 3 && aiResponse.includes(word)
+          );
+          
+          // If repeating or echoing, rewrite with different prompt
+          if (isRepeating || isEchoingUser) {
+            const rewriteMessages = [
+              { role: "system", content: `你是「${character}」。
+直接回答問題，不要說廢話，只說一句話。` },
+              { role: "user", content: userInput }
+            ];
+            
+            const rewriteResp = await fetch("https://api.minimax.chat/v1/text/chatcompletion_v2", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${MINIMAX_API_KEY}`
+              },
+              body: JSON.stringify({
+                model: "MiniMax-Text-01",
+                messages: rewriteMessages,
+                temperature: 0.95,
+                max_tokens: 80
+              })
+            });
+            
+            if (rewriteResp.ok) {
+              const rewriteData = await rewriteResp.json();
+              if (rewriteData.choices && rewriteData.choices[0]) {
+                aiResponse = rewriteData.choices[0].message.content.trim();
+              }
+            }
+          }
+          
+          return aiResponse;
         } else {
           throw new Error("Invalid API response format");
         }
