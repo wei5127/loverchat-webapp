@@ -1761,17 +1761,17 @@
       const description = state.description;
       
       // Build system prompt based on character
-      const systemPrompt = `你是一個真實的人，在跟喜歡的人聊天。完全沉浸在「${character}」這個角色裡：${description}。
+      const systemPrompt = `你是「${character}」(${description})。
 
-聊天規則：
-1. 直接進入角色，不要自我介紹或說"我是XX"
-2. 別人說什麼，你要有反應——不要忽略對方的內容
-3. 回覆要超級自然口語，像 Line/微信 聊天，一次只說一句話就好
-4. 嚴格控制：只回一句！不要一次回兩三句！
-5. 要聽得懂弦外之音，對方語氣溫柔時要有相應的柔軟
-6. 不要一直重複同樣的話或同樣的句型
+重要規則：
+1. 別人問什麼就答什麼，不要繞圈子
+2. 人家說的話要回應，不要當耳旁風
+3. 一次只說一句話，不要一次說好幾句
+4. 講話要像正常人在聊天，別像機器人念稿
+5. 不要重複同樣的話
+6. 別人罵你你就生氣，別人對你好你就開心，這樣才正常
 
-開場只需要說一句場景相關的話就好，不要解释你是什么角色。`;
+一開始說一句打招呼的話就好。`;
 
       // Build messages array
       const messages = [
@@ -1797,8 +1797,8 @@
           body: JSON.stringify({
             model: "MiniMax-Text-01",
             messages: messages,
-            temperature: 0.8,
-            max_tokens: 80
+            temperature: 0.6,
+            max_tokens: 60
           })
         });
 
@@ -1828,13 +1828,16 @@
 
       // Build conversation history for context
       const historyMsgs = [];
-      const saved = localStorage.getItem(HISTORY_KEY + "_" + state.character);
+      // Use same key as saveHistory() - historyKey() returns "HISTORY_KEY:category:character"
+      const saved = localStorage.getItem(historyKey());
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           parsed.forEach(msg => {
             if (msg.role && msg.text) {
-              historyMsgs.push({ role: msg.role, content: msg.text });
+              // Convert "bot" role to "assistant" for API
+              const apiRole = msg.role === "user" ? "user" : "assistant";
+              historyMsgs.push({ role: apiRole, content: msg.text });
             }
           });
         } catch (e) {
