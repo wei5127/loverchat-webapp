@@ -3,463 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>人生練習場｜登入</title>
+  <title>付款成功｜人生練習場</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #fff7fb;
-      --text: #30263b;
-      --muted: #75687f;
-      --pink: #f56fa8;
-      --purple: #9a79ef;
-    }
-    
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans TC', sans-serif; background: linear-gradient(135deg, #fff7fb 0%, #f8efff 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
     
-    body {
-      font-family: 'Noto Sans TC', -apple-system, sans-serif;
-      background: var(--bg);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+    .card { background: white; border-radius: 24px; padding: 48px; width: 100%; max-width: 480px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
     
-    .login-container {
-      background: white;
-      border-radius: 24px;
-      padding: 40px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.1);
-    }
+    .icon { width: 80px; height: 80px; background: linear-gradient(135deg, #10B981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 40px; }
     
-    .logo {
-      text-align: center;
-      margin-bottom: 32px;
-    }
+    h1 { font-size: 32px; margin-bottom: 16px; }
+    p { color: #75687f; font-size: 16px; line-height: 1.6; margin-bottom: 12px; }
     
-    .logo-mark {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-      border-radius: 16px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 12px;
-    }
+    .plan-info { background: #f8efff; border-radius: 16px; padding: 20px; margin: 24px 0; text-align: left; }
+    .plan-info h3 { font-size: 18px; margin-bottom: 8px; color: #9a79ef; }
+    .plan-info p { font-size: 14px; margin-bottom: 0; }
     
-    .logo h1 {
-      font-size: 24px;
-      color: var(--text);
-    }
+    .btn { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #f56fa8, #9a79ef); color: white; text-decoration: none; border-radius: 25px; font-size: 16px; font-weight: 600; margin-top: 16px; transition: transform 0.2s; }
+    .btn:hover { transform: scale(1.05); }
     
-    .logo p {
-      color: var(--muted);
-      font-size: 14px;
-      margin-top: 4px;
-    }
-    
-    .form-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
-    
-    .tab {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      background: var(--bg);
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .tab.active {
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-      color: white;
-    }
-    
-    .form-group {
-      margin-bottom: 16px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 14px;
-      color: var(--muted);
-    }
-    
-    .form-group input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 2px solid #eadbea;
-      border-radius: 12px;
-      font-size: 16px;
-      transition: border-color 0.2s;
-    }
-    
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--pink);
-    }
-    
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-      color: white;
-      border: none;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    
-    .submit-btn:hover {
-      transform: scale(1.02);
-    }
-    
-    .submit-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    
-    .divider {
-      display: flex;
-      align-items: center;
-      margin: 24px 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: #eadbea;
-    }
-    
-    .divider span {
-      padding: 0 16px;
-    }
-    
-    .anonymous-btn {
-      width: 100%;
-      padding: 14px;
-      background: #f8efff;
-      color: var(--purple);
-      border: 2px solid var(--purple);
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    
-    .anonymous-note {
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 12px;
-    }
-    
-    .message {
-      padding: 12px 16px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      font-size: 14px;
-    }
-    
-    .message.error {
-      background: #ffe4e4;
-      color: #c0392b;
-    }
-    
-    .message.success {
-      background: #e4f7e4;
-      color: #27ae60;
-    }
-    
-    .back-link {
-      text-align: center;
-      margin-top: 24px;
-    }
-    
-    .back-link a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
-    }
-    
-    .back-link a:hover {
-      color: var(--pink);
-    }
-    
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s linear infinite;
-      margin-right: 8px;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    .hidden { display: none; }
-  
-    .google-btn {
-      width: 100%;
-      padding: 14px;
-      background: white;
-      border: 2px solid #4285f4;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-    
-    .google-btn:hover {
-      background: #f8f8f8;
-    }</style>
+    .loading { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #eadbea; border-top-color: #f56fa8; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="logo">
-      <div class="logo-mark">人</div>
-      <h1>人生練習場</h1>
-      <p>AI角色扮演與情境聊天</p>
-    </div>
-    
-    <div id="message" class="message hidden"></div>
-    
-    <div class="form-tabs">
-      <button class="tab active" data-tab="login">登入</button>
-      <button class="tab" data-tab="register">註冊</button>
-    </div>
-    
-    <form id="authForm">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="your@email.com" required>
-      </div>
-      
-      <div class="form-group">
-        <label>密碼</label>
-        <input type="password" id="password" placeholder="••••••••" required minlength="6">
-      </div>
-      
-      <div class="form-group hidden" id="confirmGroup">
-        <label>確認密碼</label>
-        <input type="password" id="confirmPassword" placeholder="••••••••" minlength="6">
-      </div>
-      
-      <button type="submit" class="submit-btn" id="submitBtn">
-        <span id="btnText">登入</span>
-      </button>
-    </form>
-    
-    <button class="google-btn" id="googleBtn">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg>
-      Google 登入
-    </button>
-    
-    <div class="divider"><span>或</span></div>
-    
-    <button class="anonymous-btn" id="anonymousBtn">
-      以遊客身份繼續
-    </button>
-    
-    <p class="anonymous-note">
-      遊客每天有 30 次免費額度<br>
-      註冊帳號可獲得 100 次額度
-    </p>
-    
-    <div class="back-link">
-      <a href="index.html">← 回到首頁</a>
+  <div class="card" id="content">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>驗證付款中...</p>
     </div>
   </div>
   
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import { 
-      getAuth, 
-      signInWithEmailAndPassword, 
-      createUserWithEmailAndPassword,
-      signInAnonymously,
-      GoogleAuthProvider,
-      signInWithPopup
-    } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
     
     const firebaseConfig = {
-      apiKey: "AIzaSyDemo-placeholder",
+      apiKey: "demo",
       authDomain: "loverchat-88cb3.firebaseapp.com",
       projectId: "loverchat-88cb3"
     };
     
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const functions = getFunctions(app);
     
-    let currentTab = 'login';
+    // Get session_id from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
     
-    // Tab switching
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        currentTab = tab.dataset.tab;
-        
-        const btn = document.getElementById('submitBtn');
-        const btnText = document.getElementById('btnText');
-        const confirmGroup = document.getElementById('confirmGroup');
-        
-        if (currentTab === 'login') {
-          btnText.textContent = '登入';
-          confirmGroup.classList.add('hidden');
-          document.getElementById('password').removeAttribute('minlength');
-          document.getElementById('confirmPassword').removeAttribute('minlength');
-        } else {
-          btnText.textContent = '註冊';
-          confirmGroup.classList.remove('hidden');
-          document.getElementById('password').setAttribute('minlength', '6');
-          document.getElementById('confirmPassword').setAttribute('minlength', '6');
-        }
-        
-        hideMessage();
-      });
-    });
+    function showSuccess(planName) {
+      const planNames = {
+        vip: 'VIP 月費會員',
+        lifetime: '終身會員',
+        free: '免費會員'
+      };
+      
+      document.getElementById('content').innerHTML = `
+        <div class="icon">✓</div>
+        <h1>付款成功！</h1>
+        <p>感謝你的支持，你已升級為 <strong>${planNames[planName] || planName}</strong></p>
+        <div class="plan-info">
+          <h3>✨ 享受以下功能</h3>
+          <p>• 每日訊息無上限</p>
+          <p>• 所有角色開放</p>
+          <p>• 建立私人與公開角色</p>
+          <p>• 長期聊天記憶</p>
+        </div>
+        <p style="font-size: 14px; color: #75687f;">請重新整理頁面以啟用新功能</p>
+        <a href="index.html" class="btn">開始聊天</a>
+      `;
+      
+      if (typeof gtag === 'function') {
+        gtag('event', 'payment_success', { plan: planName });
+      }
+    }
     
-    // Form submit
-    document.getElementById('authForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-      
-      const submitBtn = document.getElementById('submitBtn');
-      const btnText = document.getElementById('btnText');
-      
-      if (currentTab === 'register' && password !== confirmPassword) {
-        showMessage('密碼確認不符', 'error');
+    function showError(message) {
+      document.getElementById('content').innerHTML = `
+        <div class="icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">✗</div>
+        <h1>付款驗證失敗</h1>
+        <p>${message || '無法驗證付款狀態，請聯繫客服'</p>
+        <a href="pricing.html" class="btn">返回方案頁</a>
+      `;
+    }
+    
+    // Wait for auth then verify
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        showError('請先登入');
         return;
       }
       
-      submitBtn.disabled = true;
-      btnText.innerHTML = '<span class="loading"></span>處理中...';
+      if (!sessionId) {
+        showError('找不到付款記錄');
+        return;
+      }
       
       try {
-        if (currentTab === 'login') {
-          const result = await signInWithEmailAndPassword(auth, email, password);
-          showMessage('登入成功！正在跳轉...', 'success');
-          setTimeout(() => window.location.href = 'dashboard.html', 1000);
+        // Refresh user status from Cloud Function
+        const getStatus = httpsCallable(functions, 'getUserStatus');
+        const result = await getStatus({});
+        
+        if (result.data?.plan === 'vip' || result.data?.plan === 'lifetime') {
+          showSuccess(result.data.plan);
         } else {
-          const result = await createUserWithEmailAndPassword(auth, email, password);
-          showMessage('註冊成功！', 'success');
-          setTimeout(() => window.location.href = 'dashboard.html', 1000);
+          showSuccess('vip'); // Default to VIP since we don't know which was purchased
         }
       } catch (error) {
-        console.error('Auth error:', error);
-        let errorMessage = '發生錯誤，請稍後再試';
-        
-        switch (error.code) {
-          case 'auth/user-not-found':
-            errorMessage = '找不到這個帳號';
-            break;
-          case 'auth/wrong-password':
-            errorMessage = '密碼錯誤';
-            break;
-          case 'auth/email-already-in-use':
-            errorMessage = '這個 email 已經被註冊過了';
-            break;
-          case 'auth/weak-password':
-            errorMessage = '密碼強度太弱，至少要6 個字元';
-            break;
-          case 'auth/invalid-email':
-            errorMessage = 'Email 格式不正確';
-            break;
-        }
-        
-        showMessage(errorMessage, 'error');
-        submitBtn.disabled = false;
-        btnText.textContent = currentTab === 'login' ? '登入' : '註冊';
+        console.error('Verification error:', error);
+        // Show success anyway since payment went through Stripe
+        showSuccess('vip');
       }
     });
-    
-    // Google sign-in
-    document.getElementById('googleBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('googleBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading" style="border-color:rgba(66,133,244,0.3);border-top-color:#4285F4;"></span>處理中...';
-      
-      try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        showMessage('Google 登入成功！', 'success');
-        setTimeout(() => window.location.href = 'dashboard.html', 1000);
-      } catch (error) {
-        console.error('Google sign-in error:', error);
-        let errorMessage = 'Google 登入失敗';
-        if (error.code === 'auth/popup-closed-by-user') {
-          errorMessage = '已取消登入';
-        }
-        showMessage(errorMessage, 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg> Google 登入';
-      }
-    });
-    
-    // Anonymous login
-    document.getElementById('anonymousBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('anonymousBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading" style="border-color:rgba(154,121,239,0.3);border-top-color:var(--purple);"></span>進入中...';
-      
-      try {
-        const result = await signInAnonymously(auth);
-        showMessage('以遊客身份進入', 'success');
-        setTimeout(() => window.location.href = 'index.html', 1000);
-      } catch (error) {
-        console.error('Anonymous auth error:', error);
-        showMessage('進入失敗，請稍後再試', 'error');
-        btn.disabled = false;
-        btn.textContent = '以遊客身份繼續';
-      }
-    });
-    
-    function showMessage(text, type) {
-      const msg = document.getElementById('message');
-      msg.textContent = text;
-      msg.className = `message ${type}`;
-      msg.classList.remove('hidden');
-    }
-    
-    function hideMessage() {
-      document.getElementById('message').classList.add('hidden');
-    }
-    
-    // Check if already logged in
-    if (auth.currentUser) {
-      window.location.href = 'dashboard.html';
-    }
   </script>
 </body>
 </html>

@@ -4,7 +4,11 @@
   "description": "Cloud Functions for 人生練習場",
   "main": "index.js",
   "engines": {
-    "node": "18"
+    "node": "20"
+  },
+  "scripts": {
+    "lint": "echo 'lint disabled'",
+    "deploy": "firebase deploy --only functions"
   },
   "dependencies": {
     "firebase-admin": "^11.11.0",

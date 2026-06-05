@@ -3,463 +3,289 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>人生練習場｜登入</title>
+  <title>人生練習場｜方案費用</title>
+  <meta name="description" content="選擇適合你的方案，開始與各種角色練習人際互動">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #fff7fb;
-      --text: #30263b;
-      --muted: #75687f;
-      --pink: #f56fa8;
-      --purple: #9a79ef;
-    }
-    
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans TC', sans-serif; background: #fff7fb; color: #30263b; min-height: 100vh; }
     
-    body {
-      font-family: 'Noto Sans TC', -apple-system, sans-serif;
-      background: var(--bg);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+    .header { background: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .header a { text-decoration: none; color: inherit; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark { width: 40px; height: 40px; background: linear-gradient(135deg, #f56fa8, #9a79ef); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+    .brand h1 { font-size: 20px; }
+    .nav { display: flex; gap: 12px; align-items: center; }
+    .nav a { padding: 8px 20px; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: 500; }
+    .btn-outline { border: 2px solid #f56fa8; color: #f56fa8; }
+    .btn-primary { background: linear-gradient(135deg, #f56fa8, #9a79ef); color: white; }
+    
+    .hero { text-align: center; padding: 60px 24px 40px; }
+    .hero h2 { font-size: 36px; margin-bottom: 16px; }
+    .hero p { color: #75687f; font-size: 18px; max-width: 600px; margin: 0 auto; }
+    
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto; padding: 0 24px 60px; }
+    
+    .card { background: white; border-radius: 24px; padding: 32px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); transition: transform 0.3s, box-shadow 0.3s; position: relative; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+    .card.featured { border: 2px solid #f56fa8; transform: scale(1.05); }
+    .card.featured:hover { transform: scale(1.05) translateY(-4px); }
+    
+    .badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #f56fa8, #9a79ef); color: white; padding: 6px 20px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    
+    .plan-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+    .plan-price { text-align: center; margin-bottom: 24px; }
+    .plan-price .amount { font-size: 52px; font-weight: 700; }
+    .plan-price .currency { font-size: 20px; vertical-align: super; }
+    .plan-price .period { color: #75687f; font-size: 14px; display: block; margin-top: 4px; }
+    .plan-price .lifetime-note { font-size: 12px; color: #8B5CF6; margin-top: 8px; }
+    
+    .features { list-style: none; margin-bottom: 28px; }
+    .features li { padding: 10px 0; border-bottom: 1px solid #eadbea; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+    .features li:last-child { border-bottom: none; }
+    .features .check { color: #10B981; font-weight: bold; }
+    .features .cross { color: #9CA3AF; }
+    .features .disabled { color: #9CA3AF; text-decoration: line-through; }
+    
+    .plan-btn { width: 100%; padding: 14px; border-radius: 25px; font-size: 16px; font-weight: 600; cursor: pointer; border: none; transition: transform 0.2s, opacity 0.2s; text-decoration: none; display: block; text-align: center; }
+    .plan-btn.primary { background: linear-gradient(135deg, #f56fa8, #9a79ef); color: white; }
+    .plan-btn.outline { background: transparent; border: 2px solid #f56fa8; color: #f56fa8; }
+    .plan-btn:hover { transform: scale(1.02); }
+    .plan-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    
+    .current-badge { display: inline-block; background: #10B981; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; margin-left: 8px; vertical-align: middle; }
+    
+    .faq { max-width: 700px; margin: 0 auto; padding: 40px 24px 80px; }
+    .faq h3 { text-align: center; font-size: 28px; margin-bottom: 32px; }
+    .faq-item { background: white; border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .faq-item h4 { margin-bottom: 8px; color: #f56fa8; }
+    .faq-item p { color: #75687f; font-size: 14px; line-height: 1.6; }
+    
+    .loading { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; z-index: 100; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #eadbea; border-top-color: #f56fa8; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+    
+    @media (max-width: 768px) {
+      .card.featured { transform: none; }
+      .card.featured:hover { transform: translateY(-4px); }
     }
-    
-    .login-container {
-      background: white;
-      border-radius: 24px;
-      padding: 40px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.1);
-    }
-    
-    .logo {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    
-    .logo-mark {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-      border-radius: 16px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 12px;
-    }
-    
-    .logo h1 {
-      font-size: 24px;
-      color: var(--text);
-    }
-    
-    .logo p {
-      color: var(--muted);
-      font-size: 14px;
-      margin-top: 4px;
-    }
-    
-    .form-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
-    
-    .tab {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      background: var(--bg);
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .tab.active {
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-      color: white;
-    }
-    
-    .form-group {
-      margin-bottom: 16px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 14px;
-      color: var(--muted);
-    }
-    
-    .form-group input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 2px solid #eadbea;
-      border-radius: 12px;
-      font-size: 16px;
-      transition: border-color 0.2s;
-    }
-    
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--pink);
-    }
-    
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-      color: white;
-      border: none;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    
-    .submit-btn:hover {
-      transform: scale(1.02);
-    }
-    
-    .submit-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    
-    .divider {
-      display: flex;
-      align-items: center;
-      margin: 24px 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: #eadbea;
-    }
-    
-    .divider span {
-      padding: 0 16px;
-    }
-    
-    .anonymous-btn {
-      width: 100%;
-      padding: 14px;
-      background: #f8efff;
-      color: var(--purple);
-      border: 2px solid var(--purple);
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    
-    .anonymous-note {
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 12px;
-    }
-    
-    .message {
-      padding: 12px 16px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      font-size: 14px;
-    }
-    
-    .message.error {
-      background: #ffe4e4;
-      color: #c0392b;
-    }
-    
-    .message.success {
-      background: #e4f7e4;
-      color: #27ae60;
-    }
-    
-    .back-link {
-      text-align: center;
-      margin-top: 24px;
-    }
-    
-    .back-link a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
-    }
-    
-    .back-link a:hover {
-      color: var(--pink);
-    }
-    
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s linear infinite;
-      margin-right: 8px;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    .hidden { display: none; }
-  
-    .google-btn {
-      width: 100%;
-      padding: 14px;
-      background: white;
-      border: 2px solid #4285f4;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-    
-    .google-btn:hover {
-      background: #f8f8f8;
-    }</style>
+  </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="logo">
-      <div class="logo-mark">人</div>
+  <header class="header">
+    <a href="index.html" class="brand">
+      <div class="brand-mark">人</div>
       <h1>人生練習場</h1>
-      <p>AI角色扮演與情境聊天</p>
+    </a>
+    <nav class="nav">
+      <a href="login.html" class="btn-outline" id="loginBtn">登入</a>
+      <a href="pricing.html" class="btn-primary" id="registerBtn">免費試用</a>
+    </nav>
+  </header>
+  
+  <section class="hero">
+    <h2>選擇你的練習方案</h2>
+    <p>從免費開始，體驗與各種角色的人際互動練習</p>
+  </section>
+  
+  <section class="pricing-grid" id="pricingGrid">
+    <div class="loading" id="loading"><div class="spinner"></div></div>
+  </section>
+  
+  <section class="faq">
+    <h3>常見問題</h3>
+    <div class="faq-item">
+      <h4>訊息額度怎麼計算？</h4>
+      <p>每個方案每天都會重置訊息額度。Guest 和 Free 每天 30 則，VIP 和 Lifetime 無上限但會貼心提醒你休息。</p>
     </div>
-    
-    <div id="message" class="message hidden"></div>
-    
-    <div class="form-tabs">
-      <button class="tab active" data-tab="login">登入</button>
-      <button class="tab" data-tab="register">註冊</button>
+    <div class="faq-item">
+      <h4>如何升級 VIP？</h4>
+      <p>點選方案後會跳轉到 Stripe 安全的付款頁面。支援信用卡、金融卡付款。</p>
     </div>
-    
-    <form id="authForm">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="your@email.com" required>
-      </div>
-      
-      <div class="form-group">
-        <label>密碼</label>
-        <input type="password" id="password" placeholder="••••••••" required minlength="6">
-      </div>
-      
-      <div class="form-group hidden" id="confirmGroup">
-        <label>確認密碼</label>
-        <input type="password" id="confirmPassword" placeholder="••••••••" minlength="6">
-      </div>
-      
-      <button type="submit" class="submit-btn" id="submitBtn">
-        <span id="btnText">登入</span>
-      </button>
-    </form>
-    
-    <button class="google-btn" id="googleBtn">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg>
-      Google 登入
-    </button>
-    
-    <div class="divider"><span>或</span></div>
-    
-    <button class="anonymous-btn" id="anonymousBtn">
-      以遊客身份繼續
-    </button>
-    
-    <p class="anonymous-note">
-      遊客每天有 30 次免費額度<br>
-      註冊帳號可獲得 100 次額度
-    </p>
-    
-    <div class="back-link">
-      <a href="index.html">← 回到首頁</a>
+    <div class="faq-item">
+      <h4>可以隨時取消嗎？</h4>
+      <p>可以。從會員中心進入 Stripe 管理頁面即可取消。取消後仍可使用當月已付費的服務。</p>
     </div>
-  </div>
+    <div class="faq-item">
+      <h4>終身會員是什麼？</h4>
+      <p>一次性 NT$2999，永久擁有所有 VIP 功能，不需要月費。未來所有新功能也會自動獲得。</p>
+    </div>
+  </section>
   
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import { 
-      getAuth, 
-      signInWithEmailAndPassword, 
-      createUserWithEmailAndPassword,
-      signInAnonymously,
-      GoogleAuthProvider,
-      signInWithPopup
-    } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
     
     const firebaseConfig = {
-      apiKey: "AIzaSyDemo-placeholder",
+      apiKey: "demo",
       authDomain: "loverchat-88cb3.firebaseapp.com",
       projectId: "loverchat-88cb3"
     };
     
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const functions = getFunctions(app);
     
-    let currentTab = 'login';
+    const PLANS = [
+      {
+        id: 'guest',
+        name: 'Guest',
+        price: 0,
+        period: '永久免費',
+        color: '#9CA3AF',
+        features: [
+          { text: '每天 30 則訊息', included: true },
+          { text: '公開角色', included: true },
+          { text: '聊天體驗功能', included: true },
+          { text: '建立私人角色', included: false },
+          { text: '收藏聊天紀錄', included: false }
+        ],
+        button: '立即開始',
+        featured: false
+      },
+      {
+        id: 'free',
+        name: 'Free',
+        price: 0,
+        period: 'Email 註冊即可',
+        color: '#10B981',
+        features: [
+          { text: '每天 30 則訊息', included: true },
+          { text: '公開角色', included: true },
+          { text: '建立私人角色（最多 3 個）', included: true },
+          { text: '收藏聊天紀錄', included: true },
+          { text: '修改個人資料', included: true }
+        ],
+        button: '免費升級',
+        featured: false
+      },
+      {
+        id: 'vip',
+        name: 'VIP',
+        price: 299,
+        period: '每月',
+        color: '#F59E0B',
+        features: [
+          { text: '每日訊息無上限', included: true },
+          { text: '所有角色開放', included: true },
+          { text: '建立私人角色（無限）', included: true },
+          { text: '建立公開角色', included: true },
+          { text: '長期聊天記憶', included: true },
+          { text: '優先回應速度', included: true },
+          { text: '搶先體驗新功能', included: true }
+        ],
+        button: '升級 VIP',
+        stripePriceId: 'price_vip_monthly',  // TODO: 替換為實際 Stripe Price ID
+        featured: true
+      },
+      {
+        id: 'lifetime',
+        name: 'Lifetime',
+        price: 2999,
+        period: '一次性買斷',
+        color: '#8B5CF6',
+        features: [
+          { text: '擁有 VIP 所有功能', included: true },
+          { text: '永久有效', included: true },
+          { text: '不需續費', included: true },
+          { text: '未來所有新功能自動獲得', included: true }
+        ],
+        button: '終身會員',
+        stripePriceId: 'price_lifetime',  // TODO: 替換為實際 Stripe Price ID
+        featured: false
+      }
+    ];
     
-    // Tab switching
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        currentTab = tab.dataset.tab;
+    function renderPricing(currentPlan) {
+      const grid = document.getElementById('pricingGrid');
+      grid.innerHTML = '';
+      
+      PLANS.forEach(plan => {
+        const isCurrent = plan.id === currentPlan;
+        const card = document.createElement('div');
+        card.className = `card${plan.featured ? ' featured' : ''}`;
         
-        const btn = document.getElementById('submitBtn');
-        const btnText = document.getElementById('btnText');
-        const confirmGroup = document.getElementById('confirmGroup');
+        const featuresHtml = plan.features.map(f => `
+          <li class="${f.included ? '' : 'disabled'}">
+            <span class="${f.included ? 'check' : 'cross'}">${f.included ? '✓' : '✗'}</span>
+            ${f.text}${isCurrent && f.included ? '<span class="current-badge">目前</span>' : ''}
+          </li>
+        `).join('');
         
-        if (currentTab === 'login') {
-          btnText.textContent = '登入';
-          confirmGroup.classList.add('hidden');
-          document.getElementById('password').removeAttribute('minlength');
-          document.getElementById('confirmPassword').removeAttribute('minlength');
+        let buttonHtml = '';
+        if (isCurrent) {
+          buttonHtml = `<button class="plan-btn outline" disabled>目前方案</button>`;
+        } else if (plan.price === 0) {
+          buttonHtml = `<a href="login.html" class="plan-btn ${plan.id === 'guest' ? 'outline' : 'primary'}">${plan.button}</a>`;
         } else {
-          btnText.textContent = '註冊';
-          confirmGroup.classList.remove('hidden');
-          document.getElementById('password').setAttribute('minlength', '6');
-          document.getElementById('confirmPassword').setAttribute('minlength', '6');
+          buttonHtml = `<button class="plan-btn primary" onclick="subscribe('${plan.id}', '${plan.stripePriceId}')">${plan.button}</button>`;
         }
         
-        hideMessage();
+        card.innerHTML = `
+          ${plan.featured ? '<div class="badge">最受歡迎</div>' : ''}
+          <div class="plan-name" style="color: ${plan.color}">${plan.name}</div>
+          <div class="plan-price">
+            <span class="amount">${plan.price === 0 ? '免費' : plan.price}</span>
+            <span class="currency">${plan.price > 0 ? 'NT$' : ''}</span>
+            <span class="period">${plan.period}</span>
+            ${plan.id === 'lifetime' ? '<span class="lifetime-note">相當於月費 25 個月</span>' : ''}
+          </div>
+          <ul class="features">${featuresHtml}</ul>
+          ${buttonHtml}
+        `;
+        
+        grid.appendChild(card);
       });
-    });
+    }
     
-    // Form submit
-    document.getElementById('authForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-      
-      const submitBtn = document.getElementById('submitBtn');
-      const btnText = document.getElementById('btnText');
-      
-      if (currentTab === 'register' && password !== confirmPassword) {
-        showMessage('密碼確認不符', 'error');
+    window.subscribe = async function(planId, priceId) {
+      if (!auth.currentUser) {
+        window.location.href = 'login.html?redirect=pricing';
         return;
       }
       
-      submitBtn.disabled = true;
-      btnText.innerHTML = '<span class="loading"></span>處理中...';
+      if (!priceId || priceId.startsWith('price_')) {
+        alert('Stripe 尚未設定完成，請聯繫管理員');
+        return;
+      }
       
       try {
-        if (currentTab === 'login') {
-          const result = await signInWithEmailAndPassword(auth, email, password);
-          showMessage('登入成功！正在跳轉...', 'success');
-          setTimeout(() => window.location.href = 'dashboard.html', 1000);
-        } else {
-          const result = await createUserWithEmailAndPassword(auth, email, password);
-          showMessage('註冊成功！', 'success');
-          setTimeout(() => window.location.href = 'dashboard.html', 1000);
+        const createCheckout = httpsCallable(functions, 'createCheckoutSession');
+        const result = await createCheckout({ planId, priceId });
+        if (result.data.url) {
+          window.location.href = result.data.url;
         }
       } catch (error) {
-        console.error('Auth error:', error);
-        let errorMessage = '發生錯誤，請稍後再試';
+        console.error('Checkout error:', error);
+        alert('付款連結建立失敗，請稍後再試');
+      }
+    };
+    
+    onAuthStateChanged(auth, async (user) => {
+      document.getElementById('loading').classList.add('hidden');
+      
+      if (user) {
+        document.getElementById('loginBtn').textContent = '會員中心';
+        document.getElementById('loginBtn').href = 'dashboard.html';
+        document.getElementById('registerBtn').textContent = '登出';
+        document.getElementById('registerBtn').href = '#';
+        document.getElementById('registerBtn').onclick = () => { signOut(auth); };
         
-        switch (error.code) {
-          case 'auth/user-not-found':
-            errorMessage = '找不到這個帳號';
-            break;
-          case 'auth/wrong-password':
-            errorMessage = '密碼錯誤';
-            break;
-          case 'auth/email-already-in-use':
-            errorMessage = '這個 email 已經被註冊過了';
-            break;
-          case 'auth/weak-password':
-            errorMessage = '密碼強度太弱，至少要6 個字元';
-            break;
-          case 'auth/invalid-email':
-            errorMessage = 'Email 格式不正確';
-            break;
+        // 取得會員狀態
+        try {
+          const getStatus = httpsCallable(functions, 'getUserStatus');
+          const result = await getStatus({});
+          renderPricing(result.data?.plan || 'guest');
+        } catch {
+          renderPricing('guest');
         }
-        
-        showMessage(errorMessage, 'error');
-        submitBtn.disabled = false;
-        btnText.textContent = currentTab === 'login' ? '登入' : '註冊';
+      } else {
+        renderPricing('guest');
       }
     });
-    
-    // Google sign-in
-    document.getElementById('googleBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('googleBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading" style="border-color:rgba(66,133,244,0.3);border-top-color:#4285F4;"></span>處理中...';
-      
-      try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        showMessage('Google 登入成功！', 'success');
-        setTimeout(() => window.location.href = 'dashboard.html', 1000);
-      } catch (error) {
-        console.error('Google sign-in error:', error);
-        let errorMessage = 'Google 登入失敗';
-        if (error.code === 'auth/popup-closed-by-user') {
-          errorMessage = '已取消登入';
-        }
-        showMessage(errorMessage, 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg> Google 登入';
-      }
-    });
-    
-    // Anonymous login
-    document.getElementById('anonymousBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('anonymousBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading" style="border-color:rgba(154,121,239,0.3);border-top-color:var(--purple);"></span>進入中...';
-      
-      try {
-        const result = await signInAnonymously(auth);
-        showMessage('以遊客身份進入', 'success');
-        setTimeout(() => window.location.href = 'index.html', 1000);
-      } catch (error) {
-        console.error('Anonymous auth error:', error);
-        showMessage('進入失敗，請稍後再試', 'error');
-        btn.disabled = false;
-        btn.textContent = '以遊客身份繼續';
-      }
-    });
-    
-    function showMessage(text, type) {
-      const msg = document.getElementById('message');
-      msg.textContent = text;
-      msg.className = `message ${type}`;
-      msg.classList.remove('hidden');
-    }
-    
-    function hideMessage() {
-      document.getElementById('message').classList.add('hidden');
-    }
-    
-    // Check if already logged in
-    if (auth.currentUser) {
-      window.location.href = 'dashboard.html';
-    }
   </script>
 </body>
 </html>

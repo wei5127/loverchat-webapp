@@ -811,6 +811,68 @@
       color: #75687f;
       cursor: pointer;
       padding: 12px;
+    }
+    /* Upgrade banner */
+    .upgrade-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 1000;
+      max-width: calc(100vw - 40px);
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .upgrade-banner-content { flex: 1; }
+    .upgrade-banner-content strong { display: block; margin-bottom: 4px; }
+    .upgrade-banner-content p { font-size: 13px; color: #75687f; margin: 0; }
+    .upgrade-banner-btn {
+      background: linear-gradient(135deg, #f56fa8, #9a79ef);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .upgrade-banner-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #9CA3AF;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+    .vip-button {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: white;
+      padding: 14px 28px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+    .vip-button:hover {
+      transform: scale(1.05);
     }</style>
 </head>
 <body>
@@ -848,12 +910,13 @@
       <section class="screen welcome active" id="welcomeScreen" aria-labelledby="welcomeTitle">
         <div class="welcome-art" aria-hidden="true"></div>
         <div>
-          <h2 id="welcomeTitle">人生練習場</h2>
-          <p>有些話現實說不出口，先來這裡練習。</p>
-          <p class="subtitle">與各種人格角色對話，體驗不同的人際關係與情境。</p>
+          <h2 id="welcomeTitle">AI 角色聊天平台</h2>
+          <p>與你喜歡的角色展開專屬對話</p>
+          <p class="subtitle">有些話現實說不出口，先來這裡練習。</p>
         </div>
-        <div>
-          <button class="primary-button" id="startButton" type="button">開始練習</button>
+        <div class="hero-buttons">
+          <button class="primary-button" id="startButton" type="button">立即開始聊天</button>
+          <a href="pricing.html" class="vip-button" id="vipButton">升級 VIP</a>
         </div>
       </section>
 
@@ -2328,10 +2391,14 @@
 
       try {
         // Call Cloud Function instead of direct API
-        const chatFunction = httpsCallable(functions, 'chatWithAI');
+        const chatFunction = httpsCallable(functions, 'sendMessage');
+        const characterName = state.character;
+        const characterDesc = getCharacterDescription(characterName);
+        
         const result = await chatFunction({
           message: input,
-          character: state.character,
+          characterName: characterName,
+          characterDesc: characterDesc,
           conversationHistory: historyMsgs
         });
 
@@ -2352,6 +2419,12 @@
         if (result.data.remaining !== undefined && userRemaining) {
           userRemaining.textContent = result.data.remaining;
         }
+        
+        // Track message count for analytics
+        trackMessageCount(result.data.usageToday || 0);
+        
+        // Show upgrade prompts based on usage
+        checkUpgradePrompts(result.data.usageToday || 0, result.data.remaining);
 
       } catch (err) {
         console.error("Chat error:", err);
@@ -2366,6 +2439,83 @@
         }
       }
     }
+
+
+    function getCharacterDescription(characterName) {
+      const chars = data["男生"].concat(data["女生"]).concat(data["朋友"]).concat(data["長輩"]);
+      const found = chars.find(c => c[0] === characterName);
+      if (found) return found[1];
+      return characterName;
+    }
+
+
+
+    // ============ ANALYTICS ============
+    let messageCount = 0;
+    
+    function trackMessageCount(count) {
+      messageCount = count;
+      if (typeof gtag === 'function') {
+        if (count === 1) gtag('event', 'first_chat');
+        if (count === 10) gtag('event', 'tenth_message');
+        if (count === 20) gtag('event', 'twentieth_message');
+      }
+    }
+    
+    function checkUpgradePrompts(used, remaining) {
+      if (!userStatus) return;
+      const plan = userStatus.plan;
+      if (plan === 'vip' || plan === 'lifetime') return;
+      
+      if (typeof gtag === 'function') {
+        if (remaining <= 10 && remaining > 5) gtag('event', 'quota_warning');
+      }
+      
+      // Show contextual upgrade prompts
+      if (remaining !== undefined && remaining <= 10 && remaining > 0) {
+        showUpgradePrompt('low_quota');
+      }
+    }
+    
+    function showUpgradePrompt(type) {
+      const prompts = {
+        low_quota: { title: '訊息額度不足', text: '升級 VIP，每日可使用 1000 則訊息', cta: '升級 VIP' },
+        very_low_quota: { title: '即將達到上限', text: '升級 VIP 可立即解除限制', cta: '立即升級' },
+        long_chat: { title: '解鎖長期記憶', text: '讓角色真正記住你', cta: '解鎖功能' },
+        create_character: { title: '建立角色', text: 'VIP 可建立無限私人角色與公開角色', cta: '升級 VIP' }
+      };
+      
+      const prompt = prompts[type];
+      if (!prompt) return;
+      
+      // Check if prompt already shown today
+      const shownKey = 'upgrade_prompt_shown_' + type;
+      const today = new Date().toDateString();
+      if (localStorage.getItem(shownKey) === today) return;
+      localStorage.setItem(shownKey, today);
+      
+      // Create banner
+      const banner = document.createElement('div');
+      banner.className = 'upgrade-banner';
+      banner.innerHTML = `
+        <div class="upgrade-banner-content">
+          <strong>${prompt.title}</strong>
+          <p>${prompt.text}</p>
+        </div>
+        <a href="pricing.html" class="upgrade-banner-btn">${prompt.cta}</a>
+        <button class="upgrade-banner-close" onclick="this.closest('.upgrade-banner').remove()">×</button>
+      `;
+      document.body.appendChild(banner);
+      
+      if (typeof gtag === 'function') {
+        gtag('event', 'upgrade_click', { method: type });
+      }
+      
+      setTimeout(() => banner.remove(), 10000);
+    }
+    
+    // ============ END ANALYTICS ============
+
 
     function resetChat() {
       localStorage.removeItem(historyKey());

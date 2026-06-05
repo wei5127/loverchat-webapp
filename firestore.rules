@@ -2,90 +2,51 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // ============ HELPER FUNCTIONS ============
-    
-    // Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    // Check if user owns the document
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
     }
     
-    // Get user data helper
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
-    
-    // ============ USERS COLLECTION ============
+    // ============ USERS ============
     match /users/{userId} {
-      // Anyone can read their own user data
       allow read: if isOwner(userId);
       
-      // Users can only update their own data (limited fields)
+      // 可以更新自己的資料，但不能改 role/plan/subscriptionStatus/stripeCustomerId/subscriptionId/dailyLimit
       allow update: if isOwner(userId) && 
-        // Cannot modify these protected fields
-        !request.resource.data.keys().hasAny(['plan', 'credits', 'role', 'isAdmin', 'stripeCustomerId', 'subscriptionId']) &&
-        // Can update basic profile
-        request.resource.data.keys().hasOnly(['displayName', 'photoURL', 'email', 'lastLogin', 'updatedAt']);
+        !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny([
+            'role', 'plan', 'dailyLimit', 'subscriptionStatus', 
+            'stripeCustomerId', 'subscriptionId', 'messagesUsedToday'
+          ]);
       
-      // Only create their own document
       allow create: if isOwner(userId);
-      
-      // Cannot delete user documents
       allow delete: if false;
     }
     
-    // ============ USAGE COLLECTION ============
-    match /usage/{usageId} {
-      // User can read their own usage
-      allow read: if isAuthenticated() && usageId.startswith(request.auth.uid);
+    // ============ CHARACTERS ============
+    match /characters/{characterId} {
+      // 公開角色 anyone can read
+      allow read: if resource.data.visibility == 'public';
       
-      // Only the system (Cloud Functions) can write to usage
-      // Deny all writes from client
-      allow write: if false;
+      // 自己的角色可以讀寫
+      allow read, write: if isAuthenticated() && 
+        (resource.data.ownerUid == request.auth.uid || request.resource.data.ownerUid == request.auth.uid);
+      
+      // 查詢時只能查自己的
+      allow list: if isAuthenticated();
     }
     
-    // ============ SUBSCRIPTIONS COLLECTION (Stripe metadata) ============
-    match /subscriptions/{subId} {
-      allow read: if isOwner(subId);
-      allow create, update, delete: if false;
+    // ============ CONVERSATIONS ============
+    match /conversations/{docId} {
+      allow read, write: if isAuthenticated() && docId.startswith(request.auth.uid);
     }
     
-    // ============ CUSTOM CHARACTERS ============
-    match /customCharacters/{charId} {
-      // User can read their own custom characters
-      allow read: if isAuthenticated() && charId.startswith(request.auth.uid + '_');
-      
-      // User can create/update their own custom characters
-      allow create: if isAuthenticated() && charId == request.auth.uid + '_' + request.resource.data.name;
-      allow update: if isAuthenticated() && charId.startswith(request.auth.uid + '_');
-      
-      // Can delete their own
-      allow delete: if isAuthenticated() && charId.startswith(request.auth.uid + '_');
-    }
-    
-    // ============ CHAT HISTORY ============
-    match /chatHistory/{docId} {
-      // User can read their own chat history
-      allow read: if isAuthenticated() && docId.startswith(request.auth.uid + '_');
-      
-      // Only create their own
-      allow create: if isAuthenticated() && docId == request.auth.uid + '_' + request.resource.data.character;
-      
-      // Can update their own chat history (append messages)
-      allow update: if isAuthenticated() && docId.startswith(request.auth.uid + '_');
-      
-      // Can delete their own
-      allow delete: if isAuthenticated() && docId.startswith(request.auth.uid + '_');
-    }
-    
-    // ============ ADMIN ONLY ============
-    match /admin/{docId} {
-      // Only admins can access admin documents
-      allow read, write: if false; // Reserved for future admin features
+    // ============ MESSAGES ============
+    match /messages/{docId} {
+      allow read, write: if isAuthenticated();
     }
   }
 }
