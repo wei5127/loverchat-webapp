@@ -1,0 +1,16 @@
+{
+  "name": "loverchat-functions",
+  "version": "1.0.0",
+  "description": "Cloud Functions for 人生練習場",
+  "main": "index.js",
+  "engines": {
+    "node": "18"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.11.0",
+    "firebase-functions": "^4.5.0",
+    "stripe": "^14.0.0",
+    "cors": "^2.8.5"
+  },
+  "private": true
+}

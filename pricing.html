@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人生練習場｜方案價格</title>
+  <meta name="description" content="選擇適合你的方案，開始練習人際互動與情緒表達">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fff7fb;
+      --bg-2: #f8efff;
+      --text: #30263b;
+      --muted: #75687f;
+      --line: #eadbea;
+      --pink: #f56fa8;
+      --pink-dark: #c93d78;
+      --purple: #9a79ef;
+      --lilac: #eee7ff;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    .header {
+      background: white;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    
+    .brand h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .nav-buttons a {
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .btn-outline {
+      border: 2px solid var(--pink);
+      color: var(--pink);
+      background: transparent;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: white;
+      border: none;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .user-plan {
+      background: var(--lilac);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--purple);
+    }
+    
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 60px 24px 40px;
+    }
+    
+    .hero h2 {
+      font-size: 36px;
+      margin-bottom: 16px;
+    }
+    
+    .hero p {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    /* Pricing Cards */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 60px;
+    }
+    
+    .pricing-card {
+      background: white;
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+    
+    .pricing-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    }
+    
+    .pricing-card.featured {
+      border: 2px solid var(--pink);
+      transform: scale(1.05);
+    }
+    
+    .pricing-card.featured:hover {
+      transform: scale(1.05) translateY(-4px);
+    }
+    
+    .badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .plan-name {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .plan-price {
+      margin-bottom: 24px;
+    }
+    
+    .plan-price .amount {
+      font-size: 48px;
+      font-weight: 700;
+    }
+    
+    .plan-price .currency {
+      font-size: 20px;
+      vertical-align: super;
+    }
+    
+    .plan-price .period {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    
+    .plan-features {
+      list-style: none;
+      margin-bottom: 32px;
+    }
+    
+    .plan-features li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+    
+    .plan-features li:last-child {
+      border-bottom: none;
+    }
+    
+    .plan-features .icon {
+      color: var(--pink);
+    }
+    
+    .plan-btn {
+      width: 100%;
+      padding: 14px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+    
+    .plan-btn.primary {
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: white;
+    }
+    
+    .plan-btn.outline {
+      background: transparent;
+      border: 2px solid var(--pink);
+      color: var(--pink);
+    }
+    
+    .plan-btn:hover {
+      transform: scale(1.02);
+    }
+    
+    .plan-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* FAQ */
+    .faq {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    
+    .faq h3 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 32px;
+    }
+    
+    .faq-item {
+      background: white;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .faq-item h4 {
+      margin-bottom: 8px;
+      color: var(--pink);
+    }
+    
+    .faq-item p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    /* Loading */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--line);
+      border-top-color: var(--pink);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .hidden { display: none !important; }
+    
+    @media (max-width: 768px) {
+      .pricing-card.featured {
+        transform: none;
+      }
+      .pricing-card.featured:hover {
+        transform: translateY(-4px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="brand">
+      <div class="brand-mark">人</div>
+      <h1>人生練習場</h1>
+    </a>
+    <div class="nav-buttons" id="navButtons">
+      <a href="login.html" class="btn-outline" id="loginBtn">登入</a>
+      <a href="pricing.html" class="btn-primary" id="registerBtn">免費試用</a>
+    </div>
+  </header>
+  
+  <section class="hero">
+    <h2>選擇你的練習方案</h2>
+    <p>每天與各種角色練習人際互動，幫助你在現實生活中更從容地表達與溝通</p>
+  </section>
+  
+  <section class="pricing-grid" id="pricingGrid">
+    <!-- Loading state -->
+    <div class="loading-overlay" id="loading">
+      <div class="spinner"></div>
+    </div>
+  </section>
+  
+  <section class="faq">
+    <h3>常見問題</h3>
+    <div class="faq-item">
+      <h4>免費額度用完了怎麼辦？</h4>
+      <p>免費方案每天提供30 次聊天額度，隔日凌晨會自動重置。也可以選擇付費方案獲得更多額度。</p>
+    </div>
+    <div class="faq-item">
+      <h4>如何取消訂閱？</h4>
+      <p>登入後可進入「會員中心」管理您的訂閱，所有訂閱隨時可以取消，取消後仍可使用已付費期間的服務。</p>
+    </div>
+    <div class="faq-item">
+      <h4>點數包可以用多久？</h4>
+      <p>點數包購買後永久有效，適合不常用但需要的用戶。</p>
+    </div>
+    <div class="faq-item">
+      <h4>聊天紀錄會保存多久？</h4>
+      <p>付費會員的聊天紀錄會保存 90 天，免費用戶保存 7 天。</p>
+    </div>
+  </section>
+  
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyDemo-placeholder", // Replace with actual config
+      authDomain: "loverchat-88cb3.firebaseapp.com",
+      projectId: "loverchat-88cb3",
+      storageBucket: "loverchat-88cb3.appspot.com",
+      messagingSenderId: "726884368190",
+      appId: "1:726884368190:web:demo-placeholder"
+    };
+    
+    // Check if already configured
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const functions = getFunctions(app);
+    
+    // Pricing data
+    const plans = [
+      {
+        id: 'free',
+        name: 'Free',
+        price: 0,
+        period: '永久免費',
+        features: [
+          '每天 30 次聊天',
+          '基本角色選擇',
+          '7 天聊天紀錄',
+          '一般速度'
+        ],
+        button: '免費開始',
+        featured: false
+      },
+      {
+        id: 'basic',
+        name: 'Basic',
+        price: 99,
+        period: '/月',
+        features: [
+          '每天 100 次聊天',
+          '全部角色解鎖',
+          '30 天聊天紀錄',
+          '優先速度'
+        ],
+        button: '升級 Basic',
+        featured: false,
+        stripePriceId: 'price_basic_monthly'
+      },
+      {
+        id: 'pro',
+        name: 'Pro',
+        price: 299,
+        period: '/月',
+        features: [
+          '每天 500 次聊天',
+          '全部角色 +優先新功能',
+          '90 天聊天紀錄',
+          '最高優先速度',
+          '自定義角色加成'
+        ],
+        button: '升級 Pro',
+        featured: true,
+        stripePriceId: 'price_pro_monthly'
+      },
+      {
+        id: 'creditPack',
+        name: '點數包',
+        price: 199,
+        period: '一次性',
+        features: [
+          '1000點數',
+          '永久有效',
+          '可用於任何方案',
+          '無期限限制'
+        ],
+        button: '購買點數',
+        featured: false,
+        stripePriceId: 'price_credit_pack'
+      }
+    ];
+    
+    // Render pricing cards
+    function renderPricing(user) {
+      const grid = document.getElementById('pricingGrid');
+      grid.innerHTML = '';
+      
+      plans.forEach(plan => {
+        const card = document.createElement('div');
+        card.className = `pricing-card${plan.featured ? ' featured' : ''}`;
+        
+        let featuresHtml = plan.features.map(f => `
+          <li><span class="icon">✓</span>${f}</li>
+        `).join('');
+        
+        let buttonHtml = '';
+        if (user) {
+          if (plan.id === 'free') {
+            buttonHtml = `<button class="plan-btn outline" disabled>目前方案</button>`;
+          } else if (plan.price === 0) {
+            buttonHtml = `<button class="plan-btn outline" disabled>已擁有</button>`;
+          } else {
+            buttonHtml = `<button class="plan-btn primary" onclick="subscribePlan('${plan.id}', '${plan.stripePriceId || ''}')">${plan.button}</button>`;
+          }
+        } else {
+          buttonHtml = `<a href="login.html" class="plan-btn ${plan.id === 'free' ? 'outline' : 'primary'}">${plan.button}</a>`;
+        }
+        
+        card.innerHTML = `
+          ${plan.featured ? '<div class="badge">最受歡迎</div>' : ''}
+          <div class="plan-name">${plan.name}</div>
+          <div class="plan-price">
+            <span class="amount">${plan.price === 0 ? '免費' : plan.price}</span>
+            <span class="period">${plan.period}</span>
+          </div>
+          <ul class="plan-features">${featuresHtml}</ul>
+          ${buttonHtml}
+        `;
+        
+        grid.appendChild(card);
+      });
+    }
+    
+    // Subscribe to plan
+    window.subscribePlan = async function(planId, priceId) {
+      if (!priceId) {
+        alert('此方案目前無法訂閱，請稍後再試');
+        return;
+      }
+      
+      try {
+        const createCheckout = httpsCallable(functions, 'createCheckoutSession');
+        const result = await createCheckout({ planId, priceId });
+        
+        if (result.data.url) {
+          window.location.href = result.data.url;
+        }
+      } catch (error) {
+        console.error('Checkout error:', error);
+        alert('建立付款失敗，請稍後再試');
+      }
+    };
+    
+    // Check auth state
+    onAuthStateChanged(auth, (user) => {
+      document.getElementById('loading').classList.add('hidden');
+      
+      if (user) {
+        document.getElementById('loginBtn').textContent = '會員中心';
+        document.getElementById('loginBtn').href = 'dashboard.html';
+        document.getElementById('registerBtn').textContent = '登出';
+        document.getElementById('registerBtn').href = '#';
+        document.getElementById('registerBtn').onclick = () => auth.signOut();
+      }
+      
+      renderPricing(user);
+    });
+  </script>
+</body>
+</html>

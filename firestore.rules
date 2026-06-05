@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============ HELPER FUNCTIONS ============
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Get user data helper
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    // ============ USERS COLLECTION ============
+    match /users/{userId} {
+      // Anyone can read their own user data
+      allow read: if isOwner(userId);
+      
+      // Users can only update their own data (limited fields)
+      allow update: if isOwner(userId) && 
+        // Cannot modify these protected fields
+        !request.resource.data.keys().hasAny(['plan', 'credits', 'role', 'isAdmin', 'stripeCustomerId', 'subscriptionId']) &&
+        // Can update basic profile
+        request.resource.data.keys().hasOnly(['displayName', 'photoURL', 'email', 'lastLogin', 'updatedAt']);
+      
+      // Only create their own document
+      allow create: if isOwner(userId);
+      
+      // Cannot delete user documents
+      allow delete: if false;
+    }
+    
+    // ============ USAGE COLLECTION ============
+    match /usage/{usageId} {
+      // User can read their own usage
+      allow read: if isAuthenticated() && usageId.startswith(request.auth.uid);
+      
+      // Only the system (Cloud Functions) can write to usage
+      // Deny all writes from client
+      allow write: if false;
+    }
+    
+    // ============ SUBSCRIPTIONS COLLECTION (Stripe metadata) ============
+    match /subscriptions/{subId} {
+      allow read: if isOwner(subId);
+      allow create, update, delete: if false;
+    }
+    
+    // ============ CUSTOM CHARACTERS ============
+    match /customCharacters/{charId} {
+      // User can read their own custom characters
+      allow read: if isAuthenticated() && charId.startswith(request.auth.uid + '_');
+      
+      // User can create/update their own custom characters
+      allow create: if isAuthenticated() && charId == request.auth.uid + '_' + request.resource.data.name;
+      allow update: if isAuthenticated() && charId.startswith(request.auth.uid + '_');
+      
+      // Can delete their own
+      allow delete: if isAuthenticated() && charId.startswith(request.auth.uid + '_');
+    }
+    
+    // ============ CHAT HISTORY ============
+    match /chatHistory/{docId} {
+      // User can read their own chat history
+      allow read: if isAuthenticated() && docId.startswith(request.auth.uid + '_');
+      
+      // Only create their own
+      allow create: if isAuthenticated() && docId == request.auth.uid + '_' + request.resource.data.character;
+      
+      // Can update their own chat history (append messages)
+      allow update: if isAuthenticated() && docId.startswith(request.auth.uid + '_');
+      
+      // Can delete their own
+      allow delete: if isAuthenticated() && docId.startswith(request.auth.uid + '_');
+    }
+    
+    // ============ ADMIN ONLY ============
+    match /admin/{docId} {
+      // Only admins can access admin documents
+      allow read, write: if false; // Reserved for future admin features
+    }
+  }
+}

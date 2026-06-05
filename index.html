@@ -737,7 +737,81 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
-</style>
+
+    /* Upgrade button */
+    .upgrade-btn {
+      background: linear-gradient(135deg, #f56fa8, #9a79ef);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: #f8efff;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+    
+    .user-plan {
+      background: linear-gradient(135deg, #f56fa8, #9a79ef);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    
+    .user-remaining {
+      color: #75687f;
+    }
+
+
+    /* Limit reached modal */
+    .limit-modal {
+      text-align: center;
+      padding: 40px;
+    }
+    .limit-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .limit-modal h3 {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+    .limit-modal p {
+      color: #75687f;
+      margin-bottom: 8px;
+    }
+    .modal-buttons {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal-buttons .btn-primary {
+      background: linear-gradient(135deg, #f56fa8, #9a79ef);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 25px;
+      text-decoration: none;
+      text-align: center;
+      font-weight: 600;
+    }
+    .modal-buttons .btn-ghost {
+      background: transparent;
+      border: none;
+      color: #75687f;
+      cursor: pointer;
+      padding: 12px;
+    }</style>
 </head>
 <body>
   <div class="app">
@@ -750,6 +824,11 @@
         </div>
       </div>
       <div class="topbar-actions">
+        <a href="pricing.html" class="upgrade-btn" id="upgradeBtn" style="display:none;">升級</a>
+        <div class="user-menu" id="userMenu" style="display:none;">
+          <span class="user-plan" id="userPlanBadge">Free</span>
+          <span class="user-remaining" id="userRemaining">30</span>
+        </div>
         <div class="lang-switch">
           <button class="lang-switch-btn" id="langSwitchBtn" type="button">
             <span id="currentLang">繁體中文</span>
@@ -829,8 +908,27 @@
 
   <script src="config.js"></script>
 
-  <script>
-    const APP_VERSION = "v2.3";
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
+    
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "demo-api-key",
+      authDomain: "loverchat-88cb3.firebaseapp.com",
+      projectId: "loverchat-88cb3",
+      storageBucket: "loverchat-88cb3.appspot.com",
+      messagingSenderId: "726884368190",
+      appId: "1:726884368190:web:demo-placeholder"
+    };
+    
+    const firebaseApp = initializeApp(firebaseConfig);
+    const auth = getAuth(firebaseApp);
+    const functions = getFunctions(firebaseApp);
+    
+    const APP_VERSION = "v3.6";
     const STORAGE_KEY = "baobei-chat-selection-v1";
     const HISTORY_KEY = "baobei-chat-history-v1";
     
@@ -2197,48 +2295,76 @@
       }
     }
 
-    function showTypingThenReply(input) {
+    async function showTypingThenReply(input) {
       const typing = document.createElement("div");
       typing.className = "typing";
       typing.innerHTML = "<span></span><span></span><span></span>";
       messages.appendChild(typing);
       scrollToBottom();
 
+      // Check user status first
+      if (userStatus && userStatus.remaining <= 0) {
+        typing.remove();
+        showLimitReachedModal();
+        return;
+      }
+
       // Build conversation history for context
       const historyMsgs = [];
-      // Use same key as saveHistory() - historyKey() returns "HISTORY_KEY:category:character"
       const saved = localStorage.getItem(historyKey());
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           parsed.forEach(msg => {
             if (msg.role && msg.text) {
-              // Convert "bot" role to "assistant" for API
               const apiRole = msg.role === "user" ? "user" : "assistant";
               historyMsgs.push({ role: apiRole, content: msg.text });
             }
           });
         } catch (e) {
-          console.warn("Failed to parse history for AI context:", e);
+          console.warn("Failed to parse history:", e);
         }
       }
 
-      callMinimaxAI(input, historyMsgs)
-        .then(response => {
-          typing.remove();
-          addMessage("bot", response || "...我听到了。");
-        })
-        .catch(err => {
-          console.error("AI response error:", err);
-          typing.remove();
-          // Fallback to local response on error
-          try {
-            const fallback = makeResponse(input);
-            addMessage("bot", fallback);
-          } catch (fallbackErr) {
-            addMessage("bot", `系統忙碌中，請稍後再試。(${err.message})`);
-          }
+      try {
+        // Call Cloud Function instead of direct API
+        const chatFunction = httpsCallable(functions, 'chatWithAI');
+        const result = await chatFunction({
+          message: input,
+          character: state.character,
+          conversationHistory: historyMsgs
         });
+
+        typing.remove();
+
+        if (result.data.success === false) {
+          if (result.data.error === 'limit_reached') {
+            showLimitReachedModal();
+          } else {
+            addMessage("bot", result.data.message || "系統忙碌中");
+          }
+          return;
+        }
+
+        addMessage("bot", result.data.response || "...我听到了。");
+
+        // Update remaining count
+        if (result.data.remaining !== undefined && userRemaining) {
+          userRemaining.textContent = result.data.remaining;
+        }
+
+      } catch (err) {
+        console.error("Chat error:", err);
+        typing.remove();
+
+        // Fallback to local response
+        try {
+          const fallback = makeResponse(input);
+          addMessage("bot", fallback);
+        } catch (fallbackErr) {
+          addMessage("bot", `系統忙碌中，請稍後再試`);
+        }
+      }
     }
 
     function resetChat() {
@@ -2308,6 +2434,93 @@
     };
 
     let currentLang = localStorage.getItem("baobei-lang") || "zh-TW";
+    
+    // ============ FIREBASE AUTH & USER STATUS ============
+    let currentUser = null;
+    let userStatus = null;
+    
+    // User status badge elements
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    const userMenu = document.getElementById('userMenu');
+    const userPlanBadge = document.getElementById('userPlanBadge');
+    const userRemaining = document.getElementById('userRemaining');
+    
+    // Load user status from Cloud Function
+    async function loadUserStatus() {
+      if (!auth.currentUser) return null;
+      try {
+        const getStatus = httpsCallable(functions, 'getUserStatus');
+        const result = await getStatus({});
+        return result.data;
+      } catch (error) {
+        console.warn('Failed to load user status:', error);
+        return null;
+      }
+    }
+    
+    // Update UI with user status
+    function updateUserStatus(status) {
+      if (!status) return;
+      
+      userStatus = status;
+      
+      // Show user menu
+      if (upgradeBtn) upgradeBtn.style.display = status.plan === 'free' ? 'block' : 'none';
+      if (userMenu) userMenu.style.display = 'flex';
+      
+      // Update badge
+      if (userPlanBadge) userPlanBadge.textContent = (status.plan || 'free').toUpperCase();
+      if (userRemaining) userRemaining.textContent = status.remaining;
+      
+      // Check if limit reached
+      if (status.remaining <= 0) {
+        showLimitReachedModal();
+      }
+    }
+    
+    // Show limit reached modal
+    function showLimitReachedModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-content limit-modal">
+          <div class="limit-icon">⚠️</div>
+          <h3>今日額度已用完</h3>
+          <p>免費方案每天 30 次聊天已用完</p>
+          <p>升級付費方案獲得更多額度</p>
+          <div class="modal-buttons">
+            <a href="pricing.html" class="btn-primary">查看方案</a>
+            <button class="btn-ghost" onclick="this.closest('.modal-overlay').remove()">稍後再說</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    
+    // Auth state listener
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      
+      if (user) {
+        console.log('User logged in:', user.uid, user.isAnonymous ? '(anonymous)' : user.email);
+        const status = await loadUserStatus();
+        updateUserStatus(status);
+      } else {
+        console.log('No user logged in');
+        if (upgradeBtn) upgradeBtn.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'none';
+        
+        // Auto sign in anonymously
+        try {
+          const result = await signInAnonymously(auth);
+          console.log('Signed in anonymously:', result.user.uid);
+          const status = await loadUserStatus();
+          updateUserStatus(status);
+        } catch (error) {
+          console.error('Anonymous sign-in failed:', error);
+        }
+      }
+    });
 
     function applyLanguage(lang) {
       currentLang = lang;
