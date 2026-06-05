@@ -635,7 +635,109 @@
         font-size: 0.88rem;
       }
     }
-  </style>
+  
+
+    /* Custom character button */
+    .custom-choice {
+      background: linear-gradient(135deg, #f56fa8 0%, #9a79ef 100%) !important;
+      color: white !important;
+    }
+    .custom-choice strong {
+      color: white !important;
+    }
+    .custom-choice span {
+      color: rgba(255,255,255,0.8) !important;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-content h3 {
+      text-align: center;
+      color: #30263b;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #75687f;
+      font-size: 14px;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #eadbea;
+      border-radius: 12px;
+      font-size: 16px;
+      font-family: inherit;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #f56fa8;
+    }
+    .char-count {
+      text-align: right;
+      font-size: 12px;
+      color: #75687f;
+      margin-top: 5px;
+    }
+    .or-divider {
+      text-align: center;
+      color: #75687f;
+      font-size: 14px;
+      margin: 20px 0;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .cancel-btn, .confirm-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+    }
+    .cancel-btn {
+      background: #f0f0f0;
+      color: #666;
+    }
+    .confirm-btn {
+      background: linear-gradient(135deg, #f56fa8 0%, #9a79ef 100%);
+      color: white;
+    }
+    .confirm-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+</style>
 </head>
 <body>
   <div class="app">
@@ -891,6 +993,12 @@
     }
     
     function getIntroMsg(charName) {
+      // For custom characters, use custom intro
+      if (state.isCustom) {
+        return currentLang === "en" 
+          ? `Hey, I'm ${charName}. Nice to meet you.`
+          : `嗨，我是 ${charName}，請多指教。`;
+      }
       const lang = currentLang;
       if (lang === "en") {
         const msgs = introI18n.en[charName] || introI18n.en.default;
@@ -1077,6 +1185,90 @@
         button.addEventListener("click", () => chooseCategory(catKey));
         categoryGrid.append(button);
       });
+      
+      // Add custom character button
+      const customBtn = document.createElement("button");
+      customBtn.className = "choice custom-choice";
+      customBtn.type = "button";
+      const customText = currentLang === "en" 
+        ? "<strong>Custom</strong><span>Create your own character</span>"
+        : "<strong>自定義角色</strong><span>建立屬於你的角色</span>";
+      customBtn.innerHTML = customText;
+      customBtn.addEventListener("click", () => showCustomCharacterForm());
+      categoryGrid.append(customBtn);
+    }
+    
+    function showCustomCharacterForm() {
+      const customModal = document.createElement("div");
+      customModal.className = "modal-overlay";
+      customModal.innerHTML = `
+        <div class="modal-content">
+          <h3>${currentLang === "en" ? "Create Custom Character" : "建立自定義角色"}</h3>
+          <div class="form-group">
+            <label>${currentLang === "en" ? "Character Name" : "角色名稱"}</label>
+            <input type="text" id="customCharName" placeholder="${currentLang === "en" ? "e.g. My Ideal Partner" : "例如：理想情人"}">
+          </div>
+          <div class="form-group">
+            <label>${currentLang === "en" ? "Description (min 100 characters)" : "角色描述（至少100字）"}</label>
+            <textarea id="customCharDesc" rows="5" placeholder="${currentLang === "en" ? "Describe the character's personality, speaking style, behavior patterns..." : "描述這個人的個性、說話風格行為特徵..."}"></textarea>
+            <div class="char-count"><span id="charCount">0</span>/100+</div>
+          </div>
+          <p class="or-divider">${currentLang === "en" ? "OR provide a URL" : "或提供人物連結"}</p>
+          <div class="form-group">
+            <label>${currentLang === "en" ? "Character URL (optional)" : "人物連結（選填）"}</label>
+            <input type="url" id="customCharUrl" placeholder="${currentLang === "en" ? "https://..." : "https://..."}">
+          </div>
+          <div class="modal-buttons">
+            <button class="cancel-btn" onclick="this.closest('.modal-overlay').remove()">${currentLang === "en" ? "Cancel" : "取消"}</button>
+            <button class="confirm-btn" id="confirmCustomChar">${currentLang === "en" ? "Confirm" : "確認建立"}</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(customModal);
+      
+      // Char count listener
+      const descInput = document.getElementById("customCharDesc");
+      const charCount = document.getElementById("charCount");
+      descInput.addEventListener("input", () => {
+        charCount.textContent = descInput.value.length;
+      });
+      
+      // Confirm button
+      document.getElementById("confirmCustomChar").addEventListener("click", () => {
+        const name = document.getElementById("customCharName").value.trim();
+        const desc = document.getElementById("customCharDesc").value.trim();
+        const url = document.getElementById("customCharUrl").value.trim();
+        
+        if (!name) {
+          alert(currentLang === "en" ? "Please enter character name" : "請輸入角色名稱");
+          return;
+        }
+        
+        if (desc.length < 100 && !url) {
+          alert(currentLang === "en" ? "Description must be 100+ characters or provide a URL" : "描述至少100字或提供連結");
+          return;
+        }
+        
+        // Create custom character
+        const customDesc = desc.length >= 100 ? desc : `Character description: ${url}`;
+        const customChar = {
+          name: name,
+          description: customDesc,
+          hint: "custom character"
+        };
+        
+        // Save to state
+        state.category = "自定義";
+        state.character = name;
+        state.description = customDesc;
+        state.englishHint = "custom";
+        state.isCustom = true;
+        
+        saveSelection();
+        setupChat();
+        showScreen(chatScreen);
+        customModal.remove();
+      });
     }
 
     function chooseCategory(category) {
@@ -1112,15 +1304,17 @@
     function setupChat() {
       const charInfo = getCharI18n(state.character);
       const catName = catI18n[currentLang]?.[state.category] || state.category;
-      chatTitle.textContent = charInfo.name;
-      chatSubtitle.textContent = `${catName} · ${charInfo.description}`;
-      chatAvatar.textContent = charInfo.name.slice(0, 1);
+      const displayName = state.isCustom ? state.character : charInfo.name;
+      const displayDesc = state.isCustom ? state.description : charInfo.description;
+      chatTitle.textContent = displayName;
+      chatSubtitle.textContent = `${catName} · ${displayDesc}`;
+      chatAvatar.textContent = displayName.slice(0, 1);
       const helperKey = currentLang === "en" ? "helperText" : (currentLang === "zh-CN" ? "helperTextCN" : "helperText");
       helperText.textContent = currentLang === "en" 
-        ? `Chatting with "${charInfo.name}". Commands: /menu for menu, /reset to clear.`
+        ? `Chatting with "${displayName}". Commands: /menu for menu, /reset to clear.`
         : (currentLang === "zh-CN" 
-          ? `正在跟「${charInfo.name}」聊天。指令：/menu 回選單，/reset 清空對話。`
-          : `正在跟「${charInfo.name}」聊天。指令：/menu 回選單，/reset 清空對話。`);
+          ? `正在跟「${displayName}」聊天。指令：/menu 回選單，/reset 清空對話。`
+          : `正在跟「${displayName}」聊天。指令：/menu 回選單，/reset 清空對話。`);
       loadHistory();
     }
 
@@ -1884,12 +2078,15 @@
       const charInfo = getCharI18n(state.character);
       const catName = catI18n[currentLang]?.[state.category] || state.category;
       
+      // Build description for custom characters
+      const desc = state.isCustom ? state.description : charInfo.description;
+      
       // Build language-specific system prompt
       const langInstruction = currentLang === "en" 
-        ? `You are a normal person chatting. You are "${charInfo.name}" (${charInfo.description}). Reply in English only.`
+        ? `You are a person chatting. You are "${state.character}" - ${desc}. Reply in English only.`
         : currentLang === "zh-CN"
-        ? `你是一个普通上班族，在跟同事聊天。你是「${charInfo.name}」（${charInfo.description}）。请用简体中文回复。`
-        : `你是一个普通上班族，在跟同事聊天。你是「${charInfo.name}」（${charInfo.description}）。请用繁体中文回复。`;
+        ? `你在跟人聊天。你是「${state.character}」（${desc}）。请用简体中文回复。`
+        : `你在跟人聊天。你是「${state.character}」（${desc}）。请用繁体中文回复。`;
       
       const systemPrompt = `${langInstruction}
 
