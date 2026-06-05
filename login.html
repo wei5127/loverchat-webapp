@@ -221,7 +221,25 @@
     }
     
     .hidden { display: none; }
-  </style>
+  
+    .google-btn {
+      width: 100%;
+      padding: 14px;
+      background: white;
+      border: 2px solid #4285f4;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    
+    .google-btn:hover {
+      background: #f8f8f8;
+    }</style>
 </head>
 <body>
   <div class="login-container">
@@ -259,6 +277,11 @@
       </button>
     </form>
     
+    <button class="google-btn" id="googleBtn">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg>
+      Google 登入
+    </button>
+    
     <div class="divider"><span>或</span></div>
     
     <button class="anonymous-btn" id="anonymousBtn">
@@ -282,8 +305,8 @@
       signInWithEmailAndPassword, 
       createUserWithEmailAndPassword,
       signInAnonymously,
-      updateProfile,
-      sendEmailVerification
+      GoogleAuthProvider,
+      signInWithPopup
     } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
     
     const firebaseConfig = {
@@ -378,6 +401,29 @@
         showMessage(errorMessage, 'error');
         submitBtn.disabled = false;
         btnText.textContent = currentTab === 'login' ? '登入' : '註冊';
+      }
+    });
+    
+    // Google sign-in
+    document.getElementById('googleBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('googleBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading" style="border-color:rgba(66,133,244,0.3);border-top-color:#4285F4;"></span>處理中...';
+      
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        showMessage('Google 登入成功！', 'success');
+        setTimeout(() => window.location.href = 'dashboard.html', 1000);
+      } catch (error) {
+        console.error('Google sign-in error:', error);
+        let errorMessage = 'Google 登入失敗';
+        if (error.code === 'auth/popup-closed-by-user') {
+          errorMessage = '已取消登入';
+        }
+        showMessage(errorMessage, 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg> Google 登入';
       }
     });
     
