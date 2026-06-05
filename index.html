@@ -753,7 +753,12 @@
         ["曖昧高手", "養很多魚、不給答案", "flirt who keeps everything vague"],
         ["公主病男", "嬌貴玻璃心、要人服侍", "delicate prince who expects service"],
         ["暖男", "貼心照顧、隨時在線、過度體貼", "overly attentive and caring partner"],
-        ["前任", "分手後仍糾纏、藕斷絲連", "ex who can't let go"]
+        ["前任", "分手後仍糾纏、藕斷絲連", "ex who can't let go"],
+        ["完美情人", "無可挑剔、世紀好男人", "too perfect, no flaws"],
+        ["深情暖男", "浪漫至極、每天都表白", "deeply romantic type"],
+        ["創業男", "忙到忽略你、但有上進心", "busy startup guy with ambition"],
+        ["藝術家男友", "浪漫但情緒化、脾氣難捉摸", "romantic but moody artist boyfriend"],
+        ["工程師男友", "木訥貼心但不懂浪漫", "logical but unromantic engineer boyfriend"]
       ],
       "女生": [
         ["公主病", "覺得自己是女王，要人伺候", "entitled princess personality"],
@@ -807,7 +812,7 @@
     };
     
     // Override with translations (English)
-    charI18n["en"]["男生"] = { "渣男": { name: "Scumbag", description: "Flaky lover who dodges commitment", hint: "flaky lover" }, "媽寶": { name: "Mama's Boy", description: "Always defers to his mother", hint: "mama's boy" }, "AA男": { name: "AA Guy", description: "Stingy partner obsessed with splitting costs", hint: "stingy partner" }, "工具人": { name: "Tool", description: "Over-eager helper who sacrifices boundaries", hint: "helper" }, "恐怖情人": { name: "Possessive Ex", description: "Controlling and obsessive", hint: "possessive" }, "佛系男友": { name: "Laid-Back BF", description: "Passive partner who avoids effort", hint: "passive" }, "曖昧高手": { name: "Flirt Master", description: "Keeps things vague", hint: "flirt" }, "公主病男": { name: "Princely Man", description: "Delicate prince who expects service", hint: "prince" }, "暖男": { name: "Warm Guy", description: "Overly attentive and caring", hint: "warm guy" }, "前任": { name: "Ex", description: "Ex who can't let go", hint: "ex" } };
+    charI18n["en"]["男生"] = { "渣男": { name: "Scumbag", description: "Flaky lover who dodges commitment", hint: "flaky lover" }, "媽寶": { name: "Mama's Boy", description: "Always defers to his mother", hint: "mama's boy" }, "AA男": { name: "AA Guy", description: "Stingy partner obsessed with splitting costs", hint: "stingy partner" }, "工具人": { name: "Tool", description: "Over-eager helper who sacrifices boundaries", hint: "helper" }, "恐怖情人": { name: "Possessive Ex", description: "Controlling and obsessive", hint: "possessive" }, "佛系男友": { name: "Laid-Back BF", description: "Passive partner who avoids effort", hint: "passive" }, "曖昧高手": { name: "Flirt Master", description: "Keeps things vague", hint: "flirt" }, "公主病男": { name: "Princely Man", description: "Delicate prince who expects service", hint: "prince" }, "暖男": { name: "Warm Guy", description: "Overly attentive and caring", hint: "warm guy" }, "前任": { name: "Ex", description: "Ex who can't let go", hint: "ex" }, "完美情人": { name: "Perfect Prince", description: "Too perfect, no flaws", hint: "perfect" }, "深情暖男": { name: "Romantic Warm Guy", description: "Deeply romantic type", hint: "romantic" }, "創業男": { name: "Startup Guy", description: "Busy but ambitious", hint: "startup" }, "藝術家男友": { name: "Artist BF", description: "Romantic but moody", hint: "artist" }, "工程師男友": { name: "Engineer BF", description: "Logical but unromantic", hint: "engineer" } };
     charI18n["en"]["女生"] = { "公主病": { name: "Princess", description: "Entitled princess personality", hint: "princess" }, "綠茶": { name: "Green Tea Girl", description: "Sweet on surface, calculating underneath", hint: "green tea" }, "控制狂": { name: "Controller", description: "Controlling partner", hint: "controller" }, "假女權": { name: "Fake Feminist", description: "Selectively fair", hint: "fake feminist" }, "巨嬰女": { name: "Big Baby", description: "Emotionally immature", hint: "immature" } };
     charI18n["en"]["朋友"] = { "假閨蜜": { name: "Fake BFF", description: "Fake bestie who gossips", hint: "fake friend" }, "邊緣人朋友": { name: "Loner Friend", description: "Appears only when lonely", hint: "loner" }, "情緒垃圾桶": { name: "Vent Friend", description: "Friend who vents endlessly", hint: "venter" }, "炫耀朋友": { name: "Brag Friend", description: "Show-off friend", hint: "bragger" }, "真心朋友": { name: "True Friend", description: "Loyal and direct", hint: "loyal friend" }, "毒舌朋友": { name: "Savage Friend", description: "Blunt and honest", hint: "savage" } };
     charI18n["en"]["長輩/婆家/父母"] = { "亞洲父母": { name: "Asian Parent", description: "Guilt-tripping parent", hint: "guilt parent" }, "直升機父母": { name: "Helicopter Parent", description: "Overprotective", hint: "helicopter" }, "偏心父母": { name: "Biased Parent", description: "Has obvious favorites", hint: "biased" }, "毒父母": { name: "Toxic Parent", description: "Harsh and critical", hint: "toxic" }, "金湯匙父母": { name: "Silver Spoon Parent", description: "Wealthy and relaxed", hint: "rich parent" }, "惡婆婆": { name: "Devil Mother-in-Law", description: "Critical MIL", hint: "evil MIL" }, "惡公公": { name: "Quiet FIL", description: "Quiet but sides with wife", hint: "quiet FIL" }, "小姑/大伯": { name: "Nosy Relative", description: "Interfering relative", hint: "nosy" }, "好相處公婆": { name: "Kind In-Laws", description: "Respectful with boundaries", hint: "kind" }, "情勒娘家": { name: "Guilt-Tripping Family", description: "Uses guilt for leverage", hint: "guilt family" }, "吸血鬼親戚": { name: "Vampire Relative", description: "Always asking for favors", hint: "vampire" } };
@@ -868,6 +873,11 @@
         "暖男": ["Hey, just checking in on you.", "You eating well today?"],
         "前任": ["Hey... it's been a while.", "Can we talk?"],
         "傲嬌同事": ["...not that I care about your work or anything.", "Whatever, I'll just help you this once."],
+        "完美情人": ["Hey beautiful, what can I do for you today?", "Just tell me what you need, I've got you."],
+        "深情暖男": ["I was just thinking about how lucky I am to have you...", "Hey babe, what's on your mind?"],
+        "創業男": ["Hey, just got out of a meeting. What's up?", "Startup life is crazy but thinking of you."],
+        "藝術家男友": ["The light today reminded me of you, strangely.", "I had this vision of us... nevermind."],
+        "工程師男友": ["The code is compiling, what did you need?", "I optimized my schedule so I could be here for you."],
         "default": ["Hey.", "Hi there."]
       }
     };
@@ -1163,7 +1173,12 @@
         "人好嘴賤主管": ["我幫你擋，但你自己要帶腦子。", "這份東西...唉。"],
         "暖男": ["嘿，今天過得怎麼樣？", "有沒有好好吃飯？"],
         "前任": ["好久不見...", "我們能談談嗎？"],
-        "傲嬌同事": ["...才不是關心你喔。", "算了，這次就幫你一下。"]
+        "傲嬌同事": ["...才不是關心你喔。", "算了，這次就幫你一下。"],
+        "完美情人": ["早安～今天想帶我去哪裡？", "有任何需要尽管说，我都在。"],
+        "深情暖男": ["今天的星星，讓我想起我們的第一次約會。", "我最喜歡的時光，就是和你在一起的每一刻。"],
+        "創業男": ["剛開完會，終於可以喘口氣了。", "等我事業穩定下來，我們就去旅行。"],
+        "藝術家男友": ["今天的夕陽好美，但比不上你。", "我剛完成一件作品，想送你。"],
+        "工程師男友": ["我把待辦事項排好了，先陪你。", "抱歉剛才在工作，現在專心聽你說。"]
       };
       const lines = intros[state.character] || ["嗨。"];
       return pick(lines);
