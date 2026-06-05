@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>寶貝 Chat</title>
+  <title>人生練習場｜AI角色扮演與情境聊天</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="description" content="寶貝角色聊天 web app">
+  <meta name="description" content="與綠茶男、亞洲父母、主管、前任等各種角色聊天。透過 AI 情境模擬練習溝通技巧、情緒表達與人際互動。">
   <style>
     :root {
       --bg: #fff7fb;
@@ -640,10 +640,10 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand" aria-label="寶貝 Chat">
-        <div class="brand-mark" aria-hidden="true">寶</div>
+      <div class="brand" aria-label="人生練習場">
+        <div class="brand-mark" aria-hidden="true">人</div>
         <div>
-          <h1>寶貝 Chat</h1>
+          <h1>人生練習場</h1>
           <span>想說什麼就說什麼</span>
         </div>
       </div>
@@ -667,19 +667,20 @@
       <section class="screen welcome active" id="welcomeScreen" aria-labelledby="welcomeTitle">
         <div class="welcome-art" aria-hidden="true"></div>
         <div>
-          <h2 id="welcomeTitle">嗨～我是寶貝 💕</h2>
-          <p>在這裡你不用假裝，想說什麼就說什麼。</p>
+          <h2 id="welcomeTitle">人生練習場</h2>
+          <p>有些話現實說不出口，先來這裡練習。</p>
+          <p class="subtitle">與各種人格角色對話，體驗不同的人際關係與情境。</p>
         </div>
         <div>
-          <button class="primary-button" id="startButton" type="button">開始聊天</button>
+          <button class="primary-button" id="startButton" type="button">開始練習</button>
         </div>
       </section>
 
       <section class="screen selection" id="categoryScreen" aria-labelledby="categoryTitle">
         <div class="section-head">
           <div>
-            <h2 id="categoryTitle">你今天想跟誰說話？</h2>
-            <p>選一個情境，寶貝會幫你叫出最像那種人的角色。</p>
+            <h2 id="categoryTitle">選擇情境</h2>
+            <p>與各種角色聊天，練習人際互動與情緒表達。</p>
           </div>
         </div>
         <div class="grid" id="categoryGrid"></div>
@@ -750,7 +751,9 @@
         ["恐怖情人", "控制欲強、分手後糾纏報復", "controlling ex archetype, dramatic but nonviolent"],
         ["佛系男友", "不主動、不拒絕、消極應對", "passive partner who avoids effort"],
         ["曖昧高手", "養很多魚、不給答案", "flirt who keeps everything vague"],
-        ["公主病男", "嬌貴玻璃心、要人服侍", "delicate prince who expects service"]
+        ["公主病男", "嬌貴玻璃心、要人服侍", "delicate prince who expects service"],
+        ["暖男", "貼心照顧、隨時在線、過度體貼", "overly attentive and caring partner"],
+        ["前任", "分手後仍糾纏、藕斷絲連", "ex who can't let go"]
       ],
       "女生": [
         ["公主病", "覺得自己是女王，要人伺候", "entitled princess personality"],
@@ -784,7 +787,8 @@
         ["豬隊友同事", "拖後腿、扯後腿", "coworker who causes avoidable problems"],
         ["擺爛同事", "領錢不做事", "coworker who coasts"],
         ["馬屁精同事", "天天拍馬屁", "sycophantic coworker"],
-        ["職場小人", "表面友好、背後捅刀", "office backstabber"]
+        ["職場小人", "表面友好、背後捅刀", "office backstabber"],
+        ["傲嬌同事", "嘴巴嫌你但默默幫忙", "tsundere coworker who nags but secretly helps"]
       ],
       "主管": [
         ["慣老闆", "錢少事多、功勞歸自己", "exploitative boss"],
@@ -803,11 +807,11 @@
     };
     
     // Override with translations (English)
-    charI18n["en"]["情人/另一半"] = { "渣男": { name: "Scumbag", description: "Flaky lover who dodges commitment", hint: "flaky lover" }, "媽寶": { name: "Mama's Boy", description: "Always defers to his mother", hint: "mama's boy" }, "AA男": { name: "AA Guy", description: "Stingy partner obsessed with splitting costs", hint: "stingy partner" }, "工具人": { name: "Tool", description: "Over-eager helper who sacrifices boundaries", hint: "helper" }, "恐怖情人": { name: "Possessive Ex", description: "Controlling and obsessive", hint: "possessive" }, "佛系男友": { name: "Laid-Back BF", description: "Passive partner who avoids effort", hint: "passive" }, "曖昧高手": { name: "Flirt Master", description: "Keeps things vague", hint: "flirt" }, "公主病男": { name: "Princely Man", description: "Delicate prince who expects service", hint: "prince" } };
+    charI18n["en"]["情人/另一半"] = { "渣男": { name: "Scumbag", description: "Flaky lover who dodges commitment", hint: "flaky lover" }, "媽寶": { name: "Mama's Boy", description: "Always defers to his mother", hint: "mama's boy" }, "AA男": { name: "AA Guy", description: "Stingy partner obsessed with splitting costs", hint: "stingy partner" }, "工具人": { name: "Tool", description: "Over-eager helper who sacrifices boundaries", hint: "helper" }, "恐怖情人": { name: "Possessive Ex", description: "Controlling and obsessive", hint: "possessive" }, "佛系男友": { name: "Laid-Back BF", description: "Passive partner who avoids effort", hint: "passive" }, "曖昧高手": { name: "Flirt Master", description: "Keeps things vague", hint: "flirt" }, "公主病男": { name: "Princely Man", description: "Delicate prince who expects service", hint: "prince" }, "暖男": { name: "Warm Guy", description: "Overly attentive and caring", hint: "warm guy" }, "前任": { name: "Ex", description: "Ex who can't let go", hint: "ex" } };
     charI18n["en"]["女生"] = { "公主病": { name: "Princess", description: "Entitled princess personality", hint: "princess" }, "綠茶": { name: "Green Tea Girl", description: "Sweet on surface, calculating underneath", hint: "green tea" }, "控制狂": { name: "Controller", description: "Controlling partner", hint: "controller" }, "假女權": { name: "Fake Feminist", description: "Selectively fair", hint: "fake feminist" }, "巨嬰女": { name: "Big Baby", description: "Emotionally immature", hint: "immature" } };
     charI18n["en"]["朋友"] = { "假閨蜜": { name: "Fake BFF", description: "Fake bestie who gossips", hint: "fake friend" }, "邊緣人朋友": { name: "Loner Friend", description: "Appears only when lonely", hint: "loner" }, "情緒垃圾桶": { name: "Vent Friend", description: "Friend who vents endlessly", hint: "venter" }, "炫耀朋友": { name: "Brag Friend", description: "Show-off friend", hint: "bragger" }, "真心朋友": { name: "True Friend", description: "Loyal and direct", hint: "loyal friend" }, "毒舌朋友": { name: "Savage Friend", description: "Blunt and honest", hint: "savage" } };
     charI18n["en"]["長輩/婆家/父母"] = { "亞洲父母": { name: "Asian Parent", description: "Guilt-tripping parent", hint: "guilt parent" }, "直升機父母": { name: "Helicopter Parent", description: "Overprotective", hint: "helicopter" }, "偏心父母": { name: "Biased Parent", description: "Has obvious favorites", hint: "biased" }, "毒父母": { name: "Toxic Parent", description: "Harsh and critical", hint: "toxic" }, "金湯匙父母": { name: "Silver Spoon Parent", description: "Wealthy and relaxed", hint: "rich parent" }, "惡婆婆": { name: "Devil Mother-in-Law", description: "Critical MIL", hint: "evil MIL" }, "惡公公": { name: "Quiet FIL", description: "Quiet but sides with wife", hint: "quiet FIL" }, "小姑/大伯": { name: "Nosy Relative", description: "Interfering relative", hint: "nosy" }, "好相處公婆": { name: "Kind In-Laws", description: "Respectful with boundaries", hint: "kind" }, "情勒娘家": { name: "Guilt-Tripping Family", description: "Uses guilt for leverage", hint: "guilt family" }, "吸血鬼親戚": { name: "Vampire Relative", description: "Always asking for favors", hint: "vampire" } };
-    charI18n["en"]["同事"] = { "豬隊友同事": { name: "Bad Coworker", description: "Causes avoidable problems", hint: "bad coworker" }, "擺爛同事": { name: "Slacker", description: "Coasts at work", hint: "slacker" }, "馬屁精同事": { name: "Yes-Man", description: "Sycophantic coworker", hint: "sycophant" }, "職場小人": { name: "Backstabber", description: "Office backstabber", hint: "backstabber" } };
+    charI18n["en"]["同事"] = { "豬隊友同事": { name: "Bad Coworker", description: "Causes avoidable problems", hint: "bad coworker" }, "擺爛同事": { name: "Slacker", description: "Coasts at work", hint: "slacker" }, "馬屁精同事": { name: "Yes-Man", description: "Sycophantic coworker", hint: "sycophant" }, "職場小人": { name: "Backstabber", description: "Office backstabber", hint: "backstabber" }, "傲嬌同事": { name: "Tsundere Coworker", description: "Nags but secretly helps", hint: "tsundere" } };
     charI18n["en"]["主管"] = { "慣老闆": { name: "Exploitative Boss", description: "Exploits employees", hint: "exploiter" }, "micromanager": { name: "Micromanager", description: "Controls every detail", hint: "micro" }, "甩鍋主管": { name: "Blame-Shifter", description: "Blaming boss", hint: "blamer" }, "搶功主管": { name: "Credit-Thief Boss", description: "Steals credit", hint: "thief" }, "畫大餅主管": { name: "Pie-in-the-Sky Boss", description: "Makes empty promises", hint: "promiser" }, "情緒化主管": { name: "Volatile Boss", description: "Explosive temper", hint: "volatile" }, "人好嘴賤主管": { name: "Sharp-Tongued Boss", description: "Blunt but supportive", hint: "sharp" } };
     
     // Category translations
@@ -861,6 +865,9 @@
         "畫大餅主管": ["Finish this round and opportunities will follow.", "There's huge potential ahead."],
         "情緒化主管": ["How many times do I have to tell you?", "Don't step on mines today."],
         "人好嘴賤主管": ["I'll back you up, but bring your brain next time.", "This report though... ugh."],
+        "暖男": ["Hey, just checking in on you.", "You eating well today?"],
+        "前任": ["Hey... it's been a while.", "Can we talk?"],
+        "傲嬌同事": ["...not that I care about your work or anything.", "Whatever, I'll just help you this once."],
         "default": ["Hey.", "Hi there."]
       }
     };
@@ -1153,7 +1160,10 @@
         "搶功主管": ["這個方向是我定的。", "功勞是團隊的。"],
         "畫大餅主管": ["做完這次機會給你。", "未來發展空間很大的。"],
         "情緒化主管": ["這種事還要我講？", "今天不要踩雷。"],
-        "人好嘴賤主管": ["我幫你擋，但你自己要帶腦子。", "這份東西...唉。"]
+        "人好嘴賤主管": ["我幫你擋，但你自己要帶腦子。", "這份東西...唉。"],
+        "暖男": ["嘿，今天過得怎麼樣？", "有沒有好好吃飯？"],
+        "前任": ["好久不見...", "我們能談談嗎？"],
+        "傲嬌同事": ["...才不是關心你喔。", "算了，這次就幫你一下。"]
       };
       const lines = intros[state.character] || ["嗨。"];
       return pick(lines);
@@ -2048,39 +2058,39 @@
 
     const langData = {
       "zh-TW": {
-        welcomeTitle: "嗨～我是寶貝 💕",
-        welcomeText: "在這裡你不用假裝，想說什麼就說什麼。",
-        tagline: "想說什麼就說什麼",
-        startBtn: "開始聊天",
-        categoryTitle: "你今天想跟誰說話？",
-        categorySubtitle: "選一個情境，寶貝會幫你叫出最像那種人的角色。",
+        welcomeTitle: "人生練習場",
+        welcomeText: "有些話現實說不出口，先來這裡練習。",
+        tagline: "AI角色對話與情境模擬",
+        startBtn: "開始練習",
+        categoryTitle: "選擇情境",
+        categorySubtitle: "與各種角色聊天，練習人際互動與情緒表達。",
         selectText: "選角色",
         resetText: "重來",
-        menuText: "好，帶妳回角色選單。",
+        menuText: "好，帶你回情境選單。",
         helperText: "正在跟「{name}」聊天。指令：/menu 回選單，/reset 清空對話。"
       },
       "zh-CN": {
-        welcomeTitle: "嗨～我是宝贝 💕",
-        welcomeText: "在这里你不用假装，想说什么就说什么。",
-        tagline: "想说什么就说什么",
-        startBtn: "开始聊天",
-        categoryTitle: "你今天想跟谁说话？",
-        categorySubtitle: "选一个情境，宝贝会帮你叫出最像那种人的角色。",
+        welcomeTitle: "人生练习场",
+        welcomeText: "有些话现实说不出口，先来这里练习。",
+        tagline: "AI角色对话与情境模拟",
+        startBtn: "开始练习",
+        categoryTitle: "选择情境",
+        categorySubtitle: "与各种角色聊天，练习人际互动与情绪表达。",
         selectText: "选角色",
         resetText: "重来",
-        menuText: "好，带你回角色选单。",
+        menuText: "好，带你回情境选单。",
         helperText: "正在跟「{name}」聊天。指令：/menu 回选单，/reset 清空对话。"
       },
       "en": {
-        welcomeTitle: "Hi～I'm Baobei 💕",
-        welcomeText: "You don't have to pretend here. Say whatever you want.",
-        tagline: "Say whatever you want",
-        startBtn: "Start Chat",
-        categoryTitle: "Who do you want to talk to today?",
-        categorySubtitle: "Pick a scenario and I'll bring out the character that fits best.",
+        welcomeTitle: "Life Practice Field",
+        welcomeText: "Practice what you can't say in real life.",
+        tagline: "AI Roleplay & Scenario Practice",
+        startBtn: "Start Practice",
+        categoryTitle: "Choose a Scenario",
+        categorySubtitle: "Chat with various characters to practice social skills and emotional expression.",
         selectText: "Select Role",
         resetText: "Reset",
-        menuText: "Sure, taking you back to the menu.",
+        menuText: "Sure, taking you back to the scenario menu.",
         helperText: "Chatting with '{name}'. Commands: /menu for menu, /reset to clear."
       }
     };
