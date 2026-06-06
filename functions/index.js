@@ -2,7 +2,9 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const stripe = require('stripe');
 
-admin.initializeApp();
+admin.initializeApp({
+  projectId: 'loverchat-88cb3'
+});
 const db = admin.firestore();
 
 // Initialize Stripe with config
@@ -92,9 +94,30 @@ function getToday() {
 }
 
 async function getUserData(uid) {
-  const userDoc = await db.collection('users').doc(uid).get();
-  if (!userDoc.exists) {
-    const defaultData = {
+  try {
+    const userDoc = await db.collection('users').doc(uid).get();
+    if (!userDoc.exists) {
+      const defaultData = {
+        uid: uid,
+        role: 'guest',
+        plan: 'guest',
+        dailyLimit: PLANS.guest.dailyLimit,
+        messagesUsedToday: 0,
+        lastMessageDate: null,
+        subscriptionStatus: null,
+        stripeCustomerId: null,
+        subscriptionId: null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      };
+      await db.collection('users').doc(uid).set(defaultData);
+      return defaultData;
+    }
+    return userDoc.data();
+  } catch (error) {
+    console.error('getUserData error:', error);
+    // Return default data on error
+    return {
       uid: uid,
       role: 'guest',
       plan: 'guest',
@@ -103,14 +126,9 @@ async function getUserData(uid) {
       lastMessageDate: null,
       subscriptionStatus: null,
       stripeCustomerId: null,
-      subscriptionId: null,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      subscriptionId: null
     };
-    await db.collection('users').doc(uid).set(defaultData);
-    return defaultData;
   }
-  return userDoc.data();
 }
 
 async function getTodayUsage(uid) {

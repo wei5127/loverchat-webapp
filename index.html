@@ -1208,7 +1208,7 @@
     </main>
   </div>
 
-  <script src="config.js"></script>
+  <!-- API keys are stored in Cloud Functions config, not in frontend -->
 
   <script type="module">
     // Firebase imports
@@ -1218,10 +1218,10 @@
     
     // Firebase config
     const firebaseConfig = {
-      apiKey: "demo-api-key",
+      apiKey: "AIzaSyBgCHhpBgJofh6fuEnFcy1CdQYxlCV-OUQ",
       authDomain: "loverchat-88cb3.firebaseapp.com",
       projectId: "loverchat-88cb3",
-      storageBucket: "loverchat-88cb3.appspot.com",
+      storageBucket: "loverchat-88cb3.firebasestorage.app",
       messagingSenderId: "726884368190",
       appId: "1:726884368190:web:demo-placeholder"
     };
@@ -2518,83 +2518,7 @@
       // Add current user input
       messages.push({ role: "user", content: userInput });
 
-      try {
-        const response = await fetch("https://api.minimax.chat/v1/text/chatcompletion_v2", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${MINIMAX_API_KEY}`
-          },
-          body: JSON.stringify({
-            model: "MiniMax-Text-01",
-            messages: messages,
-            temperature: 0.9,
-            max_tokens: 100
-          })
-        });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`API error: ${response.status} - ${errorText}`);
-        }
-
-        const data = await response.json();
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-          let aiResponse = data.choices[0].message.content.trim();
-          
-          // Validation: check if response is repeating previous or just echoing user
-          const lastBotMsg = conversationHistory.length > 0 
-            ? conversationHistory.filter(m => m.role === "assistant").pop()?.content || ""
-            : "";
-            
-          const isRepeating = lastBotMsg && (
-            aiResponse === lastBotMsg || 
-            aiResponse.includes(lastBotMsg.substring(0, Math.min(15, lastBotMsg.length)))
-          );
-          
-          const isEchoingUser = userInput.substring(0, 8).split(" ").some(word => 
-            word.length > 3 && aiResponse.includes(word)
-          );
-          
-          // If repeating or echoing, rewrite with different prompt
-          if (isRepeating || isEchoingUser) {
-            const rewriteLang = currentLang === "en" ? "Answer in English." : (currentLang === "zh-CN" ? "请用简体中文回答。" : "请用繁体中文回答。");
-            const rewriteMessages = [
-              { role: "system", content: `你是「${charInfo.name}」。${rewriteLang}
-直接回答问题，不要说废话，只说一句话。` },
-              { role: "user", content: userInput }
-            ];
-            
-            const rewriteResp = await fetch("https://api.minimax.chat/v1/text/chatcompletion_v2", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${MINIMAX_API_KEY}`
-              },
-              body: JSON.stringify({
-                model: "MiniMax-Text-01",
-                messages: rewriteMessages,
-                temperature: 0.95,
-                max_tokens: 80
-              })
-            });
-            
-            if (rewriteResp.ok) {
-              const rewriteData = await rewriteResp.json();
-              if (rewriteData.choices && rewriteData.choices[0]) {
-                aiResponse = rewriteData.choices[0].message.content.trim();
-              }
-            }
-          }
-          
-          return aiResponse;
-        } else {
-          throw new Error("Invalid API response format");
-        }
-      } catch (err) {
-        console.error("MiniMax API error:", err);
-        throw err;
-      }
     }
 
     async function showTypingThenReply(input) {
@@ -2904,7 +2828,7 @@
       document.body.appendChild(modal);
     }
     
-    // Auth state listener
+    // Auth state listener - immediate setup
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       
@@ -2929,16 +2853,6 @@
         if (navAccount) navAccount.style.display = 'none';
         if (navLogin) navLogin.style.display = '';
         if (navLogout) navLogout.style.display = 'none';
-        
-        // Auto sign in anonymously
-        try {
-          const result = await signInAnonymously(auth);
-          console.log('Signed in anonymously:', result.user.uid);
-          const status = await loadUserStatus();
-          updateUserStatus(status);
-        } catch (error) {
-          console.error('Anonymous sign-in failed:', error);
-        }
       }
     });
     

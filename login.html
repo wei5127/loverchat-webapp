@@ -119,9 +119,12 @@
     import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
     
     const firebaseConfig = {
-      apiKey: "demo",
+      apiKey: "AIzaSyBgCHhpBgJofh6fuEnFcy1CdQYxlCV-OUQ",
       authDomain: "loverchat-88cb3.firebaseapp.com",
-      projectId: "loverchat-88cb3"
+      projectId: "loverchat-88cb3",
+      storageBucket: "loverchat-88cb3.firebasestorage.app",
+      messagingSenderId: "726884368190",
+      appId: "1:726884368190:web:897b286fde11396928766f"
     };
     
     const app = initializeApp(firebaseConfig);
@@ -135,6 +138,14 @@
         document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById(tab.dataset.tab + 'Section').classList.add('active');
+        
+        // Update Google button text based on tab
+        const googleBtn = document.getElementById('googleBtn');
+        if (tab.dataset.tab === 'register') {
+          googleBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg> Google 註冊';
+        } else {
+          googleBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg> Google 登入';
+        }
       });
     });
     
@@ -167,6 +178,7 @@
         if (status.data?.plan === 'guest') {
           await httpsCallable(functions, 'upgradeToFree')({ email });
         }
+        localStorage.setItem('lastLoginTime', Date.now().toString());
         setTimeout(() => window.location.href = 'index.html', 800);
       } catch (error) {
         let msg = '登入失敗';
@@ -206,6 +218,7 @@
         if (typeof gtag === 'function') {
           gtag('event', 'register_success', { method: 'email' });
         }
+        localStorage.setItem('lastLoginTime', Date.now().toString());
         setTimeout(() => window.location.href = 'index.html', 800);
       } catch (error) {
         let msg = '註冊失敗';
@@ -230,12 +243,16 @@
         if (typeof gtag === 'function') {
           gtag('event', 'register_success', { method: 'google' });
         }
+        localStorage.setItem('lastLoginTime', Date.now().toString());
         setTimeout(() => window.location.href = 'index.html', 800);
       } catch (error) {
+        console.error('Google sign-in error:', error);
         let msg = 'Google 登入失敗';
         if (error.code === 'auth/popup-closed-by-user') msg = '已取消';
         if (error.code === 'auth/account-exists-with-different-credential') msg = '此 email 已有其他登入方式';
-        showMessage(msg, 'error');
+        if (error.code === 'auth/unauthorized-domain') msg = '網域未授權，請聯繫網站管理員';
+        if (error.code === 'auth/cancelled-popup-request') msg = '取消了，請重試';
+        showMessage(msg + (error.message ? ': ' + error.message : ''), 'error');
         btn.disabled = false;
         btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg> Google 登入`;
       }
