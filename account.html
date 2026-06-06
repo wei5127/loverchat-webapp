@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>會員中心｜人生練習場</title>
+  <meta name="description" content="管理你的訂閱與使用量">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans TC', sans-serif; background: #fff7fb; color: #30263b; min-height: 100vh; }
+    
+    .header { background: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; }
+    .header a { text-decoration: none; color: inherit; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark { width: 40px; height: 40px; background: linear-gradient(135deg, #f56fa8, #9a79ef); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+    .brand h1 { font-size: 20px; }
+    .header-actions { display: flex; gap: 12px; align-items: center; }
+    .btn-outline { padding: 8px 20px; border: 2px solid #f56fa8; color: #f56fa8; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: 500; }
+    .btn-primary { padding: 8px 20px; background: linear-gradient(135deg, #f56fa8, #9a79ef); color: white; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: 500; }
+    
+    .container { max-width: 800px; margin: 0 auto; padding: 32px 24px 80px; }
+    
+    .welcome { margin-bottom: 32px; }
+    .welcome h2 { font-size: 28px; margin-bottom: 8px; }
+    .welcome p { color: #75687f; }
+    
+    .card { background: white; border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    
+    .plan-card { display: flex; align-items: center; gap: 20px; }
+    .plan-badge { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: white; flex-shrink: 0; }
+    .plan-info { flex: 1; }
+    .plan-name { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    .plan-status { font-size: 14px; color: #75687f; }
+    
+    .usage-card h3 { font-size: 16px; margin-bottom: 16px; color: #75687f; }
+    .usage-bar { height: 12px; background: #eadbea; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+    .usage-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
+    .usage-text { display: flex; justify-content: space-between; font-size: 14px; }
+    .usage-text span:first-child { color: #75687f; }
+    .usage-text span:last-child { font-weight: 600; }
+    
+    .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .action-btn { padding: 16px; border-radius: 16px; text-align: center; text-decoration: none; font-size: 15px; font-weight: 600; transition: transform 0.2s; }
+    .action-btn:hover { transform: scale(1.02); }
+    .action-btn.primary { background: linear-gradient(135deg, #f56fa8, #9a79ef); color: white; }
+    .action-btn.secondary { background: #f8efff; color: #9a79ef; }
+    
+    .features h3 { font-size: 18px; margin-bottom: 16px; }
+    .features ul { list-style: none; }
+    .features li { padding: 12px 0; border-bottom: 1px solid #eadbea; display: flex; align-items: center; gap: 10px; font-size: 15px; }
+    .features li:last-child { border-bottom: none; }
+    .features .check { color: #10B981; }
+    .features .cross { color: #9CA3AF; }
+    
+    .loading { display: flex; align-items: center; justify-content: center; min-height: 50vh; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #eadbea; border-top-color: #f56fa8; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .hidden { display: none !important; }
+    
+    .logout-btn { background: none; border: none; color: #75687f; cursor: pointer; font-size: 14px; padding: 8px 16px; }
+    .logout-btn:hover { color: #f56fa8; }
+  
+    .login-section { padding: 20px 0; }
+    .input-group { margin-bottom: 16px; }
+    .input-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #30263b; }
+    .input-group input { width: 100%; padding: 14px 16px; border: 2px solid #eadbea; border-radius: 12px; font-size: 16px; transition: border-color 0.2s; outline: none; }
+    .input-group input:focus { border-color: #f56fa8; }
+    .btn-outline { width: 100%; padding: 14px; background: transparent; border: 2px solid #9a79ef; color: #9a79ef; border-radius: 25px; font-size: 16px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-outline:hover { background: #f8efff; }
+    .google-btn { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px; background: white; border: 2px solid #4285f4; border-radius: 25px; font-size: 16px; font-weight: 500; cursor: pointer; }
+    .google-btn:hover { background: #f8f8f8; }
+    .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; margin-right: 8px; }
+    .divider { display: flex; align-items: center; margin: 16px 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #eadbea; }
+    .divider span { padding: 0 16px; color: #75687f; font-size: 13px; }
+    .message { padding: 12px 16px; border-radius: 12px; font-size: 14px; text-align: center; }
+    .message.error { background: #fef2f2; color: #dc2626; }
+    .message.success { background: #f0fdf4; color: #16a34a; }
+    .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, #f56fa8, #9a79ef); color: white; border: none; border-radius: 25px; font-size: 16px; font-weight: 600; cursor: pointer; }</style>
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="brand">
+      <div class="brand-mark">人</div>
+      <h1>人生練習場</h1>
+    </a>
+    <div class="header-actions">
+      <a href="pricing.html" class="btn-outline">方案</a>
+      <button class="logout-btn" id="logoutBtn">登出</button>
+    </div>
+  </header>
+  
+  <div class="container">
+    <div class="loading" id="loading"><div class="spinner"></div></div>
+    
+    <div class="content hidden" id="content">
+      <div class="welcome">
+        <h2>會員中心</h2>
+        <p id="welcomeEmail">載入中...</p>
+      </div>
+      
+      <!-- Current Plan -->
+      <div class="card">
+        <div class="plan-card">
+          <div class="plan-badge" id="planBadge" style="background: #9CA3AF;">Guest</div>
+          <div class="plan-info">
+            <div class="plan-name" id="planName">Guest</div>
+            <div class="plan-status" id="planStatus">遊客身份</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Usage -->
+      <div class="card" id="usageCard">
+        <h3>今日使用量</h3>
+        <div class="usage-bar">
+          <div class="usage-fill" id="usageFill" style="width: 0%; background: linear-gradient(90deg, #f56fa8, #9a79ef);"></div>
+        </div>
+        <div class="usage-text">
+          <span id="usageUsed">0 則訊息</span>
+          <span id="usageRemaining">30 / 30</span>
+        </div>
+      </div>
+      
+      <!-- Actions -->
+      <div class="card" id="actionsCard">
+        <div class="action-buttons">
+          <a href="pricing.html" class="action-btn primary" id="upgradeBtn">升級方案</a>
+          <a href="#" class="action-btn secondary" id="portalBtn" style="display:none;">管理訂閱</a>
+        </div>
+      </div>
+      
+      <!-- Features -->
+      <div class="card">
+        <div class="features">
+          <h3>你的方案功能</h3>
+          <ul id="featuresList">
+            <li><span class="check">✓</span> 每天 30 則訊息</li>
+            <li><span class="check">✓</span> 公開角色</li>
+            <li><span class="cross">✗</span> 建立私人角色</li>
+            <li><span class="cross">✗</span> 收藏聊天紀錄</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
+    
+    const firebaseConfig = {
+      apiKey: "demo",
+      authDomain: "loverchat-88cb3.firebaseapp.com",
+      projectId: "loverchat-88cb3"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const functions = getFunctions(app);
+    
+    const PLAN_FEATURES = {
+      guest: [
+        { text: '每天 30 則訊息', included: true },
+        { text: '公開角色', included: true },
+        { text: '聊天體驗', included: true },
+        { text: '建立私人角色', included: false },
+        { text: '收藏聊天紀錄', included: false }
+      ],
+      free: [
+        { text: '每天 30 則訊息', included: true },
+        { text: '所有公開角色', included: true },
+        { text: '建立私人角色（最多3個）', included: true },
+        { text: '收藏聊天紀錄', included: true },
+        { text: '修改個人資料', included: true }
+      ],
+      vip: [
+        { text: '每日訊息無上限', included: true },
+        { text: '所有角色開放', included: true },
+        { text: '建立私人角色（無限）', included: true },
+        { text: '建立公開角色', included: true },
+        { text: '長期聊天記憶', included: true },
+        { text: '優先回應速度', included: true },
+        { text: '搶先體驗新功能', included: true }
+      ],
+      lifetime: [
+        { text: '擁有 VIP 所有功能', included: true },
+        { text: '永久有效', included: true },
+        { text: '不需續費', included: true },
+        { text: '未來所有新功能自動獲得', included: true }
+      ]
+    };
+    
+    function renderDashboard(status) {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('content').classList.remove('hidden');
+      
+      // Email
+      document.getElementById('welcomeEmail').textContent = auth.currentUser?.email || '遊客身份';
+      
+      // Plan badge
+      const badge = document.getElementById('planBadge');
+      badge.textContent = status.planName;
+      badge.style.background = status.planColor;
+      document.getElementById('planName').textContent = status.planName;
+      
+      // Status
+      let statusText = '';
+      if (status.plan === 'guest') statusText = '遊客身份';
+      else if (status.plan === 'free') statusText = '免費會員';
+      else if (status.plan === 'vip') statusText = 'VIP 月費會員';
+      else if (status.plan === 'lifetime') statusText = '終身會員';
+      if (status.subscriptionStatus === 'cancelled') statusText += '（已取消）';
+      document.getElementById('planStatus').textContent = statusText;
+      
+      // Usage
+      const usageCard = document.getElementById('usageCard');
+      if (status.plan === 'vip' || status.plan === 'lifetime') {
+        usageCard.innerHTML = `
+          <h3>今日使用量</h3>
+          <p style="color: #75687f; font-size: 14px;">✨ ${status.planName} 會員無訊息上限</p>
+          <p style="color: #75687f; font-size: 14px; margin-top: 8px;">今日已使用 ${status.usageToday} 則</p>
+        `;
+      } else {
+        const percent = Math.min(100, (status.usageToday / status.dailyLimit) * 100);
+        document.getElementById('usageFill').style.width = percent + '%';
+        if (percent > 80) {
+          document.getElementById('usageFill').style.background = 'linear-gradient(90deg, #ef4444, #f97316)';
+        }
+        document.getElementById('usageUsed').textContent = status.usageToday + ' 則訊息';
+        document.getElementById('usageRemaining').textContent = status.remaining > 0 ? status.remaining + ' 則可用' : '已用完';
+      }
+      
+      // Actions
+      const upgradeBtn = document.getElementById('upgradeBtn');
+      const portalBtn = document.getElementById('portalBtn');
+      
+      if (status.plan === 'guest' || status.plan === 'free') {
+        upgradeBtn.textContent = '升級 VIP';
+        upgradeBtn.href = 'pricing.html';
+      } else if (status.plan === 'vip') {
+        upgradeBtn.textContent = '升級終身會員';
+        upgradeBtn.href = 'pricing.html';
+        portalBtn.style.display = 'block';
+        portalBtn.onclick = async () => {
+          try {
+            const portal = httpsCallable(functions, 'createPortalSession');
+            const result = await portal({});
+            if (result.data.url) window.location.href = result.data.url;
+          } catch (e) {
+            alert('無法開啟管理頁面，請稍後再試');
+          }
+        };
+      } else if (status.plan === 'lifetime') {
+        upgradeBtn.style.display = 'none';
+        portalBtn.style.display = 'block';
+        portalBtn.textContent = '管理帳戶';
+        portalBtn.onclick = async () => {
+          try {
+            const portal = httpsCallable(functions, 'createPortalSession');
+            const result = await portal({});
+            if (result.data.url) window.location.href = result.data.url;
+          } catch (e) {
+            alert('無法開啟管理頁面，請稍後再試');
+          }
+        };
+      }
+      
+      // Features
+      const features = PLAN_FEATURES[status.plan] || PLAN_FEATURES.guest;
+      document.getElementById('featuresList').innerHTML = features.map(f => `
+        <li><span class="${f.included ? 'check' : 'cross'}">${f.included ? '✓' : '✗'}</span> ${f.text}</li>
+      `).join('');
+    }
+    
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = 'index.html';
+    });
+    
+    // Load status
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        // Show login form
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+        document.getElementById('welcomeEmail').textContent = '登入以查看會員資訊';
+        renderLoginForm();
+        return;
+      }
+      
+      try {
+        const getStatus = httpsCallable(functions, 'getUserStatus');
+        const result = await getStatus({});
+        renderDashboard(result.data);
+      } catch (error) {
+        console.error('Failed to load status:', error);
+        document.getElementById('loading').innerHTML = '<p style="color:#dc2626;">載入失敗，請刷新頁面</p>';
+      }
+    });
+    
+    function renderLoginForm() {
+      document.getElementById('content').innerHTML = `
+        <div class="welcome">
+          <h2>會員專區</h2>
+          <p>登入或註冊以查看會員資訊與管理訂閱</p>
+        </div>
+        <div class="card">
+          <div class="login-section">
+            <div class="input-group">
+              <label>Email</label>
+              <input type="email" id="emailInput" placeholder="your@email.com" autocomplete="email">
+            </div>
+            <div class="input-group">
+              <label>密碼</label>
+              <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <button class="btn-primary" id="loginBtn" style="width:100%;margin-bottom:12px;">登入</button>
+            <button class="btn-outline" id="registerBtn" style="width:100%;">註冊新帳號</button>
+            <div class="divider" style="margin:20px 0;"><span>或</span></div>
+            <button class="google-btn" id="googleLoginBtn" style="width:100%;">
+              <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg>
+              Google 登入
+            </button>
+          </div>
+        </div>
+        <div id="message" class="message" style="display:none;margin-top:16px;"></div>
+      `;
+      
+      document.getElementById('loginBtn').addEventListener('click', async () => {
+        const email = document.getElementById('emailInput').value.trim();
+        const password = document.getElementById('passwordInput').value;
+        if (!email || !password) { showMessage('請填寫所有欄位', 'error'); return; }
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.textContent = '登入中...';
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          showMessage('登入成功！', 'success');
+          setTimeout(() => window.location.reload(), 800);
+        } catch (error) {
+          showMessage(error.message || '登入失敗', 'error');
+          btn.disabled = false;
+          btn.textContent = '登入';
+        }
+      });
+      
+      document.getElementById('registerBtn').addEventListener('click', async () => {
+        const email = document.getElementById('emailInput').value.trim();
+        const password = document.getElementById('passwordInput').value;
+        if (!email || !password) { showMessage('請填寫所有欄位', 'error'); return; }
+        if (password.length < 6) { showMessage('密碼至少需要 6 個字元', 'error'); return; }
+        const btn = document.getElementById('registerBtn');
+        btn.disabled = true;
+        btn.textContent = '註冊中...';
+        try {
+          await createUserWithEmailAndPassword(auth, email, password);
+          await httpsCallable(functions, 'upgradeToFree')({ email });
+          showMessage('註冊成功！', 'success');
+          setTimeout(() => window.location.reload(), 800);
+        } catch (error) {
+          showMessage(error.message || '註冊失敗', 'error');
+          btn.disabled = false;
+          btn.textContent = '註冊新帳號';
+        }
+      });
+      
+      document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('googleLoginBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading" style="border-color:rgba(66,133,244,0.3);border-top-color:#4285F4;"></span>處理中...';
+        try {
+          const provider = new GoogleAuthProvider();
+          await signInWithPopup(auth, provider);
+          showMessage('Google 登入成功！', 'success');
+          setTimeout(() => window.location.reload(), 800);
+        } catch (error) {
+          showMessage(error.message || 'Google 登入失敗', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg> Google 登入';
+        }
+      });
+    }
+    
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      if (!msg) return;
+      msg.textContent = text;
+      msg.className = 'message ' + type;
+      msg.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

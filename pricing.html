@@ -163,10 +163,59 @@
         featured: false
       },
       {
-        id: 'vip',
-        name: 'VIP',
-        price: 299,
-        period: '每月',
+        id: 'vip_trial',
+        name: 'VIP Pro 1日體驗',
+        price: 1,
+        period: '一次性 CA$1',
+        color: '#6B7280',
+        features: [
+          { text: '24小時無限訊息', included: true },
+          { text: '體驗所有功能', included: true },
+          { text: 'VIP 功能完整試用', included: true },
+          { text: '之後可升級正式方案', included: true }
+        ],
+        button: '試用 VIP',
+        stripePriceId: 'price_1TfDYwJEKKoLVkkLH4CzBeYN',
+        featured: false
+      },
+      {
+        id: 'vip_basic_monthly',
+        name: 'VIP Basic',
+        price: 9.90,
+        period: '每月 CA$9.90',
+        color: '#3B82F6',
+        features: [
+          { text: '每日訊息無上限', included: true },
+          { text: '所有角色開放', included: true },
+          { text: '建立私人角色（最多 10 個）', included: true },
+          { text: '長期聊天記憶', included: true },
+          { text: '優先回應速度', included: true }
+        ],
+        button: '升級 Basic',
+        stripePriceId: 'price_1TfDZvJEKKoLVkkLBgKr3U3Y',
+        featured: false
+      },
+      {
+        id: 'vip_basic_lifetime',
+        name: 'VIP Basic 終身',
+        price: 99,
+        period: '一次性 CA$99',
+        color: '#6366F1',
+        features: [
+          { text: '擁有 Basic 所有功能', included: true },
+          { text: '永久有效', included: true },
+          { text: '不需續費', included: true },
+          { text: '未來所有 Basic 新功能', included: true }
+        ],
+        button: 'Basic 終身',
+        stripePriceId: 'price_1TfDbgJEKKoLVkkLn8xGavrR',
+        featured: false
+      },
+      {
+        id: 'vip_pro_monthly',
+        name: 'VIP Pro',
+        price: 29.90,
+        period: '每月 CA$29.90',
         color: '#F59E0B',
         features: [
           { text: '每日訊息無上限', included: true },
@@ -177,24 +226,24 @@
           { text: '優先回應速度', included: true },
           { text: '搶先體驗新功能', included: true }
         ],
-        button: '升級 VIP',
-        stripePriceId: 'price_vip_monthly',  // TODO: 替換為實際 Stripe Price ID
+        button: '升級 Pro',
+        stripePriceId: 'price_1TfDckJEKKoLVkkL8z6qvKrL',
         featured: true
       },
       {
-        id: 'lifetime',
-        name: 'Lifetime',
-        price: 2999,
-        period: '一次性買斷',
+        id: 'vip_pro_lifetime',
+        name: 'VIP Pro 終身',
+        price: 299,
+        period: '一次性 CA$299',
         color: '#8B5CF6',
         features: [
-          { text: '擁有 VIP 所有功能', included: true },
+          { text: '擁有 Pro 所有功能', included: true },
           { text: '永久有效', included: true },
           { text: '不需續費', included: true },
           { text: '未來所有新功能自動獲得', included: true }
         ],
-        button: '終身會員',
-        stripePriceId: 'price_lifetime',  // TODO: 替換為實際 Stripe Price ID
+        button: 'Pro 終身',
+        stripePriceId: 'price_1TfDdTJEKKoLVkkLOl9eYjFc',
         featured: false
       }
     ];

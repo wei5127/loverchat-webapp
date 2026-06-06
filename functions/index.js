@@ -34,20 +34,44 @@ const PLANS = {
     name: 'Free',
     color: '#10B981'
   },
-  vip: {
-    dailyLimit: -1, // unlimited
+  vip_trial: {
+    dailyLimit: -1,
     canCreateCharacter: true,
     canSaveChat: true,
-    maxPrivateChars: -1,
-    name: 'VIP',
-    color: '#F59E0B'
+    maxPrivateChars: 10,
+    name: 'VIP Trial',
+    color: '#6B7280'
   },
-  lifetime: {
+  vip_basic_monthly: {
+    dailyLimit: -1,
+    canCreateCharacter: true,
+    canSaveChat: true,
+    maxPrivateChars: 10,
+    name: 'VIP Basic',
+    color: '#3B82F6'
+  },
+  vip_basic_lifetime: {
     dailyLimit: -1,
     canCreateCharacter: true,
     canSaveChat: true,
     maxPrivateChars: -1,
-    name: 'Lifetime',
+    name: 'VIP Basic 終身',
+    color: '#6366F1'
+  },
+  vip_pro_monthly: {
+    dailyLimit: -1,
+    canCreateCharacter: true,
+    canSaveChat: true,
+    maxPrivateChars: -1,
+    name: 'VIP Pro',
+    color: '#F59E0B'
+  },
+  vip_pro_lifetime: {
+    dailyLimit: -1,
+    canCreateCharacter: true,
+    canSaveChat: true,
+    maxPrivateChars: -1,
+    name: 'VIP Pro 終身',
     color: '#8B5CF6'
   }
 };

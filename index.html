@@ -873,25 +873,264 @@
     }
     .vip-button:hover {
       transform: scale(1.05);
-    }</style>
+    }
+    /* ============ NAVBAR ============ */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .navbar-brand .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #f56fa8, #9a79ef);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #30263b;
+    }
+    
+    .brand-subtitle {
+      font-size: 11px;
+      color: #75687f;
+    }
+    
+    .navbar-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .nav-link {
+      padding: 8px 16px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      color: #30263b;
+      transition: all 0.2s;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+    
+    .nav-link:hover {
+      background: #f8efff;
+      color: #9a79ef;
+    }
+    
+    .nav-link.nav-vip {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: white;
+    }
+    
+    .nav-link.nav-vip:hover {
+      opacity: 0.9;
+      color: white;
+    }
+    
+    .nav-divider {
+      width: 1px;
+      height: 24px;
+      background: #eadbea;
+      margin: 0 8px;
+    }
+    
+    .nav-lang {
+      position: relative;
+    }
+    
+    .lang-switch-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: 2px solid #eadbea;
+      border-radius: 20px;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+      color: #30263b;
+    }
+    
+    .lang-switch-btn:hover {
+      border-color: #9a79ef;
+    }
+    
+    .lang-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      overflow: hidden;
+      min-width: 120px;
+      z-index: 200;
+    }
+    
+    .lang-dropdown button {
+      display: block;
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      background: none;
+      text-align: left;
+      font-size: 14px;
+      cursor: pointer;
+      color: #30263b;
+    }
+    
+    .lang-dropdown button:hover {
+      background: #f8efff;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      padding: 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .hamburger span {
+      width: 24px;
+      height: 2px;
+      background: #30263b;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+    
+    /* Mobile styles */
+    @media (max-width: 768px) {
+      .navbar {
+        flex-wrap: wrap;
+      }
+      
+      .hamburger {
+        display: flex;
+      }
+      
+      .hamburger.active span:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px);
+      }
+      
+      .hamburger.active span:nth-child(2) {
+        opacity: 0;
+      }
+      
+      .hamburger.active span:nth-child(3) {
+        transform: rotate(-45deg) translate(5px, -5px);
+      }
+      
+      .navbar-menu {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        padding: 16px 0;
+        gap: 4px;
+        border-top: 1px solid #eadbea;
+        margin-top: 12px;
+      }
+      
+      .navbar-menu.active {
+        display: flex;
+      }
+      
+      .nav-link {
+        width: 100%;
+        text-align: center;
+        padding: 14px;
+      }
+      
+      .nav-divider {
+        width: 100%;
+        height: 1px;
+        margin: 8px 0;
+      }
+      
+      .nav-lang {
+        width: 100%;
+      }
+      
+      .lang-switch-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .lang-dropdown {
+        position: static;
+        width: 100%;
+        box-shadow: none;
+        border: 1px solid #eadbea;
+        border-radius: 8px;
+        margin-top: 8px;
+      }
+    }
+</style>
 </head>
 <body>
   <div class="app">
-    <header class="topbar">
-      <div class="brand" aria-label="人生練習場">
-        <div class="brand-mark" aria-hidden="true">人</div>
-        <div>
-          <h1>人生練習場</h1>
-          <span>想說什麼就說什麼</span>
-        </div>
+    <header class="navbar">
+      <div class="navbar-brand">
+        <a href="/" class="brand-link">
+          <div class="brand-mark">人</div>
+          <div class="brand-text">
+            <span class="brand-title">人生練習場</span>
+            <span class="brand-subtitle">AI角色對話與情境模擬</span>
+          </div>
+        </a>
       </div>
-      <div class="topbar-actions">
-        <a href="pricing.html" class="upgrade-btn" id="upgradeBtn" style="display:none;">升級</a>
-        <div class="user-menu" id="userMenu" style="display:none;">
-          <span class="user-plan" id="userPlanBadge">Free</span>
-          <span class="user-remaining" id="userRemaining">30</span>
-        </div>
-        <div class="lang-switch">
+      
+      <button class="hamburger" id="hamburgerBtn" type="button">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      
+      <nav class="navbar-menu" id="navbarMenu">
+        <a href="/" class="nav-link" data-i18n="nav_home">首頁</a>
+               <a href="#" class="nav-link" id="navSelectChar" onclick="showScreen(categoryScreen); return false;" data-i18n="nav_select">選角色</a>
+        <a href="vip.html" class="nav-link nav-vip" data-i18n="nav_vip">VIP方案</a>
+        <a href="account.html" class="nav-link nav-account" id="navAccount" style="display:none;" data-i18n="nav_account">會員專區</a>
+        <div class="nav-divider"></div>
+        <div class="nav-lang">
           <button class="lang-switch-btn" id="langSwitchBtn" type="button">
             <span id="currentLang">繁體中文</span>
             <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -902,8 +1141,9 @@
             <button data-lang="en">English</button>
           </div>
         </div>
-        <button class="ghost-button" id="topMenuButton" type="button">選角色</button>
-      </div>
+        <a href="login.html" class="nav-link nav-auth" id="navLogin" data-i18n="nav_login">登入</a>
+        <button class="nav-link nav-auth nav-logout" id="navLogout" style="display:none;" onclick="signOut(auth);" data-i18n="nav_logout">登出</button>
+      </nav>
     </header>
 
     <main class="shell">
@@ -912,11 +1152,10 @@
         <div>
           <h2 id="welcomeTitle">AI 角色聊天平台</h2>
           <p>與你喜歡的角色展開專屬對話</p>
-          <p class="subtitle">有些話現實說不出口，先來這裡練習。</p>
         </div>
         <div class="hero-buttons">
           <button class="primary-button" id="startButton" type="button">立即開始聊天</button>
-          <a href="pricing.html" class="vip-button" id="vipButton">升級 VIP</a>
+          <a href="vip.html" class="vip-button" id="vipButton">升級 VIP</a>
         </div>
       </section>
 
@@ -974,7 +1213,7 @@
   <script type="module">
     // Firebase imports
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getAuth, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
     import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
     
     // Firebase config
@@ -2502,7 +2741,7 @@
           <strong>${prompt.title}</strong>
           <p>${prompt.text}</p>
         </div>
-        <a href="pricing.html" class="upgrade-banner-btn">${prompt.cta}</a>
+        <a href="vip.html" class="upgrade-banner-btn">${prompt.cta}</a>
         <button class="upgrade-banner-close" onclick="this.closest('.upgrade-banner').remove()">×</button>
       `;
       document.body.appendChild(banner);
@@ -2546,6 +2785,12 @@
 
     const langData = {
       "zh-TW": {
+        navHome: "首頁",
+        navSelect: "選角色",
+        navVip: "VIP方案",
+        navAccount: "會員專區",
+        navLogin: "登入",
+        navLogout: "登出",
         welcomeTitle: "人生練習場",
         welcomeText: "有些話現實說不出口，先來這裡練習。",
         tagline: "AI角色對話與情境模擬",
@@ -2558,6 +2803,12 @@
         helperText: "正在跟「{name}」聊天。指令：/menu 回選單，/reset 清空對話。"
       },
       "zh-CN": {
+        navHome: "首页",
+        navSelect: "选角色",
+        navVip: "VIP方案",
+        navAccount: "会员专区",
+        navLogin: "登录",
+        navLogout: "登出",
         welcomeTitle: "人生练习场",
         welcomeText: "有些话现实说不出口，先来这里练习。",
         tagline: "AI角色对话与情境模拟",
@@ -2570,6 +2821,12 @@
         helperText: "正在跟「{name}」聊天。指令：/menu 回选单，/reset 清空对话。"
       },
       "en": {
+        navHome: "Home",
+        navSelect: "Select Role",
+        navVip: "VIP Plans",
+        navAccount: "Account",
+        navLogin: "Login",
+        navLogout: "Logout",
         welcomeTitle: "Life Practice Field",
         welcomeText: "Practice what you can't say in real life.",
         tagline: "AI Roleplay & Scenario Practice",
@@ -2639,7 +2896,7 @@
           <p>免費方案每天 30 次聊天已用完</p>
           <p>升級付費方案獲得更多額度</p>
           <div class="modal-buttons">
-            <a href="pricing.html" class="btn-primary">查看方案</a>
+            <a href="vip.html" class="btn-primary">查看方案</a>
             <button class="btn-ghost" onclick="this.closest('.modal-overlay').remove()">稍後再說</button>
           </div>
         </div>
@@ -2651,14 +2908,27 @@
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       
+      const navAccount = document.getElementById('navAccount');
+      const navLogin = document.getElementById('navLogin');
+      const navLogout = document.getElementById('navLogout');
+      
       if (user) {
         console.log('User logged in:', user.uid, user.isAnonymous ? '(anonymous)' : user.email);
+        
+        // Show/hide nav items based on auth
+        if (navAccount) navAccount.style.display = '';
+        if (navLogin) navLogin.style.display = 'none';
+        if (navLogout) navLogout.style.display = '';
+        
         const status = await loadUserStatus();
         updateUserStatus(status);
       } else {
         console.log('No user logged in');
         if (upgradeBtn) upgradeBtn.style.display = 'none';
         if (userMenu) userMenu.style.display = 'none';
+        if (navAccount) navAccount.style.display = 'none';
+        if (navLogin) navLogin.style.display = '';
+        if (navLogout) navLogout.style.display = 'none';
         
         // Auto sign in anonymously
         try {
@@ -2671,6 +2941,27 @@
         }
       }
     });
+    
+    // Hamburger menu toggle
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const navbarMenu = document.getElementById('navbarMenu');
+    
+    if (hamburgerBtn) {
+      hamburgerBtn.addEventListener('click', () => {
+        hamburgerBtn.classList.toggle('active');
+        navbarMenu.classList.toggle('active');
+      });
+    }
+    
+    // Close mobile menu when clicking a link
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        if (navbarMenu && window.innerWidth <= 768) {
+          hamburgerBtn.classList.remove('active');
+          navbarMenu.classList.remove('active');
+        }
+      });
+    });
 
     function applyLanguage(lang) {
       currentLang = lang;
@@ -2681,6 +2972,20 @@
       // Update tagline in header
       const brandSpan = document.querySelector(".brand span");
       if (brandSpan) brandSpan.textContent = d.tagline;
+      
+      // Update navbar links
+      const navHome = document.querySelector('[data-i18n="nav_home"]');
+      const navSelect = document.querySelector('[data-i18n="nav_select"]');
+      const navVip = document.querySelector('[data-i18n="nav_vip"]');
+      const navAccount = document.querySelector('[data-i18n="nav_account"]');
+      const navLogin = document.querySelector('[data-i18n="nav_login"]');
+      const navLogout = document.querySelector('[data-i18n="nav_logout"]');
+      if (navHome) navHome.textContent = d.navHome;
+      if (navSelect) navSelect.textContent = d.navSelect;
+      if (navVip) navVip.textContent = d.navVip;
+      if (navAccount) navAccount.textContent = d.navAccount;
+      if (navLogin) navLogin.textContent = d.navLogin;
+      if (navLogout) navLogout.textContent = d.navLogout;
 
       document.getElementById("welcomeTitle").textContent = d.welcomeTitle;
       const welcomeP = document.querySelector("#welcomeScreen > div:nth-child(2) > p");
