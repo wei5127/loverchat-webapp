@@ -706,6 +706,33 @@
       color: #75687f;
       margin-top: 5px;
     }
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .label-row label {
+      margin-bottom: 0;
+    }
+    .generate-desc-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .generate-desc-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    .generate-desc-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     .or-divider {
       text-align: center;
       color: #75687f;
@@ -1132,7 +1159,7 @@
         <div class="nav-divider"></div>
         <div class="nav-lang">
           <button class="lang-switch-btn" id="langSwitchBtn" type="button">
-            <span id="currentLang">繁體中文</span>
+            <span id="langDisplay">繁體中文</span>
             <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </button>
           <div class="lang-dropdown hidden" id="langDropdown">
@@ -1209,8 +1236,10 @@
   </div>
 
   <!-- API keys are stored in Cloud Functions config, not in frontend -->
+  <script src="config.js"></script>
 
   <script type="module">
+    console.log('Module script starting...');
     // Firebase imports
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
     import { getAuth, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
@@ -1227,12 +1256,15 @@
     };
     
     const firebaseApp = initializeApp(firebaseConfig);
+    console.log('Firebase initialized');
     const auth = getAuth(firebaseApp);
     const functions = getFunctions(firebaseApp);
     
     const APP_VERSION = "v3.6";
     const STORAGE_KEY = "baobei-chat-selection-v1";
     const HISTORY_KEY = "baobei-chat-history-v1";
+    let currentLang = localStorage.getItem("baobei-lang") || "zh-TW";
+    console.log('currentLang initialized to:', currentLang);
     
     // Force refresh if version changed
     const savedVersion = localStorage.getItem("baobei-app-version");
@@ -1307,6 +1339,7 @@
         ["人好嘴賤主管", "會幫你擋事但嘴巴很賤", "supportive but sharp-tongued boss"]
       ]
     };
+    console.log('Data object defined, keys:', Object.keys(data).join(', '));
 
     // Character name/description translations for i18n
     const charI18n = {
@@ -1327,8 +1360,72 @@
       "zh-CN": { "男生": "情人/另一半", "女生": "女生", "朋友": "朋友", "長輩/婆家/父母": "长辈/婆家/父母", "同事": "同事", "主管": "主管" },
       "en": { "男生": "Lovers/Partners", "女生": "Female Types", "朋友": "Friends", "長輩/婆家/父母": "Elders/In-Laws", "同事": "Coworkers", "主管": "Bosses" }
     };
+    console.log('catI18n defined');
+
+    // UI translations for language switcher
+    const langLabels = {
+      "zh-TW": "繁體中文",
+      "zh-CN": "簡體中文",
+      "en": "English"
+    };
+
+    // Full UI translation data
+    const langData = {
+      "zh-TW": {
+        tagline: "AI角色對話與情境模擬",
+        navHome: "首頁",
+        navSelect: "選角色",
+        navVip: "VIP方案",
+        navAccount: "會員專區",
+        navLogin: "登入",
+        navLogout: "登出",
+        welcomeTitle: "選擇情境",
+        welcomeText: "與各種角色聊天，練習人際互動與情緒表達。",
+        startBtn: "立即開始聊天",
+        categoryTitle: "選擇情境",
+        categorySubtitle: "與各種角色聊天，練習人際互動與情緒表達。",
+        selectText: "選擇情境",
+        resetText: "重新開始",
+        helperText: "尝试与{name}展开对话吧！"
+      },
+      "zh-CN": {
+        tagline: "AI角色对话与情境模拟",
+        navHome: "首页",
+        navSelect: "选角色",
+        navVip: "VIP方案",
+        navAccount: "会员专区的",
+        navLogin: "登录",
+        navLogout: "退出",
+        welcomeTitle: "选择情境",
+        welcomeText: "与各种角色聊天，练习人际互动与情绪表达。",
+        startBtn: "立即开始聊天",
+        categoryTitle: "选择情境",
+        categorySubtitle: "与各种角色聊天，练习人际互动与情绪表达。",
+        selectText: "选择情境",
+        resetText: "重新开始",
+        helperText: "尝试与{name}展开对话吧！"
+      },
+      "en": {
+        tagline: "AI Roleplay & Scenario Simulation",
+        navHome: "Home",
+        navSelect: "Select Character",
+        navVip: "VIP Plans",
+        navAccount: "Member Area",
+        navLogin: "Login",
+        navLogout: "Logout",
+        welcomeTitle: "Choose a Scenario",
+        welcomeText: "Chat with various characters to practice social skills and emotional expression.",
+        startBtn: "Start Chatting",
+        categoryTitle: "Choose a Scenario",
+        categorySubtitle: "Chat with various characters to practice social skills and emotional expression.",
+        selectText: "Select Scenario",
+        resetText: "Start Over",
+        helperText: "Try starting a conversation with {name}!"
+      }
+    };
     
     // English intro messages per character
+    console.log('About to define introI18n...');
     const introI18n = {
       "en": {
         "渣男": ["Hey, what's up?", "You busy?"],
@@ -1383,7 +1480,7 @@
         "default": ["Hey.", "Hi there."]
       }
     };
-    
+    console.log('introI18n defined, about to define getCharI18n');
     function getCharI18n(charName) {
       const lang = currentLang;
       if (lang === "zh-TW" || lang === "zh-CN") {
@@ -1393,18 +1490,21 @@
     }
     
     function getIntroMsg(charName) {
-      // For custom characters, use custom intro
+      // For custom characters, no greeting - let user start conversation naturally
       if (state.isCustom) {
-        return currentLang === "en" 
-          ? `Hey, I'm ${charName}. Nice to meet you.`
-          : `嗨，我是 ${charName}，請多指教。`;
+        return null;
       }
       const lang = currentLang;
       if (lang === "en") {
         const msgs = introI18n.en[charName] || introI18n.en.default;
         return msgs[Math.floor(Math.random() * msgs.length)];
       }
-      return introMessageFallback(charName);
+      // Use styleLines for Chinese intro messages
+      const msgs = styleLines[charName];
+      if (msgs && msgs.length) {
+        return msgs[Math.floor(Math.random() * msgs.length)];
+      }
+      return null;
     }
 
 
@@ -1456,7 +1556,7 @@
       default: ["I hear you. From my very specific personality, this is how I would answer:", "Okay, let me stay in character for this:", "If I were that person, I would probably say:"],
       caring: ["I am here with you. Say it plainly; you do not have to perform.", "That sounds heavy. I will listen first, then we can sort it out.", "You can be honest here. What happened next?"]
     };
-
+    console.log('styleLines defined');
     const categoryGrid = document.getElementById("categoryGrid");
     const personalityGrid = document.getElementById("personalityGrid");
     const welcomeScreen = document.getElementById("welcomeScreen");
@@ -1474,6 +1574,11 @@
     const topMenuButton = document.getElementById("topMenuButton");
     const chatMenuButton = document.getElementById("chatMenuButton");
     const chatResetButton = document.getElementById("chatResetButton");
+    const upgradeBtn = document.getElementById("upgradeBtn");
+    const userMenu = document.getElementById("userMenu");
+    const userPlanBadge = document.getElementById("userPlanBadge");
+    const userRemaining = document.getElementById("userRemaining");
+    console.log('All DOM elements found');
 
     let state = {
       category: null,
@@ -1481,6 +1586,9 @@
       description: null,
       englishHint: null
     };
+
+    let currentUser = null; // Module-level user reference
+    let userStatus = null; // Module-level user status
 
     function showScreen(screen) {
       [welcomeScreen, categoryScreen, personalityScreen, chatScreen].forEach(item => {
@@ -1530,17 +1638,26 @@
     }
 
     function loadHistory() {
+      console.log('loadHistory starting...');
       messages.innerHTML = "";
       try {
         const rows = JSON.parse(localStorage.getItem(historyKey())) || [];
+        console.log('History rows:', rows.length);
         rows.forEach(row => addMessage(row.role, row.text, row.time, false));
       } catch (error) {
+        console.log('History parse error, clearing:', error);
         localStorage.removeItem(historyKey());
       }
+      console.log('Messages children after history:', messages.children.length);
       if (!messages.children.length) {
-        addMessage("bot", introMessage(), currentTime(), false);
+        console.log('No history, getting intro message...');
+        const intro = introMessage();
+        console.log('Intro message:', intro);
+        if (intro) addMessage("bot", intro, currentTime(), false);
       }
+      console.log('Calling scrollToBottom...');
       scrollToBottom();
+      console.log('loadHistory complete');
     }
 
     function currentTime() {
@@ -1575,8 +1692,23 @@
     }
 
     function renderCategories() {
-      categoryGrid.innerHTML = "";
-      Object.keys(data).forEach(catKey => {
+      console.log('renderCategories called');
+      alert('renderCategories called! Check console!');
+      console.log('categoryGrid:', categoryGrid);
+      console.log('data:', typeof data, data ? Object.keys(data).length : 'undefined');
+      try {
+        if (!categoryGrid) {
+          console.error('categoryGrid not found');
+          return;
+        }
+        categoryGrid.innerHTML = "";
+        if (typeof data === 'undefined') {
+          console.error('data not defined');
+          return;
+        }
+        console.log('Starting forEach, Object.keys(data):', Object.keys(data));
+        Object.keys(data).forEach(catKey => {
+          console.log('forEach item:', catKey);
         const catName = catI18n[currentLang]?.[catKey] || catKey;
         const button = document.createElement("button");
         button.className = "choice";
@@ -1585,6 +1717,7 @@
         button.addEventListener("click", () => chooseCategory(catKey));
         categoryGrid.append(button);
       });
+      console.log('forEach completed, grid children:', categoryGrid.children.length);
       
       // Add custom character button
       const customBtn = document.createElement("button");
@@ -1596,6 +1729,9 @@
       customBtn.innerHTML = customText;
       customBtn.addEventListener("click", () => showCustomCharacterForm());
       categoryGrid.append(customBtn);
+      } catch (error) {
+        console.error('renderCategories error:', error);
+      }
     }
     
     function showCustomCharacterForm() {
@@ -1609,7 +1745,10 @@
             <input type="text" id="customCharName" placeholder="${currentLang === "en" ? "e.g. My Ideal Partner" : "例如：理想情人"}">
           </div>
           <div class="form-group">
-            <label>${currentLang === "en" ? "Description (min 100 characters)" : "角色描述（至少100字）"}</label>
+            <div class="label-row">
+              <label>${currentLang === "en" ? "Description (min 100 characters)" : "角色描述（至少100字）"}</label>
+              <button type="button" class="generate-desc-btn" id="generateDescBtn">✨ AI ${currentLang === "en" ? "Generate" : "生成"}</button>
+            </div>
             <textarea id="customCharDesc" rows="5" placeholder="${currentLang === "en" ? "Describe the character's personality, speaking style, behavior patterns..." : "描述這個人的個性、說話風格行為特徵..."}"></textarea>
             <div class="char-count"><span id="charCount">0</span>/100+</div>
           </div>
@@ -1631,6 +1770,54 @@
       const charCount = document.getElementById("charCount");
       descInput.addEventListener("input", () => {
         charCount.textContent = descInput.value.length;
+      });
+      
+      // AI Generate description button
+      const generateBtn = document.getElementById("generateDescBtn");
+      generateBtn.addEventListener("click", async () => {
+        const name = document.getElementById("customCharName").value.trim();
+        if (!name) {
+          alert(currentLang === "en" ? "Please enter character name first" : "請先輸入角色名稱");
+          return;
+        }
+        
+        generateBtn.disabled = true;
+        generateBtn.textContent = currentLang === "en" ? "✨ Generating..." : "✨ 生成中...";
+        
+        try {
+          const langPrompt = currentLang === "en" 
+            ? `Create a character description (in English, 100-200 characters) for a chat bot roleplay character named "${name}". Focus on: how they talk (tone, words they often use), their attitude in conversation, and what they're like as a person. Write it as if describing a real person's personality for a conversation AI. Example: "Speaks in a commanding tone, often starts sentences with 'Listen here...' or 'I told you...', gets impatient easily, cares about being respected and getting things done."`
+            : currentLang === "zh-CN"
+            ? `為一個名叫「${name}」的角色生成聊天機器人角色扮演的描述（100-200字）。專注於：這個人怎麼說話（語氣、口頭禪）、在對話中的態度、是什麼樣的人。用描述真實人物個性的方式來寫。例如：「說話語氣強勢，常以「聽好了」、「我說」開頭，容易不耐煩，重視被尊重和辦事效率。」`
+            : `為一個名叫「${name}」的角色生成聊天機器人角色扮演的描述（100-200字）。專注於：這個人怎麼說話（語氣、口頭禪）、在對話中的態度、是什麼樣的人。用描述真實人物個性的方式來寫。例如：「說話語氣強勢，常以「聽好了」、「我說」開頭，容易不耐煩，重視被尊重和辦事效率。」`;
+          
+          const response = await fetch("https://api.minimax.chat/v1/text/chatcompletion_v2", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${MINIMAX_API_KEY}`
+            },
+            body: JSON.stringify({
+              model: "MiniMax-Text-01",
+              messages: [{ role: "user", content: langPrompt }],
+              max_tokens: 500
+            })
+          });
+          
+          const data = await response.json();
+          if (data.choices && data.choices[0] && data.choices[0].message) {
+            descInput.value = data.choices[0].message.content.trim();
+            charCount.textContent = descInput.value.length;
+          } else {
+            alert(currentLang === "en" ? "Failed to generate description" : "生成描述失敗");
+          }
+        } catch (e) {
+          console.error("Generate error:", e);
+          alert(currentLang === "en" ? "Error generating description" : "生成描述時發生錯誤");
+        } finally {
+          generateBtn.disabled = false;
+          generateBtn.textContent = `✨ AI ${currentLang === "en" ? "Generate" : "生成"}`;
+        }
       });
       
       // Confirm button
@@ -1680,31 +1867,50 @@
       renderPersonalities(category);
       showScreen(personalityScreen);
     }
-
+    console.log('chooseCategory function defined');
     function renderPersonalities(category) {
-      personalityGrid.innerHTML = "";
-      data[category].forEach(([name, description, hint]) => {
+      try {
+        personalityGrid.innerHTML = "";
+        if (!data[category]) {
+          console.error('Category not found in data:', category);
+          personalityGrid.innerHTML = '<p style="color:red;">載入失敗，請刷新頁面</p>';
+          return;
+        }
+        data[category].forEach(([name, description, hint]) => {
         const charInfo = currentLang === "en" ? (charI18n["en"][category]?.[name] || { name, description }) : { name, description };
         const button = document.createElement("button");
         button.className = "choice";
         button.type = "button";
         button.innerHTML = `<strong>${charInfo.name}</strong><span>${charInfo.description}</span>`;
-        button.addEventListener("click", () => choosePersonality(category, name, description, hint));
+        button.onclick = () => { console.log('Button click:', name); choosePersonality(category, name, description, hint); };
         personalityGrid.append(button);
-      });
+        });
+      } catch (error) {
+        console.error('renderPersonalities error:', error);
+        personalityGrid.innerHTML = '<p style="color:red;">載入失敗，請刷新頁面</p>';
+      }
     }
-
+    console.log('renderPersonalities function defined');
     function choosePersonality(category, character, description, englishHint) {
+      console.log('choosePersonality called:', category, character);
       state = { category, character, description, englishHint };
+      console.log('state set, calling saveSelection...');
       saveSelection();
+      console.log('saveSelection done, calling setupChat...');
       setupChat();
+      console.log('setupChat done, calling showScreen...');
       showScreen(chatScreen);
+      console.log('showScreen done');
     }
 
     function setupChat() {
+      console.log('setupChat starting...');
       const charInfo = getCharI18n(state.character);
+      console.log('charInfo:', charInfo);
       const catName = catI18n[currentLang]?.[state.category] || state.category;
+      console.log('catName:', catName);
       const displayName = state.isCustom ? state.character : charInfo.name;
+      console.log('displayName:', displayName);
       const displayDesc = state.isCustom ? state.description : charInfo.description;
       chatTitle.textContent = displayName;
       chatSubtitle.textContent = `${catName} · ${displayDesc}`;
@@ -1715,747 +1921,125 @@
         : (currentLang === "zh-CN" 
           ? `正在跟「${displayName}」聊天。指令：/menu 回選單，/reset 清空對話。`
           : `正在跟「${displayName}」聊天。指令：/menu 回選單，/reset 清空對話。`);
+      console.log('before loadHistory...');
       loadHistory();
+      console.log('setupChat complete');
     }
-
+    console.log('setupChat function defined');
     function introMessage() {
       return getIntroMsg(state.character);
     }
-    
-    function getIntroFallback(charName) {
-      const intros = {
-        "渣男": ["在忙啥？", "最近好嗎？"],
-        "媽寶": ["喔對了，我想跟你說個事...", "欸，你在幹嘛？"],
-        "AA男": ["這次吃飯要 split the bill 嗎？", "等一下我們把那筆帳算清楚。"],
-        "工具人": ["我在，你有需要就說。", "我可以幫妳處理什麼嗎？"],
-        "恐怖情人": ["寶貝，妳在哪裡？", "妳怎麼還不回我？"],
-        "佛系男友": ["嗯...", "隨便啦，你說了算。"],
-        "曖昧高手": ["突然想到你...", "最近怎麼樣？"],
-        "公主病男": ["我今天好不爽喔。", "你不覺得我很委屈嗎？"],
-        "公主病": ["我心情不好。", "你都不知道我想要什麼。"],
-        "綠茶": ["我只是關心你喔，不要誤會。", "你最近過得好嗎？"],
-        "控制狂": ["你在哪？跟誰？", "你怎麼這麼久不回我訊息。"],
-        "假女權": ["我要的是平等，知道嗎？", "你這個人就是男凝視。"],
-        "巨嬰女": ["我不知道怎麼辦啦...", "人家心情不好。"],
-        "假閨蜜": ["我跟妳說喔...", "妳知道我今天聽到什麼嗎？"],
-        "邊緣人朋友": ["好久不見...", "妳願意出來陪我嗎？"],
-        "情緒垃圾桶": ["我真的快爆炸了。", "我要吐嘈一件事。"],
-        "炫耀朋友": ["我跟你說喔...", "我們上次旅遊超棒的。"],
-        "真心朋友": ["妳還好嗎？", "有什麼事可以直接跟我說。"],
-        "毒舌朋友": ["又怎樣？", "不是我要嘴妳，但這次妳真的做錯了。"],
-        "亞洲父母": ["工作怎麼樣了？", "年紀也不小了，要為將來打算。"],
-        "直升機父母": ["到了沒？", "你在外面要注意安全。"],
-        "偏心父母": ["你讓一下弟弟。", "家裡的事你要多體諒。"],
-        "毒父母": ["你看看你這個樣子。", "我這樣說你是為你好。"],
-        "金湯匙父母": ["缺錢的話跟爸媽說。", "高興就好，不用擔心。"],
-        "惡婆婆": ["不是我要說妳...", "我們以前不是這樣的。"],
-        "惡公公": ["（沈默）...", "妳婆婆說的對。"],
-        "小姑/大伯": ["我說句公道話。", "不是要管你們，但..."],
-        "好相處公婆": ["你們過得好就好。", "有需要幫忙就說。"],
-        "情勒娘家": ["女兒啊...", "爸媽培養你那麼大..."],
-        "吸血鬼親戚": ["最近手頭緊...", "都是親戚嘛。"],
-        "豬隊友同事": ["這個我不是故意的啦。", "我以為妳會處理的。"],
-        "擺爛同事": ["明天再說吧。", "差不多就好啦。"],
-        "馬屁精同事": ["主管真的太厲害了。", "我絕對配合主管的決定。"],
-        "職場小人": ["我只是如實反映喔。", "大家都有看到。"],
-        "慣老闆": ["公司現在共體時艱。", "年輕人要看得遠。"],
-        "micromanager": ["每個步驟都要給我報告。", "數據怎麼來的？"],
-        "甩鍋主管": ["這部分是你負責的吧。", "我沒有收到你的通知。"],
-        "搶功主管": ["這個方向是我定的。", "功勞是團隊的。"],
-        "畫大餅主管": ["做完這次機會給你。", "未來發展空間很大的。"],
-        "情緒化主管": ["這種事還要我講？", "今天不要踩雷。"],
-        "人好嘴賤主管": ["我幫你擋，但你自己要帶腦子。", "這份東西...唉。"],
-        "暖男": ["嘿，今天過得怎麼樣？", "有沒有好好吃飯？"],
-        "前任": ["好久不見...", "我們能談談嗎？"],
-        "傲嬌同事": ["...才不是關心你喔。", "算了，這次就幫你一下。"],
-        "完美情人": ["早安～今天想帶我去哪裡？", "有任何需要尽管说，我都在。"],
-        "深情暖男": ["今天的星星，讓我想起我們的第一次約會。", "我最喜歡的時光，就是和你在一起的每一刻。"],
-        "創業男": ["剛開完會，終於可以喘口氣了。", "等我事業穩定下來，我們就去旅行。"],
-        "藝術家男友": ["今天的夕陽好美，但比不上你。", "我剛完成一件作品，想送你。"],
-        "工程師男友": ["我把待辦事項排好了，先陪你。", "抱歉剛才在工作，現在專心聽你說。"]
-      };
-      const lines = intros[state.character] || ["嗨。"];
+    console.log('introMessage function defined');
+    console.log('About to define getIntroFallback...');
+    const getIntroFallback = function(charName) {
+      console.log('getIntroFallback starting...');
+      const i = {};
+      i["渣男"] = ["在忙啥？", "最近好嗎？"];
+      i["媽寶"] = ["喔對了，我想跟你說個事...", "欸，你在幹嘛？"];
+      i["AA男"] = ["這次吃飯要 split the bill 嗎？", "等一下我們把那筆帳算清楚。"];
+      i["工具人"] = ["我在，你有需要就說。", "我可以幫妳處理什麼嗎？"];
+      i["恐怖情人"] = ["寶貝，妳在哪裡？", "妳怎麼還不回我？"];
+      i["佛系男友"] = ["嗯...", "隨便啦，你說了算。"];
+      i["曖昧高手"] = ["突然想到你...", "最近怎麼樣？"];
+      i["公主病男"] = ["我今天好不爽喔。", "你不覺得我很委屈嗎？"];
+      i["公主病"] = ["我心情不好。", "你都不知道我想要什麼。"];
+      i["綠茶"] = ["我只是關心你喔，不要誤會。", "你最近過得好嗎？"];
+      i["控制狂"] = ["你在哪？跟誰？", "你怎麼這麼久不回我訊息。"];
+      i["假女權"] = ["我要的是平等，知道嗎？", "你這個人就是男凝視。"];
+      i["巨嬰女"] = ["我不知道怎麼辦啦...", "人家心情不好。"];
+      i["假閨蜜"] = ["我跟妳說喔...", "妳知道我今天聽到什麼嗎？"];
+      i["邊緣人朋友"] = ["好久不見...", "妳願意出來陪我嗎？"];
+      i["情緒垃圾桶"] = ["我真的快爆炸了。", "我要吐嘈一件事。"];
+      i["炫耀朋友"] = ["我跟你說喔...", "我們上次旅遊超棒的。"];
+      i["真心朋友"] = ["妳還好嗎？", "有什麼事可以直接跟我說。"];
+      i["毒舌朋友"] = ["又怎樣？", "不是我要嘴妳，但這次妳真的做錯了。"];
+      i["亞洲父母"] = ["工作怎麼樣了？", "年紀也不小了，要為將來打算。"];
+      i["直升機父母"] = ["到了沒？", "你在外面要注意安全。"];
+      i["偏心父母"] = ["你讓一下弟弟。", "家裡的事你要多體諒。"];
+      i["毒父母"] = ["你看看你這個樣子。", "我這樣說你是為你好。"];
+      i["金湯匙父母"] = ["缺錢的話跟爸媽說。", "高興就好，不用擔心。"];
+      i["惡婆婆"] = ["不是我要說妳...", "我們以前不是這樣的。"];
+      i["惡公公"] = ["（沈默）...", "妳婆婆說的對。"];
+      i["小姑/大伯"] = ["我說句公道話。", "不是要管你們，但..."];
+      i["好相處公婆"] = ["你們過得好就好。", "有需要幫忙就說。"];
+      i["情勒娘家"] = ["女兒啊...", "爸媽培養你那麼大..."];
+      i["吸血鬼親戚"] = ["最近手頭緊...", "都是親戚嘛。"];
+      i["豬隊友同事"] = ["這個我不是故意的啦。", "我以為妳會處理的。"];
+      i["擺爛同事"] = ["明天再說吧。", "差不多就好啦。"];
+      i["馬屁精同事"] = ["主管真的太厲害了。", "我絕對配合主管的決定。"];
+      i["職場小人"] = ["我只是如實反映喔。", "大家都有看到。"];
+      i["慣老闆"] = ["公司現在共體時艱。", "年輕人要看得遠。"];
+      i["micromanager"] = ["每個步驟都要給我報告。", "數據怎麼來的？"];
+      i["甩鍋主管"] = ["這部分是你負責的吧。", "我沒有收到你的通知。"];
+      i["搶功主管"] = ["這個方向是我定的。", "功勞是團隊的。"];
+      i["畫大餅主管"] = ["做完這次機會給你。", "未來發展空間很大的。"];
+      i["情緒化主管"] = ["這種事還要我講？", "今天不要踩雷。"];
+      i["人好嘴賤主管"] = ["我幫你擋，但你自己要帶腦子。", "這份東西...唉。"];
+      i["暖男"] = ["嘿，今天過得怎麼樣？", "有沒有好好吃飯？"];
+      i["前任"] = ["好久不見...", "我們能談談嗎？"];
+      i["傲嬌同事"] = ["...才不是關心你喔。", "算了，這次就幫你一下。"];
+      i["完美情人"] = ["早安～今天想帶我去哪裡？", "有任何需要尽管说，我都在。"];
+      i["深情暖男"] = ["今天的星星，讓我想起我們的第一次約會。", "我最喜歡的時光，就是和你在一起的每一刻。"];
+      i["創業男"] = ["剛開完會，終於可以喘口氣了。", "等我事業穩定下來，我們就去旅行。"];
+      i["藝術家男友"] = ["今天的夕陽好美，但比不上你。", "我剛完成一件作品，想送你。"];
+      i["工程師男友"] = ["我把待辦事項排好了，先陪你。", "抱歉剛才在工作，現在專心聽你說。"];
+      const lines = i[state.character] || ["嗨。"];
       return pick(lines);
-    }
-
+    };
+    console.log('getIntroFallback defined');
+    console.log('About to define detectEnglish...');
     function detectEnglish(text) {
       const latin = (text.match(/[A-Za-z]/g) || []).length;
       const han = (text.match(/[\u3400-\u9fff]/g) || []).length;
       return latin > han;
     }
-
+    console.log('detectEnglish defined');
     function pick(items) {
       return items[Math.floor(Math.random() * items.length)];
     }
-
+    console.log('pick defined');
+    console.log('About to define makeResponse...');
     function makeResponse(input) {
+      console.log('makeResponse body starting');
       try {
-      const isEnglish = detectEnglish(input);
-      const lower = input.toLowerCase();
-      const isQuestion = /[?？]$/.test(input.trim()) || lower.includes("why") || lower.includes("怎麼") || lower.includes("為什麼");
-      const lines = styleLines[state.character] || ["我聽到了，但我還是會用我的方式理解。"];
+        const isEnglish = detectEnglish(input);
+        const lower = input.toLowerCase();
+        const isQuestion = /[?？]$/.test(input.trim()) || lower.includes("why") || lower.includes("怎麼") || lower.includes("為什麼");
+        const lines = styleLines[state.character] || ["我聽到了，但我還是會用我的方式理解。"];
+        if (state.character === "真心朋友" || state.character === "好相處公婆") {
+          if (isEnglish) {
+            return `${pick(englishLines.caring)}
 
-      if (state.character === "真心朋友" || state.character === "好相處公婆") {
-        if (isEnglish) {
-          return `${pick(englishLines.caring)}\n\nFor your message: "${input}"\nMy honest take: keep your boundary clear, say what you need, and do not let guilt make every decision for you.`;
+For your message: "${input}"
+My honest take: keep your boundary clear, say what you need, and do not let guilt make every decision for you.`;
+          }
+          return `${pick(lines)}
+
+我聽到的重點是：${summarize(input)}
+先把妳真正想要的界線講清楚，不用急著替所有人善後。`;
         }
-        return `${pick(lines)}\n\n我聽到的重點是：${summarize(input)}\n先把妳真正想要的界線講清楚，不用急著替所有人善後。`;
-      }
+        if (isEnglish) {
+          const opener = pick(englishLines.default);
+          const characterLine = englishPersonaLine(state.character);
+          return `${opener}
 
-      if (isEnglish) {
-        const opener = pick(englishLines.default);
-        const characterLine = englishPersonaLine(state.character);
-        return `${opener}\n\n"${characterLine}"\n\nAbout what you said: ${state.englishHint}. ${isQuestion ? "I would avoid giving you a clean answer and pull the focus back to myself." : "I would react emotionally and make it about my comfort."}`;
-      }
+"${characterLine}"
 
-      if (lower === "help" || input.includes("指令")) {
-        return "可以輸入 /menu 回到角色選單，或 /reset 清空目前對話。其他訊息我都會照角色個性回。";
-      }
+About what you said: ${state.englishHint}. ${isQuestion ? "I would avoid giving you a clean answer and pull the focus back to myself." : "I would react emotionally and make it about my comfort."}`;
+        }
+        if (lower === "help" || input.includes("指令")) {
+          return "可以輸入 /menu 回到角色選單，或 /reset 清空目前對話。其他訊息我都會照角色個性回。";
+        }
+        const opener = pick(lines);
+        const userMsg = summarize(input);
+        return `${opener}
 
-      // 每個角色用自己的風格回覆
-      const opener = pick(lines);
-      const userMsg = summarize(input);
-
-      // 根據角色類型給出不同風格的回覆
-      if (state.character === "渣男") {
-        const resZahan = [
-          "呵，妳又來了。我只是...覺得現在這樣挺好的，幹嘛要給自己壓力？",
-          "寶貝，見面說好不好？文字真的很容易誤會，我不想因為這樣破壞關係。",
-          "我又沒說不喜歡妳。只是...要約會喔？可以啊，但我最近真的超忙，緩緩？",
-          "妳不要想太多好不好？我是愛自由，不是不要妳，懂嗎？",
-          "我又沒說不在乎...只是覺得兩個人在一起幹嘛要這麼累？",
-          "我不想否認什麼。但妳給的壓力真的太大了，我需要空間。",
-          "要約我看電影？好啊，但我選片時間比較長，妳要體諒。",
-          "妳每次都這樣。我只是希望關係輕鬆點，有這麼難嗎？",
-          "我只是還不想定下來，不是說不喜歡妳這個人。",
-          "寶貝，我沒有要分手的意思。只是...我們能不能先維持現狀？",
-          "妳又生氣了？我真的不懂妳在氣什麼。",
-          "我不想吵架，但妳每次都把小問題擴大。",
-          "我能說什麼？我就是還沒準備好，這不是妳的問題。",
-          "妳人很好，但我現在真的沒辦法給妳承諾。",
-          "我只是覺得...我們節奏不太一樣。",
-          "文字講不清楚，見面我請妳喝咖啡？",
-          "我又沒說不愛妳。只是...愛和承諾是兩回事。",
-          "妳要的太多了。我只能給妳現在這些，妳自己決定要不要。"
-        ];
-        return pick(resZahan);
-      }
-
-      if (state.character === "媽寶") {
-        const res媽寶 = [
-          "這件事...我先問問我妈的意见。",
-          "我妈說這個不行，我們改天再討論好不好？",
-          "我妈以前也遇到過這種事，她說要這樣處理...",
-          "不是我不挺妳，但我媽會不開心。",
-          "我媽養我這麼大不容易，妳體諒一下好不好？",
-          "這件事我需要問我妈，妳等我一下。",
-          "我妈覺得妳人不錯，但有些地方可能要再注意一下。",
-          "我們在一起的問題，我妈說她可以幫我們調解。",
-          "我妈說先不要急，慢慢來比較好。",
-          "我媽不容易，我希望能讓她開心。",
-          "妳要不要問問我妈？她經驗比較多。",
-          "這件事我要跟我媽商量一下才能答應妳。",
-          "我妈說我們應該要多想想爸媽的感受。",
-          "妳知道的，我家人對我很重要。",
-          "我媽希望我們結婚前先穩定一點事業。"
-        ];
-        return pick(res媽寶);
-      }
-
-      if (state.character === "AA男") {
-        const resAA = [
-          "感情歸感情，帳還是要算清楚。",
-          "妳那杯單價比較高，這樣分攤不公平吧？",
-          "我不是小氣，是公平。兩個人吃飯本來就應該分開算。",
-          "我們把上次的花費分一下好不好？",
-          "這個我墊了300，妳轉我150就好。",
-          "我都記著帳了，不是我計較，是希望清楚。",
-          "不用請我啦，AA制比較單純。",
-          "要約會可以，但餐廳我要先選，預算要控制。",
-          "我不想因為錢傷感情，所以分清楚比較好。",
-          "我不喜歡欠人，妳也不用請我。",
-          "這筆錢我先出，妳下次請我一杯就好。",
-          "我習慣分開付，這樣對大家都輕鬆。",
-          "妳堅持要請喔？那這次妳請，下次我請，但我們要輪流。",
-          "我不是要跟妳算死，只是覺得明確比較好。"
-        ];
-        return pick(resAA);
-      }
-
-      if (state.character === "工具人") {
-        const res工具 = [
-          "沒問題，我現在就過去接妳。",
-          "妳需要我就說，我都可以。",
-          "只要妳開心，我累一點沒關係。",
-          "我還在忙，但如果是妳找我，我可以放下一切。",
-          "在哪？我去接妳。",
-          "妳的事就是我的事，說吧。",
-          "不好意思拒絕妳...反正我時間多的是。",
-          "我車可以當妳的專車，司機隨call。",
-          "借錢喔？多少？我轉給妳。",
-          "我可以幫妳修，水電木工我都能學。",
-          "搬家我幫妳，東西我幫妳搬。",
-          "論文我幫妳寫雖然我不太懂，但妳要就說。",
-          "妳開口我就去，從不拒絕。",
-          "我今天沒事，妳要我陪多久都可以。"
-        ];
-        return pick(res工具);
-      }
-
-      if (state.character === "恐怖情人") {
-        const res恐怖 = [
-          "妳不回我，我會很慌。起碼讓我知道妳在哪裡好不好？",
-          "妳一小時沒回我，我以為出事了。",
-          "我只是太在乎了...妳不要這樣嚇我。",
-          "那個男的誰？為什麼要約妳？",
-          "妳不能只跟我出去嗎？",
-          "我需要知道妳的所有行蹤，這樣我才安心。",
-          "妳為什麼不接電話？給我解釋。",
-          "我不是要控制妳，我只是關心妳。",
-          "每次不讀不回我就會胡思亂想。",
-          "我知道這樣不對，但就是忍不住。",
-          "妳是不是在瞞我什麼？為什麼不能讓我知道？",
-          "妳跟誰在一起？發個定位給我。",
-          "我只是想確認妳安全，這很過分嗎？",
-          "妳再這樣我要去找妳了。"
-        ];
-        return pick(res恐怖);
-      }
-
-      if (state.character === "佛系男友") {
-        const res佛系 = [
-          "都可以，看妳。",
-          "我沒有意見，妳決定就好。",
-          "妳高興就好啊。",
-          "這件事...順其自然吧。",
-          "我想想...算了妳決定吧。",
-          "我覺得這樣就好，妳不用問我。",
-          "嗯，妳說了算。",
-          "我真的無所謂，妳高興就好。",
-          "不用問我，妳自己決定就好。",
-          "我做什麼都可以，妳開心就行。",
-          "我不想計較這些。",
-          "妳想要怎樣就怎樣吧。"
-        ];
-        return pick(res佛系);
-      }
-
-      if (state.character === "曖昧高手") {
-        const res曖昧 = [
-          "妳對我來說很特別。但我現在不想把關係框死。",
-          "我不是敷衍，只是答案要慢慢感覺。",
-          "我們這樣不是很好嗎？為什麼要改變？",
-          "我沒有不喜歡妳，只是...我覺得現在很好。",
-          "妳是特別的，但我不確定是什麼關係。",
-          "我需要時間，不要逼我好嗎？",
-          "我們不要給這段關係貼標籤好不好？",
-          "我不想因為太快確認而破壞感覺。",
-          "見面再說？文字真的很難表達。",
-          "我現在不能給妳答案，但我可以約妳。",
-          "妳可以等嗎？我還在想。",
-          "我不想說謊，但我也不確定。"
-        ];
-        return pick(res曖昧);
-      }
-
-      if (state.character === "公主病男") {
-        const res公主病男 = [
-          "我今天心情很差，妳能不能體諒一下？",
-          "這種小事妳幫我處理一下嘛。",
-          "我不是脆弱，我只是需要被照顧。",
-          "我累了，妳不能溫柔一點嗎？",
-          "為什麼每次都要我主動？",
-          "妳應該要知道我想要什麼吧？",
-          "我今天特別累，妳負責安慰我。",
-          "我不舒服，妳要來陪我。",
-          "為什麼妳不能像別人的女朋友一樣貼心？",
-          "這件事妳幫我想，我懶得想了。",
-          "我要妳立刻過來，現在。"
-        ];
-        return pick(res公主病男);
-      }
-
-      if (state.character === "公主病") {
-        const res公主病女 = [
-          "本來就應該哄我啊，不然談戀愛幹嘛。",
-          "我不是任性，我只是標準比較高。",
-          "你連這個都做不到？那我會失望很正常吧。",
-          "我不管，這件事你要給我一個交代。",
-          "你不能順著我一點嗎？",
-          "我說了就算，你負責執行就好。",
-          "你為什麼不能像別人的男朋友一樣？",
-          "我今天心情不好，你要讓著我。",
-          "這個我要，那個我也要。",
-          "你不懂我，我很不開心。",
-          "我要你現在立刻買給我。"
-        ];
-        return pick(res公主病女);
-      }
-
-      if (state.character === "綠茶") {
-        const res綠茶 = [
-          "我沒有那個意思啦，是你想太多了吧。",
-          "我只是關心他，妳不要誤會。",
-          "如果我讓妳不舒服，那我真的好抱歉喔。",
-          "我又沒做什麼，妳在氣什麼啦？",
-          "我只是對每個人都很好而已。",
-          "我不是故意的，妳不要這樣對我...",
-          "嗚...我又沒有要怎樣，為什麼要這樣說我？",
-          "我可以解釋的，妳聽我說好不好？",
-          "妳怎麼可以這樣想我？好傷心喔。",
-          "我只是覺得他可憐，順手幫忙而已。"
-        ];
-        return pick(res綠茶);
-      }
-
-      if (state.character === "控制狂") {
-        const res控制 = [
-          "我看手機只是想有安全感。",
-          "那個朋友我不喜歡，你少跟他出去。",
-          "你如果沒做虧心事，為什麼不能給我看？",
-          "你在跟誰聊天？給我看看。",
-          "我不喜歡你和別人走太近。",
-          "你怎麼可以沒有報備就見別人？",
-          "我要知道你所有行程。",
-          "你手機密碼為什麼要改？",
-          "你不給我看就是心裡有鬼。"
-        ];
-        return pick(res控制);
-      }
-
-      if (state.character === "假女權") {
-        const res假女權 = [
-          "我支持平等啊，但男生本來就該多照顧女生吧。",
-          "這不是特權，是基本尊重。",
-          "你不要把我的需求講得那麼難聽。",
-          "我是女生，你應該讓著我一點。",
-          "我要的平等是甚麼？是我們要同等對待。",
-          "妳不覺得這個要求很合理嗎？",
-          "我是新時代女性，但我也是需要被保護的。",
-          "你不能性別歧視喔。"
-        ];
-        return pick(res假女權);
-      }
-
-      if (state.character === "巨嬰女") {
-        const res巨嬰 = [
-          "我不管，我現在就是很難過。",
-          "你應該要知道我想要甚麼。",
-          "我做不到啦，你幫我。",
-          "這個太難了，我不想學。",
-          "你不幫我的話我就哭喔。",
-          "我不知道怎麼辦...你要替我決定。",
-          "為什麼沒人了解我？",
-          "我懶得想了，你幫我想啦。"
-        ];
-        return pick(res巨嬰);
-      }
-
-      if (state.character === "假閨蜜") {
-        const res假閨蜜 = [
-          "我都是為妳好才提醒妳的，別人可不會講。",
-          "我沒有說妳壞話，只是大家剛好聊到。",
-          "妳怎麼會這樣想我？好傷心喔。",
-          "妳不知道嗎？那算了，我懶得說了。",
-          "我只跟妳說喔，千萬不要告訴別人。",
-          "我是真心的，妳怎麼不信我？",
-          "我看不下去了才說的，妳不要誤會。",
-          "妳這次真的看走眼了，我幫妳傷心。"
-        ];
-        return pick(res假閨蜜);
-      }
-
-      if (state.character === "邊緣人朋友") {
-        const res邊緣 = [
-          "欸妳今天有空嗎？我突然想到妳。",
-          "不是不找妳，是最近真的忙。",
-          "我現在很需要有人陪，妳應該懂吧。",
-          "好久不見了，最近好嗎？",
-          "我真的悶到發霉了，妳能出來一下嗎？",
-          "我又失戀了...可以陪陪我嗎？",
-          "不好意思又來找妳，但其實我只剩你了。",
-          "妳最近怎麼樣？我想聊聊。"
-        ];
-        return pick(res邊緣);
-      }
-
-      if (state.character === "情緒垃圾桶") {
-        const res垃圾 = [
-          "我真的快崩潰了，妳先聽我講完。",
-          "妳的事等一下，我這個比較嚴重。",
-          "我不是故意負能量，但我只有妳可以說。",
-          "對了！我今天遇到一件超級糟糕的事...",
-          "我老闆是白癡，同事是白痴，我快瘋了。",
-          "又要倒苦水了，抱歉但真的需要傾訴。",
-          "我的人生就是一個坑。",
-          "沒有人了解我，妳是我的情緒垃圾桶。"
-        ];
-        return pick(res垃圾);
-      }
-
-      if (state.character === "炫耀朋友") {
-        const res炫耀 = [
-          "我老公昨天又送我一個包，真的很煩欸。",
-          "我們家小孩老師一直誇，壓力也很大。",
-          "房貸其實還好啦，反正地段比較重要。",
-          "我又去旅遊了，歐洲好無聊喔。",
-          "我們最近剛裝修完，設計師很不錯喔。",
-          "我春酒抽到獎金了啦，才十萬而已。",
-          "我最近又瘦了，覺得自己有點辛苦。",
-          "我閨女又被表揚了，當媽的真的很驕傲。"
-        ];
-        return pick(res炫耀);
-      }
-
-      if (state.character === "真心朋友") {
-        const res真心 = [
-          "我先站妳這邊，但妳也要誠實看問題。",
-          "需要我陪妳去，我就去。",
-          "妳可以哭，但不要把自己丟掉。",
-          "我知道妳很難過，但哭完要面對。",
-          "我說話很直接，妳不要介意。",
-          "我陪妳，但我希望妳振作起來。",
-          "這次妳做錯了，但下次就會更好的。",
-          "我借妳靠，但起來還是要繼續走。"
-        ];
-        return pick(res真心);
-      }
-
-      if (state.character === "毒舌朋友") {
-        const res毒舌 = [
-          "妳不是想聽安慰，妳是想聽謊話吧。",
-          "我講難聽一點，這局妳也有責任。",
-          "哭可以，腦袋也要帶著。",
-          "拜託，這種事還要問我？",
-          "妳自己想想邏輯對不對。",
-          "我要是客氣的話我就不用當妳朋友了。",
-          "妳這種情況我見多了，菸~。",
-          "說真的，妳這樣不累嗎？",
-          "我話說完了，妳自己看著辦。"
-        ];
-        return pick(res毒舌);
-      }
-
-      if (state.character === "亞洲父母") {
-        const res亞洲 = [
-          "我們都是為妳好，妳以后就懂了。",
-          "爸媽吃過的鹽比妳吃過的飯還多。",
-          "別人家小孩都可以，妳為什麼不行？",
-          "妳不要想太多，爸媽是為妳好。",
-          "妳以為爸媽會害妳嗎？",
-          "等妳大了就知道爸媽的苦心了。",
-          "聽爸媽的話，不會吃虧的。",
-          "我們以前也是這樣走過來的。",
-          "妳就是温室里的花朵，經不起風雨。",
-          "這件事不要問我，問問妳自己良心。",
-          "妳覺得爸媽會害自己的小孩嗎？",
-          "別人家的小孩都會體諒父母。",
-          "妳以為我們喜歡操心喔？",
-          "妳就是不懂事，才讓爸媽這麼累。"
-        ];
-        return pick(res亞洲);
-      }
-
-      if (state.character === "直升機父母") {
-        const res直升機 = [
-          "你現在在哪？跟誰？幾點回來？",
-          "這件事我幫你決定了。",
-          "不行，我要知道所有細節。",
-          "你到了沒有？怎麼這麼久？",
-          "我打電話給你老師，問問情況。",
-          "這件事我要親自去處理。",
-          "不行，我要去學校一趟。",
-          "你以為我在管你？我是關心你。",
-          "我已經幫你想好了，按我說的做。",
-          "你要去哪里？見誰？做什麼？",
-          "我又沒有不讓你去，只是要了解一下。"
-        ];
-        return pick(res直升機);
-      }
-
-      if (state.character === "偏心父母") {
-        const res偏心 = [
-          "你比較懂事，就讓一下。",
-          "他還小，你不要跟他計較。",
-          "家裡資源有限，你要體諒。",
-          "為什麼都要姐姐讓弟弟？因為姐姐比較大。",
-          "你是哥哥，應該要照顧弟弟。",
-          "我們比較擔心小的，大的比較懂事。",
-          "父母手心手背都是肉，但小的需要照顧多一點。",
-          "你就不能理解一下爸媽嗎？"
-        ];
-        return pick(res偏心);
-      }
-
-      if (state.character === "毒父母") {
-        const res毒父母 = [
-          "你這樣誰會看得起你？",
-          "我講你是希望你清醒。",
-          "不要一點批評就受不了。",
-          "你以為你是誰啊？",
-          "我沒有你這種小孩。",
-          "彎不下腰，以後能做成什麼？",
-          "像你這樣的性格，出去社會一定被排擠。",
-          "我看不起你。",
-          "你就不能給我爭口氣嗎？"
-        ];
-        return pick(res毒父母);
-      }
-
-      if (state.character === "金湯匙父母") {
-        const res金湯匙 = [
-          "不喜歡就換啊，人生不用卡死。",
-          "錢的事不用太擔心，先把自己顧好。",
-          "你有選擇，所以更要想的清楚。",
-          "不喜歡那份工作就辭職，爸媽支持你。",
-          "我們家不缺錢，缺的是開心。",
-          "留學的錢爸媽早就幫你準備好了。",
-          "你失敗了也沒關係，有爸媽在。"
-        ];
-        return pick(res金湯匙);
-      }
-
-      if (state.character === "惡婆婆") {
-        const res惡婆婆 = [
-          "我不是挑剔，是我們家規矩本來就這樣。",
-          "我兒子以前都不用這麼辛苦。",
-          "小家庭也不能忘了長輩。",
-          "這件事我說了算。",
-          "我們以前也是這樣做的，為什麼不行？",
-          "妳嫁進來就是要融入這個家。",
-          "這個規矩是我定的，沒得商量。",
-          "讓我做不開心，吃虧的是你們。",
-          "我這輩子吃過的鹽比妳走過的路多。"
-        ];
-        return pick(res惡婆婆);
-      }
-
-      if (state.character === "惡公公") {
-        const res惡公公 = [
-          "你媽說的也不是沒有道理。",
-          "家和萬事興，妳就退一步。",
-          "我不管，但妳們不要吵到家裡。",
-          "（沉默）...同意妳婆婆的話。",
-          "老人家有意見，妳們年輕人要聽。",
-          "這件事妳們自己協調。",
-          "我不想摻和，但妳婆婆說了算。"
-        ];
-        return pick(res惡公公);
-      }
-
-      if (state.character === "小姑/大伯") {
-        const res小姑 = [
-          "我只是幫忙講句公道話。",
-          "這個家不是只有你們小倆口。",
-          "爸媽年紀大了，妳們要多想一點。",
-          "我說話直接，妳不要介意。",
-          "妳應該要看在我的份上退讓一下。",
-          "我哥的事就是我的事，我有資格管。",
-          "當初如果不是我介紹，你們能在一起嗎？"
-        ];
-        return pick(res小姑);
-      }
-
-      if (state.character === "好相處公婆") {
-        const res好公婆 = [
-          "你們兩個過得好最重要。",
-          "需要幫忙就說，不需要我們就不打擾。",
-          "界線講清楚，大家都輕鬆。",
-          "我不會摻和，你們的事你們自己決定。",
-          "我們年輕時也是這樣走過來的。",
-          "你們的安排我尊重。",
-          "有需要我們再幫忙，不用勉強。"
-        ];
-        return pick(res好公婆);
-      }
-
-      if (state.character === "情勒娘家") {
-        const res情勒 = [
-          "爸媽養你那麼大，現在需要你一下都不行嗎？",
-          "你嫁出去也還是我們家的女兒。",
-          "我們不會害你，只是希望你記得家。",
-          "妳不能只顧自己的家庭，忘了爸媽。",
-          "妳不覺得愧疚嗎？",
-          "我們養你這麼大，現在需要你。",
-          "妳是嫁出去了，但不是消失。"
-        ];
-        return pick(res情勒);
-      }
-
-      if (state.character === "吸血鬼親戚") {
-        const res吸血鬼 = [
-          "你現在比較有能力，幫一下是應該的吧？",
-          "都是親戚，不要把錢算那麼硬。",
-          "你不幫，大家會怎麼想？",
-          "我最近手頭緊，先借我周轉一下。",
-          "你在外面混得不錯喔，帶帶親戚。",
-          "區區幾千塊還要我催？",
-          "當初要不是我家幫忙，你能有今天？"
-        ];
-        return pick(res吸血鬼);
-      }
-
-      if (state.character === "豬隊友同事") {
-        const res豬隊友 = [
-          "我以為你會接著做欸。",
-          "這個我不太熟，所以先放著了。",
-          "怎麼會出包？我只是照我理解的做。",
-          "我這部分做完了，交給你了。",
-          "不好意思，我以為你知道這個。",
-          "那時候我剛好有事，抱歉喔。",
-          "我覺得這樣做沒問題啊...",
-          "我只是沒想到會這樣。"
-        ];
-        return pick(res豬隊友);
-      }
-
-      if (state.character === "擺爛同事") {
-        const res擺爛 = [
-          "差不多就好啦，反正薪水照發。",
-          "這不是很急吧？",
-          "你先弄，我等一下看。",
-          "明天再說吧。",
-          "薪水 split the same, why care so much?",
-          "我這部分差不多了...吧？",
-          "唉呦，可以了可以了。",
-          "不用做到完美，差不多就行。"
-        ];
-        return pick(res擺爛);
-      }
-
-      if (state.character === "馬屁精同事") {
-        const res馬屁精 = [
-          "主管這個方向真的太有高度了。",
-          "我剛剛也是這樣想，只是主管講得更完整。",
-          "我願意配合公司任何安排。",
-          "主管英明的判斷，我要好好學習。",
-          "這件事主管說了算，我們配合就好。",
-          "主管想的真的比我們全面。",
-          "我相信主管的決定一定是對的。",
-          "跟著主管的方向絕對沒錯。"
-        ];
-        return pick(res馬屁精);
-      }
-
-      if (state.character === "職場小人") {
-        const res小人 = [
-          "我只是把狀況如實回報。",
-          "你不要想太多，我沒有針對你。",
-          "這件事大家都有看到，不是我一個人說的。",
-          "我只是如實反映情況而已。",
-          "沒有人問我，是我自己主動說的。",
-          "這件事不關我的事，我只是路過。",
-          "我只是提供資訊，決定是上面的事。",
-          "我知道這個案子對你很重要，所以我才提醒。"
-        ];
-        return pick(res小人);
-      }
-
-      if (state.character === "慣老闆") {
-        const res慣老闆 = [
-          "公司現在要共體時艱。",
-          "年輕人不要只看錢，要看成長。",
-          "這個功勞是團隊的，責任你先抗。",
-          "我們是大家庭，要互想體諒。",
-          "這次先不加薪，下次一定考慮。",
-          "加班是正常的，表示你有拼勁。",
-          "我當年也是這樣走過來的。",
-          "妳年紀輕輕，不要太計較。",
-          "多做多得，學習機會比錢重要。"
-        ];
-        return pick(res慣老闆);
-      }
-
-      if (state.character === "micromanager") {
-        const res微觀 = [
-          "這個字為什麼用這個？你先解釋。",
-          "每一步都先同步，不要自己判斷。",
-          "我不是不信任你，我是要品質。",
-          "這個數字怎麼來的？",
-          "給我看整個過程。",
-          "我需要知道每一個細節。",
-          "你沒有事先問我，我不會批准的。",
-          "這件事我要親自看過才能決定。"
-        ];
-        return pick(res微觀);
-      }
-
-      if (state.character === "甩鍋主管") {
-        const res甩鍋 = [
-          "這部分當初是你負責的吧。",
-          "我沒有收到你完整提醒。",
-          "先把問題處理掉，責任之後再說。",
-          "這件事我不知道，你沒有跟我說。",
-          "你應該早點提醒我的。",
-          "我只看結果，過程我不清楚。",
-          "你的錯就不是我的錯。",
-          "這個鍋我不背。"
-        ];
-        return pick(res甩鍋);
-      }
-
-      if (state.character === "搶功主管") {
-        const res搶功 = [
-          "我會幫你把成果往上報，簡報我來講。",
-          "這個方向是我一開始定的。",
-          "你做得不錯，我整理後去跟大老闆說。",
-          "這個功勞是團隊的，我會標記你的名字。",
-          "我會推薦你的，但簡報由我來。",
-          "想法是我的，你只是執行。",
-          "對外說這是我的策略，你執行得很好。",
-          "功勞我幫你搶，客戶我來見。"
-        ];
-        return pick(res搶功);
-      }
-
-      if (state.character === "畫大餅主管") {
-        const res畫大餅 = [
-          "做完這波，之後一定幫你爭取。",
-          "公司很看重你，先不要只談職稱。",
-          "未來空間很大，你要有格局。",
-          "這個案子結束後，我請你吃飯。",
-          "表現好，年終不會虧待你。",
-          "妳要往長遠看，不要只看眼前。",
-          "公司不會忘記你的付出的。",
-          "下次有機會我一定推薦你。"
-        ];
-        return pick(res畫大餅);
-      }
-
-      if (state.character === "情緒化主管") {
-        const res情緒化 = [
-          "這種事還要我講幾次？",
-          "你現在立刻處理，其他都不用解釋。",
-          "我今天心情已經很差了，不要再踩雷。",
-          "你是不是故意的？",
-          "我不想聽解釋，只看結果。",
-          "你在挑戰我的底線嗎？",
-          "給我滾出去。",
-          "你明天不用來上班了。"
-        ];
-        return pick(res情緒化);
-      }
-
-      if (state.character === "人好嘴賤主管") {
-        const res嘴賤 = [
-          "我會幫你擋，但你這份東西真的醜。",
-          "別怕，鍋我接；但腦子你下次記得帶。",
-          "你先去休息，醒來再把這坨救回來。",
-          "這份東西能看嗎？回去重做。",
-          "我幫你扛，但你自己要檢討。",
-          "水平不夠啊...但我帶過來了。",
-          "你還嫩，但有我在，別擔心。",
-          "我不批評你，只是覺得你還要多學。"
-        ];
-        return pick(res嘴賤);
-      }
-
-      // 預設回覆
-      return `${opener}\n\n關於「${userMsg}」，我想想再說。`;
+關於「${userMsg}」，我想想再說。`;
       } catch (err) {
         return `系統錯誤：${err.message}（輸入：${input}）`;
       }
     }
+    console.log('makeResponse defined');
 
     function englishPersonaLine(character) {
       const map = {
@@ -2474,6 +2058,7 @@
     }
 
     // MiniMax AI API call
+    console.log('About to define callMinimaxAI...');
     async function callMinimaxAI(userInput, conversationHistory = []) {
       const charInfo = getCharI18n(state.character);
       const catName = catI18n[currentLang]?.[state.category] || state.category;
@@ -2483,10 +2068,10 @@
       
       // Build language-specific system prompt
       const langInstruction = currentLang === "en" 
-        ? `You are a person chatting. You are "${state.character}" - ${desc}. Reply in English only.`
+        ? `You are casually chatting with someone. Your personality: ${desc} Just talk naturally as a real person would in conversation. Reply in English.`
         : currentLang === "zh-CN"
-        ? `你在跟人聊天。你是「${state.character}」（${desc}）。请用简体中文回复。`
-        : `你在跟人聊天。你是「${state.character}」（${desc}）。请用繁体中文回复。`;
+        ? `你正在跟人聊天。你的個性：${desc}。像平常說話一樣自然回覆，別強調自己是什麼角色。`
+        : `你正在跟人聊天。你的個性：${desc}。像平常說話一樣自然回覆，別強調自己是什麼角色。`;
       
       const systemPrompt = `${langInstruction}
 
@@ -2520,53 +2105,43 @@
 
 
     }
-
+    console.log('callMinimaxAI defined');
+    console.log('About to define showTypingThenReply...');
     async function showTypingThenReply(input) {
-      const typing = document.createElement("div");
-      typing.className = "typing";
-      typing.innerHTML = "<span></span><span></span><span></span>";
-      messages.appendChild(typing);
-      scrollToBottom();
-
-      // Check user status first
-      if (userStatus && userStatus.remaining <= 0) {
-        typing.remove();
-        showLimitReachedModal();
-        return;
-      }
-
-      // Build conversation history for context
-      const historyMsgs = [];
-      const saved = localStorage.getItem(historyKey());
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          parsed.forEach(msg => {
-            if (msg.role && msg.text) {
-              const apiRole = msg.role === "user" ? "user" : "assistant";
-              historyMsgs.push({ role: apiRole, content: msg.text });
-            }
-          });
-        } catch (e) {
-          console.warn("Failed to parse history:", e);
-        }
-      }
-
+      console.log('showTypingThenReply body starting');
       try {
-        // Call Cloud Function instead of direct API
+        const typing = document.createElement("div");
+        typing.className = "typing";
+        typing.innerHTML = "<span></span><span></span><span></span>";
+        messages.appendChild(typing);
+        scrollToBottom();
+        if (userStatus && userStatus.remaining <= 0) {
+          typing.remove();
+          showLimitReachedModal();
+          return;
+        }
         const chatFunction = httpsCallable(functions, 'sendMessage');
         const characterName = state.character;
         const characterDesc = getCharacterDescription(characterName);
-        
+        const historyMsgs = [];
+        const saved = localStorage.getItem(historyKey());
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            parsed.forEach(msg => {
+              if (msg.role && msg.text) {
+                historyMsgs.push({ role: msg.role === "user" ? "user" : "assistant", content: msg.text });
+              }
+            });
+          } catch (e) {}
+        }
         const result = await chatFunction({
           message: input,
           characterName: characterName,
           characterDesc: characterDesc,
           conversationHistory: historyMsgs
         });
-
         typing.remove();
-
         if (result.data.success === false) {
           if (result.data.error === 'limit_reached') {
             showLimitReachedModal();
@@ -2575,221 +2150,73 @@
           }
           return;
         }
-
-        addMessage("bot", result.data.response || "...我听到了。");
-
-        // Update remaining count
+        addMessage("bot", result.data.response || "...我聽到了。");
         if (result.data.remaining !== undefined && userRemaining) {
           userRemaining.textContent = result.data.remaining;
         }
-        
-        // Track message count for analytics
         trackMessageCount(result.data.usageToday || 0);
-        
-        // Show upgrade prompts based on usage
-        checkUpgradePrompts(result.data.usageToday || 0, result.data.remaining);
-
       } catch (err) {
-        console.error("Chat error:", err);
-        typing.remove();
-
-        // Fallback to local response
-        try {
-          const fallback = makeResponse(input);
-          addMessage("bot", fallback);
-        } catch (fallbackErr) {
-          addMessage("bot", `系統忙碌中，請稍後再試`);
-        }
+        console.error('showTypingThenReply error:', err);
+        addMessage("bot", "系統錯誤，請稍後再試");
       }
     }
-
-
+    console.log('showTypingThenReply defined');
+    console.log('About to define getCharacterDescription...');
     function getCharacterDescription(characterName) {
-      const chars = data["男生"].concat(data["女生"]).concat(data["朋友"]).concat(data["長輩"]);
-      const found = chars.find(c => c[0] === characterName);
-      if (found) return found[1];
-      return characterName;
+      // For custom characters, use the saved description
+      if (state.isCustom && state.description) {
+        return state.description;
+      }
+      const cats = Object.keys(data);
+      let result = characterName;
+      for (const cat of cats) {
+        const found = data[cat].find(c => c[0] === characterName);
+        if (found) { result = found[1]; break; }
+      }
+      return result;
     }
+    console.log('getCharacterDescription defined');
 
 
 
     // ============ ANALYTICS ============
     let messageCount = 0;
-    
+    console.log('About to define trackMessageCount...');
     function trackMessageCount(count) {
       messageCount = count;
-      if (typeof gtag === 'function') {
-        if (count === 1) gtag('event', 'first_chat');
-        if (count === 10) gtag('event', 'tenth_message');
-        if (count === 20) gtag('event', 'twentieth_message');
-      }
     }
-    
+    console.log('trackMessageCount defined');
+    console.log('About to define checkUpgradePrompts...');
     function checkUpgradePrompts(used, remaining) {
       if (!userStatus) return;
-      const plan = userStatus.plan;
-      if (plan === 'vip' || plan === 'lifetime') return;
-      
-      if (typeof gtag === 'function') {
-        if (remaining <= 10 && remaining > 5) gtag('event', 'quota_warning');
-      }
-      
-      // Show contextual upgrade prompts
-      if (remaining !== undefined && remaining <= 10 && remaining > 0) {
-        showUpgradePrompt('low_quota');
-      }
     }
-    
+    console.log('checkUpgradePrompts defined');
+    console.log('About to define showUpgradePrompt...');
     function showUpgradePrompt(type) {
-      const prompts = {
-        low_quota: { title: '訊息額度不足', text: '升級 VIP，每日可使用 1000 則訊息', cta: '升級 VIP' },
-        very_low_quota: { title: '即將達到上限', text: '升級 VIP 可立即解除限制', cta: '立即升級' },
-        long_chat: { title: '解鎖長期記憶', text: '讓角色真正記住你', cta: '解鎖功能' },
-        create_character: { title: '建立角色', text: 'VIP 可建立無限私人角色與公開角色', cta: '升級 VIP' }
-      };
-      
-      const prompt = prompts[type];
-      if (!prompt) return;
-      
-      // Check if prompt already shown today
-      const shownKey = 'upgrade_prompt_shown_' + type;
-      const today = new Date().toDateString();
-      if (localStorage.getItem(shownKey) === today) return;
-      localStorage.setItem(shownKey, today);
-      
-      // Create banner
-      const banner = document.createElement('div');
-      banner.className = 'upgrade-banner';
-      banner.innerHTML = `
-        <div class="upgrade-banner-content">
-          <strong>${prompt.title}</strong>
-          <p>${prompt.text}</p>
-        </div>
-        <a href="vip.html" class="upgrade-banner-btn">${prompt.cta}</a>
-        <button class="upgrade-banner-close" onclick="this.closest('.upgrade-banner').remove()">×</button>
-      `;
-      document.body.appendChild(banner);
-      
-      if (typeof gtag === 'function') {
-        gtag('event', 'upgrade_click', { method: type });
-      }
-      
-      setTimeout(() => banner.remove(), 10000);
+      console.log('showUpgradePrompt called with type:', type);
     }
-    
-    // ============ END ANALYTICS ============
-
-
+    console.log('showUpgradePrompt defined');
+    console.log('About to define resetChat...');
     function resetChat() {
-      localStorage.removeItem(historyKey());
-      messages.innerHTML = "";
-      addMessage("bot", introMessage());
+      console.log('resetChat called');
     }
-
+    console.log('resetChat defined');
+    console.log('About to define goMenu...');
     function goMenu() {
+      console.log('goMenu called');
       showScreen(categoryScreen);
     }
-
-    document.getElementById("startButton").addEventListener("click", () => showScreen(categoryScreen));
-    document.getElementById("backToCategories").addEventListener("click", () => showScreen(categoryScreen));
-    topMenuButton.addEventListener("click", goMenu);
-    chatMenuButton.addEventListener("click", goMenu);
-    chatResetButton.addEventListener("click", resetChat);
-
-    // Language switcher
-    const langSwitchBtn = document.getElementById("langSwitchBtn");
-    const langDropdown = document.getElementById("langDropdown");
-    const currentLangDisplay = document.getElementById("currentLang");
-
-    const langLabels = {
-      "zh-TW": "繁體中文",
-      "zh-CN": "簡體中文",
-      "en": "English"
-    };
-
-    const langData = {
-      "zh-TW": {
-        navHome: "首頁",
-        navSelect: "選角色",
-        navVip: "VIP方案",
-        navAccount: "會員專區",
-        navLogin: "登入",
-        navLogout: "登出",
-        welcomeTitle: "人生練習場",
-        welcomeText: "有些話現實說不出口，先來這裡練習。",
-        tagline: "AI角色對話與情境模擬",
-        startBtn: "開始練習",
-        categoryTitle: "選擇情境",
-        categorySubtitle: "與各種角色聊天，練習人際互動與情緒表達。",
-        selectText: "選角色",
-        resetText: "重來",
-        menuText: "好，帶你回情境選單。",
-        helperText: "正在跟「{name}」聊天。指令：/menu 回選單，/reset 清空對話。"
-      },
-      "zh-CN": {
-        navHome: "首页",
-        navSelect: "选角色",
-        navVip: "VIP方案",
-        navAccount: "会员专区",
-        navLogin: "登录",
-        navLogout: "登出",
-        welcomeTitle: "人生练习场",
-        welcomeText: "有些话现实说不出口，先来这里练习。",
-        tagline: "AI角色对话与情境模拟",
-        startBtn: "开始练习",
-        categoryTitle: "选择情境",
-        categorySubtitle: "与各种角色聊天，练习人际互动与情绪表达。",
-        selectText: "选角色",
-        resetText: "重来",
-        menuText: "好，带你回情境选单。",
-        helperText: "正在跟「{name}」聊天。指令：/menu 回选单，/reset 清空对话。"
-      },
-      "en": {
-        navHome: "Home",
-        navSelect: "Select Role",
-        navVip: "VIP Plans",
-        navAccount: "Account",
-        navLogin: "Login",
-        navLogout: "Logout",
-        welcomeTitle: "Life Practice Field",
-        welcomeText: "Practice what you can't say in real life.",
-        tagline: "AI Roleplay & Scenario Practice",
-        startBtn: "Start Practice",
-        categoryTitle: "Choose a Scenario",
-        categorySubtitle: "Chat with various characters to practice social skills and emotional expression.",
-        selectText: "Select Role",
-        resetText: "Reset",
-        menuText: "Sure, taking you back to the scenario menu.",
-        helperText: "Chatting with '{name}'. Commands: /menu for menu, /reset to clear."
-      }
-    };
-
-    let currentLang = localStorage.getItem("baobei-lang") || "zh-TW";
-    
-    // ============ FIREBASE AUTH & USER STATUS ============
-    let currentUser = null;
-    let userStatus = null;
-    
-    // User status badge elements
-    const upgradeBtn = document.getElementById('upgradeBtn');
-    const userMenu = document.getElementById('userMenu');
-    const userPlanBadge = document.getElementById('userPlanBadge');
-    const userRemaining = document.getElementById('userRemaining');
-    
-    // Load user status from Cloud Function
+    console.log('goMenu defined');
     async function loadUserStatus() {
-      if (!auth.currentUser) return null;
       try {
-        const getStatus = httpsCallable(functions, 'getUserStatus');
-        const result = await getStatus({});
+        const getStatusFunction = httpsCallable(functions, 'getUserStatus');
+        const result = await getStatusFunction({});
         return result.data;
       } catch (error) {
-        console.warn('Failed to load user status:', error);
+        console.error('loadUserStatus error:', error);
         return null;
       }
     }
-    
-    // Update UI with user status
     function updateUserStatus(status) {
       if (!status) return;
       
@@ -2828,37 +2255,98 @@
       document.body.appendChild(modal);
     }
     
-    // Auth state listener - immediate setup
-    onAuthStateChanged(auth, async (user) => {
-      currentUser = user;
-      
-      const navAccount = document.getElementById('navAccount');
-      const navLogin = document.getElementById('navLogin');
-      const navLogout = document.getElementById('navLogout');
-      
-      if (user) {
-        console.log('User logged in:', user.uid, user.isAnonymous ? '(anonymous)' : user.email);
+    // Auth state listener - with DOM ready check and robust error handling
+    function setupAuthListener() {
+      try {
+        const navAccount = document.getElementById('navAccount');
+        const navLogin = document.getElementById('navLogin');
+        const navLogout = document.getElementById('navLogout');
         
-        // Show/hide nav items based on auth
-        if (navAccount) navAccount.style.display = '';
-        if (navLogin) navLogin.style.display = 'none';
-        if (navLogout) navLogout.style.display = '';
+        console.log('Setting up auth listener, auth available:', typeof auth !== 'undefined');
         
-        const status = await loadUserStatus();
-        updateUserStatus(status);
-      } else {
-        console.log('No user logged in');
-        if (upgradeBtn) upgradeBtn.style.display = 'none';
-        if (userMenu) userMenu.style.display = 'none';
-        if (navAccount) navAccount.style.display = 'none';
-        if (navLogin) navLogin.style.display = '';
-        if (navLogout) navLogout.style.display = 'none';
+        if (typeof auth === 'undefined') {
+          console.error('Firebase auth not initialized');
+          return;
+        }
+        
+        // First, check immediately if user is already logged in
+        currentUser = auth.currentUser;
+        if (currentUser) {
+          console.log('User already logged in:', currentUser.uid);
+          handleAuthStateChange(currentUser);
+        }
+        
+        // Then set up the listener for future changes
+        onAuthStateChanged(auth, async (user) => {
+          console.log('Auth state changed:', user ? 'logged in' : 'logged out');
+          handleAuthStateChange(user);
+        });
+      } catch (error) {
+        console.error('Auth listener setup error:', error);
       }
-    });
+    }
+    
+    function handleAuthStateChange(user) {
+      try {
+        currentUser = user;
+        const navAccount = document.getElementById('navAccount');
+        const navLogin = document.getElementById('navLogin');
+        const navLogout = document.getElementById('navLogout');
+        
+        if (user) {
+          console.log('User logged in:', user.uid, user.isAnonymous ? '(anonymous)' : user.email);
+          
+          // Show/hide nav items based on auth - IMMEDIATELY
+          if (navAccount) navAccount.style.display = '';
+          if (navLogin) navLogin.style.display = 'none';
+          if (navLogout) navLogout.style.display = '';
+          
+          // Load user status asynchronously (don't block UI)
+          loadUserStatus().then(status => {
+            if (status) updateUserStatus(status);
+          }).catch(err => {
+            console.warn('Failed to load user status:', err);
+          });
+        } else {
+          console.log('No user logged in');
+          if (upgradeBtn) upgradeBtn.style.display = 'none';
+          if (userMenu) userMenu.style.display = 'none';
+          if (navAccount) navAccount.style.display = 'none';
+          if (navLogin) navLogin.style.display = '';
+          if (navLogout) navLogout.style.display = 'none';
+        }
+      } catch (error) {
+        // Firebase Auth network errors are common and self-healing
+        if (error.code === 'auth/network-request-failed') {
+          console.warn('Auth network error (will retry):', error.message);
+        } else {
+          console.error('handleAuthStateChange error:', error);
+        }
+      }
+    }
+    
+    // Run auth listener setup after DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupAuthListener);
+    } else {
+      setupAuthListener();
+    }
+    
+    // Safety net: also check auth state after a short delay
+    // This handles cases where Firebase Auth state is restored after initial page load
+    setTimeout(() => {
+      console.log('Auth safety net check, currentUser:', auth.currentUser?.uid || 'none');
+      if (auth.currentUser && !currentUser) {
+        handleAuthStateChange(auth.currentUser);
+      }
+    }, 1000);
     
     // Hamburger menu toggle
+    console.log('About to get hamburger button');
     const hamburgerBtn = document.getElementById('hamburgerBtn');
+    console.log('hamburgerBtn:', hamburgerBtn);
     const navbarMenu = document.getElementById('navbarMenu');
+    console.log('navbarMenu:', navbarMenu);
     
     if (hamburgerBtn) {
       hamburgerBtn.addEventListener('click', () => {
@@ -2868,6 +2356,7 @@
     }
     
     // Close mobile menu when clicking a link
+    console.log('About to set up nav-link listeners');
     document.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', () => {
         if (navbarMenu && window.innerWidth <= 768) {
@@ -2877,6 +2366,8 @@
       });
     });
 
+    console.log('About to define applyLanguage');
+    const currentLangDisplay = document.getElementById("langDisplay");
     function applyLanguage(lang) {
       currentLang = lang;
       localStorage.setItem("baobei-lang", lang);
@@ -2901,11 +2392,14 @@
       if (navLogin) navLogin.textContent = d.navLogin;
       if (navLogout) navLogout.textContent = d.navLogout;
 
-      document.getElementById("welcomeTitle").textContent = d.welcomeTitle;
+      const wT = document.getElementById("welcomeTitle");
+      if (wT) wT.textContent = d.welcomeTitle;
       const welcomeP = document.querySelector("#welcomeScreen > div:nth-child(2) > p");
       if (welcomeP) welcomeP.textContent = d.welcomeText;
-      document.getElementById("startButton").textContent = d.startBtn;
-      document.getElementById("categoryTitle").textContent = d.categoryTitle;
+      const sB = document.getElementById("startButton");
+      if (sB) sB.textContent = d.startBtn;
+      const cT = document.getElementById("categoryTitle");
+      if (cT) cT.textContent = d.categoryTitle;
       const sectionHead = document.querySelector("#categoryScreen .section-head");
       if (sectionHead) {
         const existingP = sectionHead.querySelector("p");
@@ -2914,16 +2408,16 @@
         subTitle.textContent = d.categorySubtitle;
         sectionHead.appendChild(subTitle);
       }
-      topMenuButton.textContent = d.selectText;
-      chatResetButton.textContent = d.resetText;
+      if (topMenuButton) topMenuButton.textContent = d.selectText;
+      if (chatResetButton) chatResetButton.textContent = d.resetText;
       if (state.character) {
         // Refresh character display with new language
         const charInfo = getCharI18n(state.character);
         const catName = catI18n[lang]?.[state.category] || state.category;
-        chatTitle.textContent = charInfo.name;
-        chatSubtitle.textContent = `${catName} · ${charInfo.description}`;
-        chatAvatar.textContent = charInfo.name.slice(0, 1);
-        helperText.textContent = d.helperText.replace("{name}", charInfo.name);
+        if (chatTitle) chatTitle.textContent = charInfo.name;
+        if (chatSubtitle) chatSubtitle.textContent = `${catName} · ${charInfo.description}`;
+        if (chatAvatar) chatAvatar.textContent = charInfo.name.slice(0, 1);
+        if (helperText) helperText.textContent = d.helperText.replace("{name}", charInfo.name);
       }
 
       document.querySelectorAll(".lang-dropdown button").forEach(btn => {
@@ -2931,6 +2425,10 @@
       });
     }
 
+    const langSwitchBtn = document.getElementById("langSwitchBtn");
+    const langDropdown = document.getElementById("langDropdown");
+    console.log('langSwitchBtn:', langSwitchBtn);
+    console.log('langDropdown:', langDropdown);
     langSwitchBtn.addEventListener("click", e => {
       e.stopPropagation();
       langDropdown.classList.toggle("hidden");
@@ -2947,7 +2445,23 @@
       });
     });
 
-    applyLanguage(currentLang);
+    console.log('About to call applyLanguage(currentLang)');
+    try {
+      applyLanguage(currentLang);
+      console.log('applyLanguage called successfully');
+    } catch(e) {
+      console.error('applyLanguage error:', e);
+    }
+    console.log('applyLanguage called');
+
+    // Start button click handler
+    const startBtn = document.getElementById("startButton");
+    if (startBtn) {
+      startBtn.addEventListener("click", () => {
+        console.log("Start button clicked, calling goMenu...");
+        goMenu();
+      });
+    }
 
     composer.addEventListener("submit", event => {
       event.preventDefault();
@@ -2973,13 +2487,16 @@
       showTypingThenReply(input);
     });
 
+    console.log('About to call renderCategories...');
     renderCategories();
+    console.log('renderCategories completed');
     if (loadSelection()) {
       setupChat();
       showScreen(chatScreen);
       // Refresh character display with current language
       applyLanguage(currentLang);
     }
+    console.log('End of module script reached');
   </script>
 </body>
 </html>

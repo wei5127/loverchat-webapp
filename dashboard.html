@@ -88,7 +88,8 @@
       <!-- Current Plan -->
       <div class="card">
         <div class="plan-card">
-          <div class="plan-badge" id="planBadge" style="background: #9CA3AF;">Guest</div>
+          <img src="" alt="Plan Badge" id="planBadgeImg" style="width:80px;height:80px;display:none;border-radius:16px;">
+          <div class="plan-badge" id="planBadgeFallback" style="background: #9CA3AF;">Guest</div>
           <div class="plan-info">
             <div class="plan-name" id="planName">Guest</div>
             <div class="plan-status" id="planStatus">遊客身份</div>
@@ -189,9 +190,31 @@
       document.getElementById('welcomeEmail').textContent = auth.currentUser?.email || '遊客身份';
       
       // Plan badge
-      const badge = document.getElementById('planBadge');
-      badge.textContent = status.planName;
-      badge.style.background = status.planColor;
+      const badgeImg = document.getElementById('planBadgeImg');
+      const badgeFallback = document.getElementById('planBadgeFallback');
+      
+      // Map plan to badge image
+      const badgeMap = {
+        'vip_trial': 'public/images/vip-badges/vip-trial.png',
+        'vip_basic_monthly': 'public/images/vip-badges/vip-basic-monthly.png',
+        'vip_basic_lifetime': 'public/images/vip-badges/vip-basic-lifetime.png',
+        'vip_pro_monthly': 'public/images/vip-badges/vip-pro-monthly.png',
+        'vip_pro_lifetime': 'public/images/vip-badges/vip-pro-lifetime.png',
+        'free': null,
+        'guest': null
+      };
+      
+      const badgeSrc = badgeMap[status.plan];
+      if (badgeSrc) {
+        badgeImg.src = badgeSrc;
+        badgeImg.style.display = 'block';
+        badgeFallback.style.display = 'none';
+      } else {
+        badgeImg.style.display = 'none';
+        badgeFallback.style.display = 'flex';
+        badgeFallback.textContent = status.planName;
+        badgeFallback.style.background = status.planColor;
+      }
       document.getElementById('planName').textContent = status.planName;
       
       // Status

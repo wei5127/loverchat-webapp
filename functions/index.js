@@ -2,9 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const stripe = require('stripe');
 
-admin.initializeApp({
-  projectId: 'loverchat-88cb3'
-});
+admin.initializeApp();
 const db = admin.firestore();
 
 // Initialize Stripe with config
@@ -116,8 +114,8 @@ async function getUserData(uid) {
     return userDoc.data();
   } catch (error) {
     console.error('getUserData error:', error);
-    // Return default data on error
-    return {
+    // Try to create the document with default data
+    const defaultData = {
       uid: uid,
       role: 'guest',
       plan: 'guest',
@@ -126,8 +124,16 @@ async function getUserData(uid) {
       lastMessageDate: null,
       subscriptionStatus: null,
       stripeCustomerId: null,
-      subscriptionId: null
+      subscriptionId: null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
+    try {
+      await db.collection('users').doc(uid).set(defaultData, { merge: true });
+    } catch (setError) {
+      console.error('getUserData set error:', setError);
+    }
+    return defaultData;
   }
 }
 
@@ -136,10 +142,15 @@ async function getTodayUsage(uid) {
   const userData = await getUserData(uid);
   
   if (userData.lastMessageDate !== today) {
-    await db.collection('users').doc(uid).update({
-      messagesUsedToday: 0,
-      lastMessageDate: today
-    });
+    try {
+      await db.collection('users').doc(uid).set({
+        messagesUsedToday: 0,
+        lastMessageDate: today
+      }, { merge: true });
+    } catch (error) {
+      console.error('getTodayUsage set error:', error);
+      // Continue anyway - we'll return 0 usage
+    }
     return 0;
   }
   return userData.messagesUsedToday || 0;
@@ -294,26 +305,55 @@ exports.getUserStatus = functions.https.onCall(async (data, context) => {
   }
   
   const uid = context.auth.uid;
-  const userData = await getUserData(uid);
-  const todayUsage = await getTodayUsage(uid);
-  const plan = PLANS[userData.plan] || PLANS.guest;
   
-  return {
-    uid: uid,
-    role: userData.role || 'guest',
-    plan: userData.plan || 'guest',
-    planName: plan.name,
-    planColor: plan.color,
-    dailyLimit: plan.dailyLimit,
-    usageToday: todayUsage,
-    remaining: plan.dailyLimit === -1 ? -1 : Math.max(0, plan.dailyLimit - todayUsage),
-    canCreateCharacter: plan.canCreateCharacter,
-    maxPrivateChars: plan.maxPrivateChars,
-    canSaveChat: plan.canSaveChat,
-    isAnonymous: userData.email ? false : true,
-    subscriptionStatus: userData.subscriptionStatus || null,
-    createdAt: userData.createdAt?.toDate?.()?.toISOString() || null
-  };
+  try {
+    const userData = await getUserData(uid);
+    let todayUsage = 0;
+    try {
+      todayUsage = await getTodayUsage(uid);
+    } catch (usageError) {
+      console.error('getTodayUsage error:', usageError);
+      // Continue with 0 usage
+    }
+    
+    const plan = PLANS[userData.plan] || PLANS.guest;
+    
+    return {
+      uid: uid,
+      role: userData.role || 'guest',
+      plan: userData.plan || 'guest',
+      planName: plan.name,
+      planColor: plan.color,
+      dailyLimit: plan.dailyLimit,
+      usageToday: todayUsage,
+      remaining: plan.dailyLimit === -1 ? -1 : Math.max(0, plan.dailyLimit - todayUsage),
+      canCreateCharacter: plan.canCreateCharacter,
+      maxPrivateChars: plan.maxPrivateChars,
+      canSaveChat: plan.canSaveChat,
+      isAnonymous: userData.email ? false : true,
+      subscriptionStatus: userData.subscriptionStatus || null,
+      createdAt: userData.createdAt?.toDate?.()?.toISOString() || null
+    };
+  } catch (error) {
+    console.error('getUserStatus error:', error);
+    // Return a default response so the app doesn't crash
+    return {
+      uid: uid,
+      role: 'guest',
+      plan: 'guest',
+      planName: '免費方案',
+      planColor: '#666666',
+      dailyLimit: 30,
+      usageToday: 0,
+      remaining: 30,
+      canCreateCharacter: false,
+      maxPrivateChars: 0,
+      canSaveChat: false,
+      isAnonymous: false,
+      subscriptionStatus: null,
+      createdAt: null
+    };
+  }
 });
 
 /**
@@ -545,4 +585,24 @@ exports.getMyCharacters = functions.https.onCall(async (data, context) => {
     .get();
   
   return characters.docs.map(doc => doc.data());
+});
+
+/**
+ * 重置測試用戶訊息計數（僅開發用）
+ */
+exports.resetTestMessages = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', '請先登入');
+  }
+  // Only allow the test user or admin
+  const uid = context.auth.uid;
+  if (uid !== '3rWURqzxmCWY8zIse8vYyC0G5aL2') {
+    throw new functions.https.HttpsError('permission-denied', 'Not allowed');
+  }
+  const userRef = db.collection('users').doc(uid);
+  await userRef.update({
+    messagesUsedToday: 0,
+    lastMessageDate: null
+  });
+  return { success: true };
 });
