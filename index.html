@@ -443,6 +443,79 @@
       line-height: 1.45;
       font-size: 0.9rem;
     }
+    
+    .favorite-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255,255,255,0.9);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      z-index: 2;
+    }
+    .favorite-btn:hover {
+      transform: scale(1.15);
+    }
+    .favorite-btn.active {
+      background: rgba(255,200,200,0.9);
+    }
+    
+    .choice {
+      position: relative;
+    }
+    
+    .recent-section {
+      margin-bottom: 24px;
+    }
+    .recent-section h3 {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .recent-grid {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .recent-grid::-webkit-scrollbar {
+      height: 4px;
+    }
+    .recent-grid::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border-radius: 2px;
+    }
+    .recent-item {
+      flex-shrink: 0;
+      background: white;
+      border-radius: 12px;
+      padding: 12px 16px;
+      min-width: 120px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid var(--line);
+    }
+    .recent-item:hover {
+      border-color: var(--pink);
+      transform: translateY(-2px);
+    }
+    .recent-item-name {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .recent-item-cat {
+      font-size: 12px;
+      color: var(--muted);
+    }
 
     .crumbs {
       display: flex;
@@ -1369,6 +1442,7 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
     import { getAuth, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
     import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
     
     // Firebase config
     const firebaseConfig = {
@@ -1384,6 +1458,7 @@
     console.log('Firebase initialized');
     const auth = getAuth(firebaseApp);
     const functions = getFunctions(firebaseApp);
+    const db = getFirestore(firebaseApp);
     
     const APP_VERSION = "v3.6";
     const STORAGE_KEY = "baobei-chat-selection-v1";
@@ -1717,6 +1792,83 @@
 
     let currentUser = null; // Module-level user reference
     let userStatus = null; // Module-level user status
+    let favorites = []; // User's favorite characters
+    let recentChats = JSON.parse(localStorage.getItem('baobei-recent-chats-v1') || '[]'); // Recently chatted characters
+    
+    // Load favorites from Firestore
+    async function loadFavorites() {
+      if (!auth.currentUser) return;
+      try {
+        const favDoc = await getDoc(doc(db, 'users', auth.currentUser.uid, 'data', 'favorites'));
+        if (favDoc.exists()) {
+          favorites = favDoc.data().characters || [];
+        } else {
+          favorites = [];
+        }
+      } catch (e) {
+        console.error('Failed to load favorites:', e);
+        favorites = [];
+      }
+    }
+    
+    // Toggle favorite status
+    async function toggleFavorite(category, charName) {
+      if (!auth.currentUser) {
+        alert(currentLang === 'en' ? 'Please login to save favorites' : '請先登入才能收藏角色');
+        return;
+      }
+      const charId = `${category}:${charName}`;
+      const isFav = favorites.includes(charId);
+      try {
+        const userRef = doc(db, 'users', auth.currentUser.uid, 'data', 'favorites');
+        if (isFav) {
+          // Remove from favorites
+          favorites = favorites.filter(f => f !== charId);
+          await updateDoc(userRef, { characters: arrayRemove(charId) });
+        } else {
+          // Add to favorites
+          favorites.push(charId);
+          await setDoc(userRef, { characters: arrayUnion(charId) }, { merge: true });
+        }
+        // Update UI
+        updateFavoriteButtons();
+      } catch (e) {
+        console.error('Failed to toggle favorite:', e);
+      }
+    }
+    
+    // Update all favorite buttons in the UI
+    function updateFavoriteButtons() {
+      document.querySelectorAll('.favorite-btn').forEach(btn => {
+        const charId = btn.dataset.charId;
+        if (favorites.includes(charId)) {
+          btn.textContent = '❤️';
+          btn.classList.add('active');
+        } else {
+          btn.textContent = '🤍';
+          btn.classList.remove('active');
+        }
+      });
+    }
+    
+    // Add to recent chats (called when starting a chat)
+    function addToRecentChats(category, charName, charDisplayName) {
+      const charId = `${category}:${charName}`;
+      const charInfo = { charId, category, charName, displayName: charDisplayName };
+      // Remove if already exists
+      recentChats = recentChats.filter(c => c.charId !== charId);
+      // Add to beginning
+      recentChats.unshift(charInfo);
+      // Keep only last 10
+      recentChats = recentChats.slice(0, 10);
+      // Save to localStorage
+      localStorage.setItem('baobei-recent-chats-v1', JSON.stringify(recentChats));
+    }
+    
+    // Check if character is favorited
+    function isFavorited(category, charName) {
+      return favorites.includes(`${category}:${charName}`);
+    }
 
     function showScreen(screen) {
       [welcomeScreen, categoryScreen, personalityScreen, chatScreen].forEach(item => {
@@ -1821,9 +1973,6 @@
 
     function renderCategories() {
       console.log('renderCategories called');
-      alert('renderCategories called! Check console!');
-      console.log('categoryGrid:', categoryGrid);
-      console.log('data:', typeof data, data ? Object.keys(data).length : 'undefined');
       try {
         if (!categoryGrid) {
           console.error('categoryGrid not found');
@@ -1834,6 +1983,40 @@
           console.error('data not defined');
           return;
         }
+        
+        // Add recent chats section if there are recent chats
+        if (recentChats.length > 0) {
+          const recentSection = document.createElement('div');
+          recentSection.className = 'recent-section';
+          const recentTitle = currentLang === 'en' ? 'Recent Chats' : (currentLang === 'zh-CN' ? '最近聊天' : '最近聊天');
+          recentSection.innerHTML = `<h3>🕐 ${recentTitle}</h3><div class="recent-grid"></div>`;
+          const recentGrid = recentSection.querySelector('.recent-grid');
+          recentChats.slice(0, 5).forEach(chat => {
+            const item = document.createElement('div');
+            item.className = 'recent-item';
+            item.onclick = () => {
+              // Navigate to this character
+              if (data[chat.category]) {
+                chooseCategory(chat.category);
+                // After choosing category, select the character
+                setTimeout(() => {
+                  const match = data[chat.category].find(item => item[0] === chat.charName);
+                  if (match) {
+                    choosePersonality(chat.category, chat.charName, match[1], match[2]);
+                  }
+                }, 100);
+              }
+            };
+            item.innerHTML = `
+              <div class="recent-item-name">${chat.displayName || chat.charName}</div>
+              <div class="recent-item-cat">${catI18n[currentLang]?.[chat.category] || chat.category}</div>
+            `;
+            recentGrid.appendChild(item);
+          });
+          categoryGrid.appendChild(recentSection);
+        }
+        
+        // Add category buttons
         console.log('Starting forEach, Object.keys(data):', Object.keys(data));
         Object.keys(data).forEach(catKey => {
           console.log('forEach item:', catKey);
@@ -2005,13 +2188,18 @@
           return;
         }
         data[category].forEach(([name, description, hint]) => {
-        const charInfo = currentLang === "en" ? (charI18n["en"][category]?.[name] || { name, description }) : { name, description };
-        const button = document.createElement("button");
-        button.className = "choice";
-        button.type = "button";
-        button.innerHTML = `<strong>${charInfo.name}</strong><span>${charInfo.description}</span>`;
-        button.onclick = () => { console.log('Button click:', name); choosePersonality(category, name, description, hint); };
-        personalityGrid.append(button);
+          const charInfo = currentLang === "en" ? (charI18n["en"][category]?.[name] || { name, description }) : { name, description };
+          const button = document.createElement("button");
+          button.className = "choice";
+          button.type = "button";
+          const isFav = isFavorited(category, name);
+          button.innerHTML = `
+            <button class="favorite-btn ${isFav ? 'active' : ''}" data-char-id="${category}:${name}" onclick="event.stopPropagation(); toggleFavorite('${category}', '${name}')">${isFav ? '❤️' : '🤍'}</button>
+            <strong>${charInfo.name}</strong>
+            <span>${charInfo.description}</span>
+          `;
+          button.onclick = () => { console.log('Button click:', name); choosePersonality(category, name, description, hint); };
+          personalityGrid.appendChild(button);
         });
       } catch (error) {
         console.error('renderPersonalities error:', error);
@@ -2427,12 +2615,13 @@ About what you said: ${state.englishHint}. ${isQuestion ? "I would avoid giving 
           if (navLogin) navLogin.style.display = 'none';
           if (navLogout) navLogout.style.display = '';
           
-          // Load user status asynchronously (don't block UI)
+          // Load user status and favorites asynchronously (don't block UI)
           loadUserStatus().then(status => {
             if (status) updateUserStatus(status);
           }).catch(err => {
             console.warn('Failed to load user status:', err);
           });
+          loadFavorites().then(() => updateFavoriteButtons());
         } else {
           console.log('No user logged in');
           if (upgradeBtn) upgradeBtn.style.display = 'none';
