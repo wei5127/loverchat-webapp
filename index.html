@@ -1586,8 +1586,9 @@
         categorySubtitle: "與各種角色聊天，練習人際互動與情緒表達。",
         selectText: "選擇情境",
         resetText: "重新開始",
-        helperText: "尝试与{name}展开对话吧！",
-        vipUpgrade: "升級 VIP"
+        helperText: "與{name}展開對話吧！",
+        vipUpgrade: "升級 VIP",
+        inputPlaceholder: "輸入訊息，或試試 /menu、/reset"
       },
       "zh-CN": {
         tagline: "AI角色对话与情境模拟",
@@ -1605,7 +1606,8 @@
         selectText: "选择情境",
         resetText: "重新开始",
         helperText: "尝试与{name}展开对话吧！",
-        vipUpgrade: "升级 VIP"
+        vipUpgrade: "升级 VIP",
+        inputPlaceholder: "输入信息，或试试 /menu、/reset"
       },
       "en": {
         tagline: "AI Roleplay & Scenario Simulation",
@@ -1623,7 +1625,8 @@
         selectText: "Choose a Scenario",
         resetText: "Restart",
         helperText: "Try starting a conversation with {name}!",
-        vipUpgrade: "Upgrade VIP"
+        vipUpgrade: "Upgrade VIP",
+        inputPlaceholder: "Type a message, or try /menu, /reset"
       }
     };
     
@@ -2739,6 +2742,7 @@ About what you said: ${state.englishHint}. ${isQuestion ? "I would avoid giving 
       }
       if (topMenuButton) topMenuButton.textContent = d.selectText;
       if (chatResetButton) chatResetButton.textContent = d.resetText;
+      if (messageInput) messageInput.placeholder = d.inputPlaceholder || '輸入訊息，或試試 /menu、/reset';
       if (state.character) {
         // Refresh character display with new language
         const charInfo = getCharI18n(state.character);
