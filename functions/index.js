@@ -680,3 +680,19 @@ exports.setUserPlan = functions.https.onCall(async (data, context) => {
   });
   return { success: true, plan };
 });
+
+// 載入 Admin API 函式
+try {
+  const adminApi = require('./admin-api');
+  // Re-export admin functions so Firebase can find them
+  if (adminApi) {
+    Object.keys(adminApi).forEach(key => {
+      if (!exports[key]) {
+        exports[key] = adminApi[key];
+        console.log(`Admin API exported: ${key}`);
+      }
+    });
+  }
+} catch (e) {
+  console.warn('Could not load admin-api.js:', e.message);
+}

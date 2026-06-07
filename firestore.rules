@@ -10,20 +10,42 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == uid;
     }
     
+    // ============ ADMIN HELPER FUNCTIONS ============
+    function isAdmin() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+      );
+    }
+    
+    function isSuperAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+    }
+    
     // ============ USERS ============
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      // 會員可以讀取自己的資料，管理員可以讀取所有會員資料
+      allow read: if isOwner(userId) || isAdmin();
       
-      // 可以更新自己的資料，但不能改 role/plan/subscriptionStatus/stripeCustomerId/subscriptionId/dailyLimit
+      // 會員可以更新自己的基本資料（但不能改 role/plan/subscription 等管理欄位）
       allow update: if isOwner(userId) && 
         !request.resource.data.diff(resource.data).affectedKeys()
           .hasAny([
             'role', 'plan', 'dailyLimit', 'subscriptionStatus', 
-            'stripeCustomerId', 'subscriptionId', 'messagesUsedToday'
+            'stripeCustomerId', 'subscriptionId', 'messagesUsedToday',
+            'disabled', 'isSuperAdmin'
           ]);
       
+      // 管理員可以更新會員的任何欄位
+      allow update: if isAdmin() &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['uid']);
+      
+      // 只有超級管理員可以刪除帳號
+      allow delete: if isSuperAdmin();
+      
+      // 建立：會員可以建立自己的 document
       allow create: if isOwner(userId);
-      allow delete: if false;
     }
     
     // ============ CHARACTERS ============
@@ -47,6 +69,51 @@ service cloud.firestore {
     // ============ MESSAGES ============
     match /messages/{docId} {
       allow read, write: if isAuthenticated();
+    }
+    
+    // ============ ADMIN COLLECTIONS ============
+    
+    // audit_logs: 會員和管理員都可以建立（系統记录），僅管理員可讀取
+    match /audit_logs/{logId} {
+      allow create: if isAuthenticated();
+      allow read: if isAdmin();
+      allow list: if isAdmin();
+      allow update, delete: if false;
+    }
+    
+    // analytics_events: 會員和管理員都可以建立，僅管理員可讀取
+    match /analytics_events/{eventId} {
+      allow create: if isAuthenticated();
+      allow read: if isAdmin();
+      allow list: if isAdmin();
+      allow update, delete: if false;
+    }
+    
+    // payments: 僅管理員可讀寫
+    match /payments/{paymentId} {
+      allow read, write: if isAdmin();
+      allow list: if isAdmin();
+    }
+    
+    // subscriptions: 僅管理員可讀寫
+    match /subscriptions/{subscriptionId} {
+      allow read, write: if isAdmin();
+      allow list: if isAdmin();
+    }
+    
+    // settings: 管理員可讀取，超級管理員可寫入
+    match /settings/{settingId} {
+      allow read: if isAdmin();
+      allow write: if isSuperAdmin();
+    }
+    
+    // usage_logs: 會員可寫入自己的記錄，管理員可讀取
+    match /usage_logs/{logId} {
+      allow create: if isAuthenticated();
+      allow read: if isAdmin();
+      allow list: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
     }
   }
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://loverchat-88cb3.web.app/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://loverchat-88cb3.web.app/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://loverchat-88cb3.web.app/?lang=zh-CN"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://loverchat-88cb3.web.app/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://loverchat-88cb3.web.app/"/>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://loverchat-88cb3.web.app/vip.html</loc>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://loverchat-88cb3.web.app/vip.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://loverchat-88cb3.web.app/vip.html?lang=zh-CN"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://loverchat-88cb3.web.app/vip.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://loverchat-88cb3.web.app/vip.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://loverchat-88cb3.web.app/pricing.html</loc>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://loverchat-88cb3.web.app/pricing.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://loverchat-88cb3.web.app/pricing.html?lang=zh-CN"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://loverchat-88cb3.web.app/pricing.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://loverchat-88cb3.web.app/pricing.html"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://loverchat-88cb3.web.app/success.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

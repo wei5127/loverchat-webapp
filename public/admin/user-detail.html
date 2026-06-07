@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>會員詳細｜管理後台</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .detail-header-info h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .detail-header-info .email {
+      color: var(--text-light);
+      font-size: 14px;
+    }
+    .edit-section {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .edit-section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .history-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .history-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-time { color: var(--text-light); min-width: 140px; }
+    .history-action { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebarInsert"></div>
+    <div class="main-content">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">👤 會員詳細</h1>
+          <p class="page-subtitle" id="pageSubtitle">載入中...</p>
+        </div>
+        <div class="page-actions">
+          <a href="users.html" class="btn btn-secondary">← 返回列表</a>
+          <button class="btn btn-secondary" onclick="location.reload()">🔄 重新整理</button>
+        </div>
+      </header>
+      
+      <div class="page-content">
+        <!-- BACK BUTTON + HEADER -->
+        <div class="detail-header">
+          <div class="detail-avatar" id="userAvatar">—</div>
+          <div class="detail-header-info">
+            <h1 id="userDisplayName">載入中...</h1>
+            <div class="email" id="userEmail">—</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;" id="statusBadge">
+           <span class="badge badge-success" id="accountStatus">正常</span>
+         </div>
+        </div>
+        
+        <!-- QUICK STATS -->
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+          <div class="stat-card">
+            <div class="stat-icon blue">💬</div>
+            <div>
+              <div class="stat-value" id="statMessagesToday">—</div>
+              <div class="stat-label">今日訊息</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">📅</div>
+            <div>
+              <div class="stat-value" id="statMessagesMonth">—</div>
+              <div class="stat-label">本月訊息</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">🎭</div>
+            <div>
+              <div class="stat-value" id="statChars">—</div>
+              <div class="stat-label">自訂角色數</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">📆</div>
+            <div>
+              <div class="stat-value" id="statDays">—</div>
+              <div class="stat-label">註冊天數</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- TWO COLUMN LAYOUT -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+          <!-- LEFT: 基本資料編輯 -->
+          <div>
+            <div class="edit-section">
+              <div class="edit-section-title">✏️ 帳號資料</div>
+              
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="text" class="form-input" id="editEmail" disabled>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">UID</label>
+                <input type="text" class="form-input font-mono" id="editUid" disabled>
+              </div>
+              
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-group">
+                  <label class="form-label">會員方案</label>
+                  <select class="form-select" id="editPlan">
+                    <option value="guest">遊客 Guest</option>
+                    <option value="free">免費 Free</option>
+                    <option value="vip_trial">體驗 Trial</option>
+                    <option value="vip_basic_monthly">Basic 月費</option>
+                    <option value="vip_basic_lifetime">Basic 終身</option>
+                    <option value="vip_pro_monthly">Pro 月費</option>
+                    <option value="vip_pro_lifetime">Pro 終身</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">角色</label>
+                  <select class="form-select" id="editRole" disabled>
+                    <option value="user">一般會員</option>
+                    <option value="admin">管理員</option>
+                    <option value="super_admin">超級管理員</option>
+                  </select>
+                  <div class="form-hint" id="roleHint">僅 super_admin 可修改</div>
+                </div>
+              </div>
+              
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-group">
+                  <label class="form-label">每日訊息上限</label>
+                  <input type="number" class="form-input" id="editDailyLimit" min="-1">
+                  <div class="form-hint">-1 = 無限</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">最大自訂角色數</label>
+                  <input type="number" class="form-input" id="editMaxChars" min="-1">
+                  <div class="form-hint">-1 = 無限</div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">訂閱狀態</label>
+                <select class="form-select" id="editSubStatus">
+                  <option value="">無訂閱</option>
+                  <option value="active">已訂閱</option>
+                  <option value="cancelled">已取消</option>
+                  <option value="past_due">逾期</option>
+                  <option value="trialing">體驗中</option>
+                </select>
+              </div>
+              
+              <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+                <label class="switch">
+                  <input type="checkbox" id="editDisabled">
+                  <span class="switch-slider"></span>
+                </label>
+                <span id="disabledLabel">帳號正常</span>
+              </div>
+              
+              <div style="margin-top:20px;display:flex;gap:12px;">
+                <button class="btn btn-primary" id="saveBtn" onclick="saveChanges()">💾 儲存變更</button>
+                <button class="btn btn-secondary" id="resetBtn" onclick="resetUser()">🔄 重置</button>
+              </div>
+              
+              <div id="saveStatus" style="margin-top:12px;font-size:13px;"></div>
+            </div>
+          </div>
+          
+          <!-- RIGHT: 其他資訊 -->
+          <div>
+            <!-- 訂閱資訊 -->
+            <div class="edit-section">
+              <div class="edit-section-title">💳 訂閱資訊</div>
+              <div id="subscriptionInfo">
+                <div class="text-muted">載入中...</div>
+              </div>
+            </div>
+            
+            <!-- 付款記錄 -->
+            <div class="edit-section">
+              <div class="edit-section-title">💰 付款記錄</div>
+              <div id="paymentHistory">
+                <div class="text-muted">載入中...</div>
+              </div>
+            </div>
+            
+            <!-- 操作紀錄 -->
+            <div class="edit-section">
+              <div class="edit-section-title">📋 對此會員的操作紀錄</div>
+              <div class="history-list" id="userAuditLogs">
+                <div class="text-muted">無操作紀錄</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module" src="js/admin-shared.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import AdminAuth from './js/admin-auth.js';
+    
+    const user = await AdminAuth.checkAuth();
+    if (!user) window.location.href = 'login.html';
+    injectSidebar(user);
+    
+    // Get UID from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetUid = urlParams.get('uid');
+    
+    if (!targetUid) {
+      alert('缺少會員 UID');
+      window.location.href = 'users.html';
+    }
+    
+    document.getElementById('pageSubtitle').textContent = 'UID: ' + targetUid;
+    
+    let originalData = null;
+    
+    const planDisplayNames = {
+      guest: '遊客 Guest',
+      free: '免費 Free', 
+      vip_trial: '體驗 Trial',
+      vip_basic_monthly: 'Basic 月費',
+      vip_basic_lifetime: 'Basic 終身',
+      vip_pro_monthly: 'Pro 月費',
+      vip_pro_lifetime: 'Pro 終身'
+    };
+    
+    async function loadUserDetail() {
+      try {
+        const data = await AdminAuth.api('adminGetUser', { uid: targetUid });
+        originalData = data;
+        
+        // Header
+        document.getElementById('userDisplayName').textContent = data.displayName || data.email || '（匿名會員）';
+        document.getElementById('userEmail').textContent = data.email || '（匿名）';
+        document.getElementById('userAvatar').textContent = (data.email || 'A')[0].toUpperCase();
+        
+        // Status badge
+        if (data.disabled) {
+          document.getElementById('accountStatus').className = 'badge badge-danger';
+          document.getElementById('accountStatus').textContent = '已停權';
+        } else {
+          document.getElementById('accountStatus').className = 'badge badge-success';
+          document.getElementById('accountStatus').textContent = '正常';
+        }
+        
+        // Stats
+        document.getElementById('statMessagesToday').textContent = data.messagesUsedToday ||0;
+        document.getElementById('statMessagesMonth').textContent = data.messagesUsedMonth || data.messagesUsedToday || 0;
+        document.getElementById('statChars').textContent = data.privateCharCount || 0;
+        
+        if (data.createdAt) {
+          const created = new Date(data.createdAt);
+          const days = Math.floor((Date.now() - created) / (1000 * 60 * 60 * 24));
+          document.getElementById('statDays').textContent = days;
+        }
+        
+        // Form fields
+        document.getElementById('editEmail').value = data.email || '（匿名）';
+        document.getElementById('editUid').value = data.uid;
+        document.getElementById('editPlan').value = data.plan || 'guest';
+        document.getElementById('editRole').value = data.role || 'user';
+        document.getElementById('editDailyLimit').value = data.dailyLimit ?? -1;
+        document.getElementById('editMaxChars').value = data.maxPrivateChars ?? -1;
+        document.getElementById('editSubStatus').value = data.subscriptionStatus || '';
+        document.getElementById('editDisabled').checked = !!data.disabled;
+        document.getElementById('disabledLabel').textContent = data.disabled ? '帳號已停權' : '帳號正常';
+        
+        // Role edit permission - only super_admin can change
+        if (AdminAuth.isSuperAdmin) {
+          document.getElementById('editRole').disabled = false;
+          document.getElementById('roleHint').textContent = '';
+        }
+        
+        // Subscription info
+        const subInfo = document.getElementById('subscriptionInfo');
+        if (data.subscriptionId) {
+          subInfo.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="user-detail-item">
+                <div class="user-detail-label">方案</div>
+                <div class="user-detail-value">${planDisplayNames[data.plan] || data.plan}</div>
+              </div>
+              <div class="user-detail-item">
+                <div class="user-detail-label">訂閱狀態</div>
+                <div class="user-detail-value">${data.subscriptionStatus || '—'}</div>
+              </div>
+              <div class="user-detail-item">
+                <div class="user-detail-label">Stripe Customer ID</div>
+                <div class="user-detail-value font-mono text-sm">${data.stripeCustomerId || '—'}</div>
+              </div>
+              <div class="user-detail-item">
+                <div class="user-detail-label">Subscription ID</div>
+                <div class="user-detail-value font-mono text-sm">${data.subscriptionId || '—'}</div>
+              </div>
+            </div>
+          `;
+        } else {
+          subInfo.innerHTML = '<div class="text-muted">無訂閱資料</div>';
+        }
+        
+        // Payment history
+        const payHistory = document.getElementById('paymentHistory');
+        if (data.payments && data.payments.length > 0) {
+          payHistory.innerHTML = data.payments.slice(0, 5).map(p => `
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+              <span>${AdminAuth.formatDate(p.createdAt)}</span>
+              <span style="font-weight:600;">${AdminAuth.formatCurrency(p.amount, p.currency)}</span>
+              <span class="badge badge-${p.status === 'succeeded' ? 'success' : p.status === 'failed' ? 'danger' : 'warning'}">${p.status}</span>
+            </div>
+          `).join('');
+        } else {
+          payHistory.innerHTML = '<div class="text-muted">無付款記錄</div>';
+        }
+        
+        // Audit logs for this user
+        const auditList = document.getElementById('userAuditLogs');
+        if (data.userAuditLogs && data.userAuditLogs.length > 0) {
+          auditList.innerHTML = data.userAuditLogs.map(log => `
+            <div class="history-item">
+              <span class="history-time">${AdminAuth.formatDate(log.createdAt)}</span>
+              <span class="history-action">${log.action}</span>
+              <span class="text-muted">by ${log.adminEmail}</span>
+            </div>
+          `).join('');
+        } else {
+          auditList.innerHTML = '<div class="text-muted">無操作紀錄</div>';
+        }
+        
+      } catch (e) {
+        AdminAuth.showToast('載入失敗：' + e.message, 'error');
+      }
+    }
+    
+    // Disabled toggle label update
+    document.getElementById('editDisabled').addEventListener('change', function() {
+      document.getElementById('disabledLabel').textContent = this.checked ? '帳號已停權' : '帳號正常';
+    });
+    
+    window.saveChanges = async function() {
+      if (!originalData) return;
+      
+      const updates = {
+        plan: document.getElementById('editPlan').value,
+        role: document.getElementById('editRole').value,
+        dailyLimit: parseInt(document.getElementById('editDailyLimit').value, 10),
+        maxPrivateChars: parseInt(document.getElementById('editMaxChars').value, 10),
+        subscriptionStatus: document.getElementById('editSubStatus').value || null,
+        disabled: document.getElementById('editDisabled').checked
+      };
+      
+      const saveBtn = document.getElementById('saveBtn');
+      const statusEl = document.getElementById('saveStatus');
+      
+      saveBtn.disabled = true;
+      saveBtn.textContent = '儲存中...';
+      
+      try {
+        await AdminAuth.api('adminUpdateUser', { uid: targetUid, updates });
+        statusEl.innerHTML = '<span style="color:var(--success);">✅ 儲存成功！</span>';
+        setTimeout(() => location.reload(), 1000);
+      } catch (e) {
+        statusEl.innerHTML = '<span style="color:var(--danger);">❌ 儲存失敗：' + e.message + '</span>';
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 儲存變更';
+      }
+    };
+    
+    window.resetUser = function() {
+      if (originalData) loadUserDetail();
+    };
+    
+    loadUserDetail();
+  </script>
+</body>
+</html>

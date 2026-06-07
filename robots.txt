@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://loverchat-88cb3.web.app/sitemap.xml
+
+# Crawl-delay (optional, be nice to search engines)
+Crawl-delay: 1
+
+# Disallow admin pages
+Disallow: /public/admin/
+Disallow: /public/admin/*
+
+# Disallow auth-related pages
+Disallow: /login.html
+Disallow: /account.html
+Disallow: /dashboard.html

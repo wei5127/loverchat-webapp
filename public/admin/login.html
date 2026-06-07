@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理員登入｜人生練習場</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    .admin-note {
+      background: #f5f3ff;
+      border: 1px solid #ddd6fe;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #6b21a8;
+      margin-top: 16px;
+      text-align: left;
+      line-height: 1.6;
+    }
+    .admin-note strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-page" id="loginPage">
+    <div class="login-card">
+      <div class="login-logo">管</div>
+      <h1 class="login-title">管理員登入</h1>
+      <p class="login-subtitle">人生練習場後台管理系統</p>
+      
+      <div id="loginError" class="login-error" style="display:none;"></div>
+      
+      <button class="google-login-btn" id="googleBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/>
+        </svg>
+        以 Google 帳號登入
+      </button>
+      
+      <div class="admin-note">
+        <strong>⚠️ 僅限受權管理員</strong>
+        此頁面僅供已授權的管理員使用。一般的會員帳號無法登入後台系統。
+        <br><br>
+        如需管理員權限，請聯繫超級管理員（wei512712@gmail.com）。
+      </div>
+      
+      <p class="login-note">
+        <a href="../index.html" style="color:#75687f;">← 返回網站首頁</a>
+      </p>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyBgCHhpBgJofh6fuEnFcy1CdQYxlCV-OUQ",
+      authDomain: "loverchat-88cb3.firebaseapp.com",
+      projectId: "loverchat-88cb3",
+      storageBucket: "loverchat-88cb3.firebasestorage.app",
+      messagingSenderId: "726884368190",
+      appId: "1:726884368190:web:897b286fde11396928766f"
+    };
+    
+    const app = initializeApp(firebaseConfig, 'admin');
+    const auth = getAuth(app);
+    
+    function showError(msg) {
+      const el = document.getElementById('loginError');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+    
+    function hideError() {
+      document.getElementById('loginError').style.display = 'none';
+    }
+    
+    // 檢查是否已經登入（檢查 Firestore 中的 admin 權限）
+    async function checkAdminAndRedirect() {
+      if (!auth.currentUser) return;
+      
+      try {
+        // 呼叫 adminCheckAuth 驗證是否有後台權限
+        const { getFunctions, httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js');
+        const functions = getFunctions(app);
+        const fn = httpsCallable(functions, 'adminCheckAuth');
+        const result = await fn({});
+        const data = result.data || {};
+        
+        if (data.authenticated && data.isAdmin) {
+          // 有權限，前往 dashboard
+          window.location.href = 'dashboard.html';
+        } else {
+          // 沒有權限，強制登出
+          showError('此帳號沒有後台管理權限。如需權限請聯繫 super_admin。');
+          await auth.signOut();
+        }
+      } catch (e) {
+        console.error('Admin check failed:', e);
+        // 網路錯誤時不阻擋登入流程
+      }
+    }
+    
+    // 處理 Google 登入結果（從 redirect 回來時）
+    async function handleRedirect() {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          // 登入成功，檢查 admin 權限
+          await checkAdminAndRedirect();
+        }
+      } catch (e) {
+        console.error('Redirect result error:', e);
+        const errorMap = {
+          'auth/popup-closed-by-user': '登入已取消',
+          'auth/network-request-failed': '網路連線失敗，請稍後重試',
+          'auth/cancelled-popup-request': '登入已取消',
+          'auth/timeout': '連線逾時，請重試'
+        };
+        showError(errorMap[e.code] || '登入失敗：' + (e.message || e.code || '未知錯誤'));
+      }
+    }
+    
+    // Google 登入按鈕
+    document.getElementById('googleBtn').addEventListener('click', async () => {
+      hideError();
+      const btn = document.getElementById('googleBtn');
+      btn.disabled = true;
+      btn.textContent = '重新導向至 Google...';
+      
+      try {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        await signInWithRedirect(auth, provider);
+        // 頁面會被重導向到 Google，回來後 handleRedirect 會處理
+      } catch (e) {
+        console.error('Sign-in error:', e);
+        if (e.code !== 'auth/redirect-cancelled-by-user') {
+          showError('Google 登入失敗：' + (e.message || e.code));
+        }
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.96H.957C.356 6.218 0 7.547 0 9s.356 2.783.957 4.04l2.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.04l2.007 2.332C4.672 4.164 6.56 3.58 9 3.58z"/></svg> 以 Google 帳號登入`;
+      }
+    });
+    
+    // 啟動時檢查 redirect 結果
+    handleRedirect();
+  </script>
+</body>
+</html>

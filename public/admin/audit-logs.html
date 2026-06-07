@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>📋 操作日誌｜管理後台</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebarInsert"></div>
+    <div class="main-content">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">📋 操作日誌</h1>
+          <p class="page-subtitle" id="pageSubtitle">管理員操作紀錄</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="location.reload()">🔄 重新整理</button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- FILTERS -->
+        <div class="filter-bar">
+          <div class="search-input-wrap" style="flex:1;max-width:360px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-input" id="searchInput" placeholder="搜尋管理員 Email...">
+          </div>
+          <select class="form-select" id="actionFilter" style="width:auto;min-width:160px;">
+            <option value="">全部動作</option>
+            <option value="user_update">用戶更新</option>
+            <option value="payment_success">付款成功</option>
+            <option value="payment_failed">付款失敗</option>
+            <option value="user_disabled">停權</option>
+            <option value="user_enabled">啟用</option>
+            <option value="settings_update">設定更新</option>
+            <option value="webhook_received">Webhook</option>
+          </select>
+          <select class="form-select" id="targetFilter" style="width:auto;min-width:140px;">
+            <option value="">目標類型</option>
+            <option value="user">用戶</option>
+            <option value="payment">付款</option>
+            <option value="settings">設定</option>
+            <option value="stripe">Stripe</option>
+          </select>
+          <button class="btn btn-primary" id="searchBtn">🔍 搜尋</button>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>時間</th>
+                <th>動作</th>
+                <th>目標類型</th>
+                <th>目標 ID</th>
+                <th>管理員</th>
+                <th>異動內容</th>
+              </tr>
+            </thead>
+            <tbody id="logsTable">
+              <tr><td colspan="6" style="text-align:center;padding:40px;color:#9ca3af;">載入中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination">
+          <div class="pagination-info" id="paginationInfo">—</div>
+          <div class="pagination-buttons">
+            <button class="btn btn-secondary btn-sm" id="prevBtn" disabled>← 上一頁</button>
+            <button class="btn btn-secondary btn-sm" id="nextBtn" disabled>下一頁 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin-shared.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import AdminAuth from './js/admin-auth.js';
+
+    const user = await AdminAuth.checkAuth();
+    if (!user) window.location.href = 'login.html';
+    injectSidebar(user);
+
+    let currentPage = 1;
+    let currentSearch = '';
+    let currentAction = '';
+    let currentTarget = '';
+
+    const actionColors = {
+      user_update: '#3b82f6',
+      payment_success: '#10b981',
+      payment_failed: '#ef4444',
+      user_disabled: '#ef4444',
+      user_enabled: '#10b981',
+      settings_update: '#8b5cf6',
+      webhook_received: '#6b7280'
+    };
+
+    const actionNames = {
+      user_update: '用戶更新',
+      payment_success: '付款成功',
+      payment_failed: '付款失敗',
+      user_disabled: '停權',
+      user_enabled: '啟用',
+      settings_update: '設定更新',
+      webhook_received: 'Webhook'
+    };
+
+    function formatJson(val) {
+      if (!val) return '<span class="text-muted">—</span>';
+      try {
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        return JSON.stringify(obj, null, 2)
+          .replace(/\n/g, '<br>')
+          .replace(/ /g, '&nbsp;');
+      } catch {
+        return String(val);
+      }
+    }
+
+    window.toggleLogRow = function(id) {
+      const row = document.getElementById('log-detail-' + id);
+      if (row) {
+        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+      }
+    };
+
+    async function loadLogs(page = 1) {
+      AdminAuth.showLoading('載入操作日誌...');
+      try {
+        const data = await AdminAuth.api('adminGetAuditLogs', {
+          page,
+          search: currentSearch,
+          action: currentAction,
+          targetType: currentTarget
+        });
+
+        currentPage = data.page || page;
+        const tbody = document.getElementById('logsTable');
+
+        if (!data.logs || data.logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#9ca3af;">找不到操作紀錄</td></tr>';
+        } else {
+          tbody.innerHTML = data.logs.map(log => {
+            const color = actionColors[log.action] || '#9ca3af';
+            const actionName = actionNames[log.action] || log.action;
+            const hasDetails = log.oldValue || log.newValue;
+            const shortId = (log.targetId || '—').slice(0, 16);
+            return `
+              <tr onclick="${hasDetails ? `toggleLogRow('${log.id}')` : ''}" style="${hasDetails ? 'cursor:pointer;' : ''}">
+                <td><span class="text-sm text-muted">${AdminAuth.formatDate(log.createdAt)}</span></td>
+                <td>
+                  <span style="color:${color};font-weight:600;">${actionName}</span>
+                </td>
+                <td><span class="badge badge-gray">${log.targetType || '—'}</span></td>
+                <td><span class="font-mono text-sm">${shortId}...</span></td>
+                <td><span class="text-sm">${log.adminEmail || 'system'}</span></td>
+                <td>${hasDetails ? '<button class="btn btn-secondary btn-sm">👁️ 檢視</button>' : '<span class="text-muted text-sm">—</span>'}</td>
+              </tr>
+              ${hasDetails ? `
+              <tr id="log-detail-${log.id}" style="display:none;background:#fafafa;">
+                <td colspan="6" style="padding:16px 24px;">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;margin-bottom:6px;">舊值</div>
+                      <pre style="background:#f3f4f6;border-radius:8px;padding:12px;font-size:12px;font-family:monospace;white-space:pre-wrap;max-height:200px;overflow:auto;">${formatJson(log.oldValue)}</pre>
+                    </div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;margin-bottom:6px;">新值</div>
+                      <pre style="background:#f3f4f6;border-radius:8px;padding:12px;font-size:12px;font-family:monospace;white-space:pre-wrap;max-height:200px;overflow:auto;">${formatJson(log.newValue)}</pre>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              ` : ''}
+            `;
+          }).join('');
+        }
+
+        // Pagination
+        const perPage = 50;
+        const start = (currentPage - 1) * perPage + 1;
+        const end = Math.min(currentPage * perPage, data.totalCount || 0);
+        document.getElementById('paginationInfo').textContent = data.totalCount > 0
+          ? `顯示 ${start}-${end}，共 ${data.totalCount} 筆`
+          : '共 0 筆';
+        document.getElementById('prevBtn').disabled = currentPage <= 1;
+        document.getElementById('nextBtn').disabled = !data.hasMore;
+
+      } catch (e) {
+        AdminAuth.showToast('載入失敗：' + e.message, 'error');
+      } finally {
+        AdminAuth.hideLoading();
+      }
+    }
+
+    // Search
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      currentSearch = document.getElementById('searchInput').value.trim();
+      currentAction = document.getElementById('actionFilter').value;
+      currentTarget = document.getElementById('targetFilter').value;
+      loadLogs(1);
+    });
+
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('searchBtn').click();
+    });
+
+    // Pagination
+    document.getElementById('prevBtn').addEventListener('click', () => loadLogs(currentPage - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => loadLogs(currentPage + 1));
+
+    loadLogs(1);
+  </script>
+</body>
+</html>

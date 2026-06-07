@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚙️ 系統設定｜管理後台</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebarInsert"></div>
+    <div class="main-content">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">⚙️ 系統設定</h1>
+          <p class="page-subtitle" id="pageSubtitle">系統配置與維運</p>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- SYSTEM INFO -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-title">🖥️ 系統資訊</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;margin-top:8px;">
+            <div class="user-detail-item">
+              <div class="user-detail-label">Node.js 版本</div>
+              <div class="user-detail-value font-mono" id="sysNodeVersion">—</div>
+            </div>
+            <div class="user-detail-item">
+              <div class="user-detail-label">Firebase 地區</div>
+              <div class="user-detail-value font-mono" id="sysFirebaseRegion">—</div>
+            </div>
+            <div class="user-detail-item">
+              <div class="user-detail-label">Cloud Functions 地區</div>
+              <div class="user-detail-value font-mono" id="sysFunctionsRegion">—</div>
+            </div>
+            <div class="user-detail-item">
+              <div class="user-detail-label">運行時間</div>
+              <div class="user-detail-value font-mono" id="sysUptime">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEATURE FLAGS -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-title">🚩 功能開關</div>
+          <div style="display:flex;flex-direction:column;gap:16px;margin-top:8px;" id="featureFlags">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+              <div>
+                <div style="font-weight:600;font-size:14px;">開放註冊</div>
+                <div class="text-sm text-muted">允許新用戶註冊帳號</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="flagRegistration" onchange="updateSetting('registrationEnabled', this.checked)">
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+              <div>
+                <div style="font-weight:600;font-size:14px;">Google 登入</div>
+                <div class="text-sm text-muted">啟用 Google OAuth 登入</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="flagGoogleLogin" onchange="updateSetting('googleLoginEnabled', this.checked)">
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+              <div>
+                <div style="font-weight:600;font-size:14px;">維護模式</div>
+                <div class="text-sm text-muted">啟用後所有用戶無法使用（超級管理員除外）</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="flagMaintenance" onchange="updateSetting('maintenanceMode', this.checked)">
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- API CONFIGURATION -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-title">🔑 API 設定</div>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:20px;">💳</span>
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:14px;">Stripe</div>
+                <div class="text-sm text-muted">金流 API 連接狀態</div>
+              </div>
+              <span id="stripeStatus" class="badge badge-gray">—</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:20px;">🤖</span>
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:14px;">MiniMax API</div>
+                <div class="text-sm text-muted">AI 聊天回應 API 狀態</div>
+              </div>
+              <span id="minimaxStatus" class="badge badge-gray">—</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;">
+              <span style="font-size:20px;">🔗</span>
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:14px;">Stripe Webhook URL</div>
+                <div class="text-sm font-mono text-muted">https://us-central1-loverchat-88cb3.cloudfunctions.net/adminStripeWebhook</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="copyWebhook()">📋複製</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DANGER ZONE -->
+        <div class="card" style="border-color:#fecaca;margin-bottom:24px;">
+          <div class="card-title" style="color:var(--danger);">☠️ 危險區域</div>
+          <div style="display:flex;flex-direction:column;gap:16px;margin-top:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #fecaca;">
+              <div>
+                <div style="font-weight:600;font-size:14px;">重置所有訪客帳號</div>
+                <div class="text-sm text-muted">清除所有訪客的今日使用量（messagesUsedToday）</div>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="resetGuestAccounts()">⚠️ 確認重置</button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+              <div>
+                <div style="font-weight:600;font-size:14px;">強制登出所有用戶</div>
+                <div class="text-sm text-muted">撤銷所有 session，強制所有用戶重新登入</div>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="forceLogoutAll()">⚠️ 確認登出</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin-shared.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import AdminAuth from './js/admin-auth.js';
+
+    const user = await AdminAuth.checkAuth();
+    if (!user) window.location.href = 'login.html';
+
+    // Only super_admin can access settings
+    if (!AdminAuth.isSuperAdmin) {
+      AdminAuth.showToast('需要超級管理員權限', 'error');
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    injectSidebar(user);
+
+    window.copyWebhook = function() {
+      const url = 'https://us-central1-loverchat-88cb3.cloudfunctions.net/adminStripeWebhook';
+      navigator.clipboard.writeText(url).then(() => {
+        AdminAuth.showToast('已複製到剪貼簿', 'success');
+      }).catch(() => {
+        AdminAuth.showToast('複製失敗，請手動複製', 'error');
+      });
+    };
+
+    window.updateSetting = async function(key, value) {
+      try {
+        await AdminAuth.api('adminUpdateSettings', {
+          updates: { [key]: value }
+        });
+        AdminAuth.showToast('設定已更新', 'success');
+        loadSettings();
+      } catch (e) {
+        AdminAuth.showToast('更新失敗：' + e.message, 'error');
+        // Revert toggle
+        loadSettings();
+      }
+    };
+
+    window.resetGuestAccounts = async function() {
+      if (!confirm('⚠️ 確定要重置所有訪客帳號的今日使用量嗎？\n此操作無法復原。')) return;
+      AdminAuth.showLoading('重置中...');
+      try {
+        await AdminAuth.api('adminUpdateSettings', {
+          action: 'resetGuestAccounts'
+        });
+        AdminAuth.showToast('訪客帳號已重置', 'success');
+      } catch (e) {
+        AdminAuth.showToast('重置失敗：' + e.message, 'error');
+      } finally {
+        AdminAuth.hideLoading();
+      }
+    };
+
+    window.forceLogoutAll = async function() {
+      if (!confirm('⚠️ 確定要強制登出所有用戶嗎？\n所有用戶將需要重新登入。')) return;
+      AdminAuth.showLoading('登出中...');
+      try {
+        await AdminAuth.api('adminUpdateSettings', {
+          action: 'forceLogoutAll'
+        });
+        AdminAuth.showToast('所有用戶已登出', 'success');
+      } catch (e) {
+        AdminAuth.showToast('操作失敗：' + e.message, 'error');
+      } finally {
+        AdminAuth.hideLoading();
+      }
+    };
+
+    async function loadSettings() {
+      AdminAuth.showLoading('載入設定...');
+      try {
+        const data = await AdminAuth.api('adminGetSettings');
+
+        // System info
+        if (data.systemInfo) {
+          document.getElementById('sysNodeVersion').textContent = data.systemInfo.nodeVersion || '—';
+          document.getElementById('sysFirebaseRegion').textContent = data.systemInfo.firebaseRegion || '—';
+          document.getElementById('sysFunctionsRegion').textContent = data.systemInfo.functionsRegion || '—';
+          document.getElementById('sysUptime').textContent = data.systemInfo.uptime || '—';
+        }
+
+        // Feature flags
+        if (data.settings) {
+          document.getElementById('flagRegistration').checked = !!data.settings.registrationEnabled;
+          document.getElementById('flagGoogleLogin').checked = !!data.settings.googleLoginEnabled;
+          document.getElementById('flagMaintenance').checked = !!data.settings.maintenanceMode;
+        }
+
+        // API config
+        if (data.apiConfig) {
+          const stripeBadge = data.apiConfig.stripeConfigured
+            ? '<span class="badge badge-success">✅ 已設定</span>'
+            : '<span class="badge badge-danger">❌ 未設定</span>';
+          document.getElementById('stripeStatus').outerHTML = stripeBadge;
+
+          const minimaxBadge = data.apiConfig.minimaxConfigured
+            ? '<span class="badge badge-success">✅ 已設定</span>'
+            : '<span class="badge badge-danger">❌ 未設定</span>';
+          document.getElementById('minimaxStatus').outerHTML = minimaxBadge;
+        }
+
+      } catch (e) {
+        AdminAuth.showToast('載入失敗：' + e.message, 'error');
+      } finally {
+        AdminAuth.hideLoading();
+      }
+    }
+
+    loadSettings();
+  </script>
+</body>
+</html>

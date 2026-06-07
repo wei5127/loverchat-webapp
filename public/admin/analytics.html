@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>📊 流量分析｜管理後台</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebarInsert"></div>
+    <div class="main-content">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">📊 流量分析</h1>
+          <p class="page-subtitle" id="pageSubtitle">網站流量數據</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="location.reload()">🔄 重新整理</button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- STATS -->
+        <div class="stats-grid" id="statsGrid" style="margin-bottom:32px;">
+          <div class="stat-card">
+            <div class="stat-icon blue">👁️</div>
+            <div>
+              <div class="stat-value" id="statPageViews">—</div>
+              <div class="stat-label">總瀏覽次數</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">🔐</div>
+            <div>
+              <div class="stat-value" id="statLogins">—</div>
+              <div class="stat-label">總登入次數</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">📝</div>
+            <div>
+              <div class="stat-value" id="statRegistrations">—</div>
+              <div class="stat-label">總註冊次數</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon pink">💬</div>
+            <div>
+              <div class="stat-value" id="statMessages">—</div>
+              <div class="stat-label">總訊息發送</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">⚠️</div>
+            <div>
+              <div class="stat-value" id="statErrors">—</div>
+              <div class="stat-label">錯誤次數</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DATE RANGE -->
+        <div class="filter-bar" style="margin-bottom:24px;">
+          <span style="font-weight:600;font-size:14px;color:var(--text-light);">時間範圍：</span>
+          <button class="btn btn-secondary btn-sm" id="range7d" onclick="setRange('7d')">7天</button>
+          <button class="btn btn-secondary btn-sm" id="range30d" onclick="setRange('30d')">30天</button>
+          <button class="btn btn-secondary btn-sm" id="range90d" onclick="setRange('90d')">90天</button>
+          <button class="btn btn-secondary btn-sm" id="rangeCustom" onclick="setRange('custom')">自訂</button>
+          <div id="customRangeInputs" style="display:none;gap:8px;align-items:center;">
+            <input type="date" class="form-input" id="customStart" style="width:auto;">
+            <span>~</span>
+            <input type="date" class="form-input" id="customEnd" style="width:auto;">
+            <button class="btn btn-primary btn-sm" onclick="applyCustomRange()">套用</button>
+          </div>
+        </div>
+
+        <!-- CHARTS ROW -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;">
+          <!-- Daily Page Views Bar Chart -->
+          <div class="card">
+            <div class="card-title">📈每日瀏覽（近14天）</div>
+            <div id="dailyViewsChart" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;">
+              <div class="text-muted" style="padding:40px;text-align:center;">載入中...</div>
+            </div>
+          </div>
+
+          <!-- Event Breakdown Pie -->
+          <div class="card">
+            <div class="card-title">🥧 事件類型分布</div>
+            <div id="eventBreakdown" style="margin-top:16px;display:flex;gap:24px;align-items:center;">
+              <div id="pieChart" style="display:flex;flex-wrap:wrap;gap:8px;max-width:200px;">
+                <!-- CSS circles injected by JS -->
+              </div>
+              <div id="pieLegend" style="flex:1;">
+                <!-- Legend items -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOP PAGES -->
+        <div class="card">
+          <div class="card-title">🔝 Top 10 頁面</div>
+          <div class="table-container" style="margin-top:16px;border:none;">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>路徑</th>
+                 <th>瀏覽次數</th>
+                  <th>佔比</th>
+                </tr>
+              </thead>
+              <tbody id="topPagesTable">
+                <tr><td colspan="4" style="text-align:center;padding:40px;color:#9ca3af;">載入中...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin-shared.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import AdminAuth from './js/admin-auth.js';
+
+    const user = await AdminAuth.checkAuth();
+    if (!user) window.location.href = 'login.html';
+    injectSidebar(user);
+
+    let currentRange = '7d';
+
+    const eventColors = {
+      page_view: '#3b82f6',
+      login: '#10b981',
+      register: '#8b5cf6',
+      payment_success: '#f59e0b',
+      payment_failed: '#ef4444',
+      message_sent: '#f56fa8',
+      error: '#6b7280'
+    };
+
+    const eventNames = {
+      page_view: '瀏覽頁面',
+      login: '登入',
+      register: '註冊',
+      payment_success: '付款成功',
+      payment_failed: '付款失敗',
+      message_sent: '發送訊息',
+      error: '錯誤'
+    };
+
+    window.setRange = function(range) {
+      currentRange = range;
+      document.querySelectorAll('[id^="range"]').forEach(b => b.classList.remove('btn-primary'));
+      document.getElementById('range' + range.replace('_', '')).classList.add('btn-primary');
+      const customInputs = document.getElementById('customRangeInputs');
+      if (range === 'custom') {
+        customInputs.style.display = 'flex';
+      } else {
+        customInputs.style.display = 'none';
+        loadAnalytics();
+      }
+    };
+
+    window.applyCustomRange = function() {
+      loadAnalytics();
+    };
+
+    async function loadAnalytics() {
+      AdminAuth.showLoading('載入流量分析...');
+      try {
+        let dateRange = currentRange;
+        if (currentRange === 'custom') {
+          const start = document.getElementById('customStart').value;
+          const end = document.getElementById('customEnd').value;
+          dateRange = { start, end };
+        }
+
+        const data = await AdminAuth.api('adminGetAnalytics', { dateRange });
+
+        // Stats
+        document.getElementById('statPageViews').textContent = data.totalPageViews ?? 0;
+        document.getElementById('statLogins').textContent = data.totalLogins ?? 0;
+        document.getElementById('statRegistrations').textContent = data.totalRegistrations ?? 0;
+        document.getElementById('statMessages').textContent = data.totalMessagesSent ?? 0;
+        document.getElementById('statErrors').textContent = data.totalErrors ?? 0;
+
+        // Daily views bar chart (last 14 days)
+        const dailyViews = data.dailyPageViews || [];
+        const maxViews = Math.max(...dailyViews.map(d => d.count), 1);
+        const chartHtml = dailyViews.length > 0
+          ? dailyViews.map(d => {
+            const pct = Math.round((d.count / maxViews) * 100);
+            const dateLabel = new Date(d.date).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' });
+            return `<div style="display:flex;align-items:center;gap:12px;">
+              <span style="width:50px;font-size:12px;color:var(--text-light);text-align:right;flex-shrink:0;">${dateLabel}</span>
+              <div style="flex:1;background:#f3f4f6;border-radius:6px;height:24px;overflow:hidden;">
+                <div style="width:${pct}%;height:100%;background:var(--primary);border-radius:6px;transition:width 0.3s;"></div>
+              </div>
+              <span style="width:40px;font-size:12px;font-weight:600;flex-shrink:0;">${d.count}</span>
+            </div>`;
+          }).join('')
+          : '<div class="text-muted" style="padding:20px;text-align:center;">尚無資料</div>';
+        document.getElementById('dailyViewsChart').innerHTML = chartHtml;
+
+        // Event breakdown — CSS circle pie
+        const events = data.eventBreakdown || {};
+        const eventTotal = Object.values(events).reduce((s, v) => s + v, 0);
+        const pieHtml = Object.entries(events)
+          .filter(([_, count]) => count > 0)
+          .map(([type, count]) => {
+            const pct = eventTotal > 0 ? Math.round((count / eventTotal) * 100) : 0;
+            return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <div style="width:14px;height:14px;border-radius:50%;background:${eventColors[type] || '#9ca3af'};flex-shrink:0;"></div>
+              <span style="font-size:13px;">${eventNames[type] || type}</span>
+              <span style="margin-left:auto;font-weight:600;font-size:13px;">${count}</span>
+              <span style="color:var(--text-light);font-size:12px;min-width:40px;text-align:right;">${pct}%</span>
+            </div>`;
+          }).join('');
+        document.getElementById('pieLegend').innerHTML = pieHtml || '<div class="text-muted">尚無資料</div>';
+
+        // CSS circle segments for pie (approximated with stacked circles)
+        if (eventTotal > 0) {
+          let cumulative = 0;
+          const pieSegments = Object.entries(events)
+            .filter(([_, count]) => count > 0)
+            .map(([type, count]) => {
+              const pct = count / eventTotal;
+              const color = eventColors[type] || '#9ca3af';
+              cumulative += pct;
+              return `<div style="width:120px;height:120px;border-radius:50%;background:conic-gradient(${color} 0% ${Math.round(pct * 100)}%, #f3f4f6 ${Math.round(pct * 100)}% 100%);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text);"></div>`;
+            }).join('');
+          document.getElementById('pieChart').innerHTML = pieSegments;
+        } else {
+          document.getElementById('pieChart').innerHTML = '<div style="width:120px;height:120px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:12px;">—</div>';
+        }
+
+        // Top pages table
+        const topPages = data.topPages || [];
+        const pageTotal = topPages.reduce((s, p) => s + p.views, 0);
+        const pagesHtml = topPages.length > 0
+          ? topPages.map((p, i) => {
+            const pct = pageTotal > 0 ? Math.round((p.views / pageTotal) * 100) : 0;
+            return `<tr>
+              <td><span class="font-mono text-sm">${i + 1}</span></td>
+              <td><span class="font-mono text-sm">${p.path || '/'}</span></td>
+              <td><strong>${p.views}</strong></td>
+              <td><span class="text-muted text-sm">${pct}%</span></td>
+            </tr>`;
+          }).join('')
+          : '<tr><td colspan="4" style="text-align:center;padding:40px;color:#9ca3af;">尚無資料</td></tr>';
+        document.getElementById('topPagesTable').innerHTML = pagesHtml;
+
+      } catch (e) {
+        AdminAuth.showToast('載入失敗：' + e.message, 'error');
+      } finally {
+        AdminAuth.hideLoading();
+      }
+    }
+
+    loadAnalytics();
+    setRange('7d');
+  </script>
+</body>
+</html>

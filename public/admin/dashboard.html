@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>儀表板｜管理後台</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- SIDEBAR (filled by JS) -->
+    <aside class="sidebar" id="sidebar"></aside>
+    
+    <!-- MAIN -->
+    <div class="main-content">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">📊 儀表板</h1>
+          <p class="page-subtitle" id="pageSubtitle">載入中...</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="location.reload()">🔄 重新整理</button>
+        </div>
+      </header>
+      
+      <div class="page-content">
+        <!-- STATS GRID -->
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-icon blue">👥</div>
+            <div>
+              <div class="stat-value" id="statTotalUsers">—</div>
+              <div class="stat-label">總會員數</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">📅</div>
+            <div>
+              <div class="stat-value" id="statTodayNew">—</div>
+              <div class="stat-label">今日新會員</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">💰</div>
+            <div>
+              <div class="stat-value" id="statTodayRevenue">—</div>
+              <div class="stat-label">今日收入</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon pink">📈</div>
+            <div>
+              <div class="stat-value" id="statMonthRevenue">—</div>
+              <div class="stat-label">本月收入</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">💳</div>
+            <div>
+              <div class="stat-value" id="statSuccessPayments">—</div>
+              <div class="stat-label">成功付款</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">⚠️</div>
+            <div>
+              <div class="stat-value" id="statFailedPayments">—</div>
+              <div class="stat-label">失敗付款</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- PLAN DISTRIBUTION + RECENT LOGS -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;">
+          <!-- Plan Distribution -->
+          <div class="card">
+            <div class="card-title">方案分布</div>
+            <div id="planDistribution">
+              <div class="chart-area">載入中...</div>
+            </div>
+          </div>
+          
+          <!-- Recent Audit Logs -->
+          <div class="card">
+            <div class="card-title">最近操作紀錄</div>
+            <div id="recentLogs">
+              <div class="chart-area">載入中...</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- REVENUE + MEMBERS TREND -->
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
+          <div class="card">
+            <div class="card-title">📊 收入概覽</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px;">
+              <div style="background:#fafafa;border-radius:12px;padding:16px;text-align:center;">
+                <div style="font-size:28px;font-weight:700;color:#10b981;" id="totalRevenue">—</div>
+                <div style="font-size:12px;color:#75687f;margin-top:4px;">累積收入 (CAD)</div>
+              </div>
+              <div style="background:#fafafa;border-radius:12px;padding:16px;text-align:center;">
+                <div style="font-size:28px;font-weight:700;color:#3b82f6;" id="monthRevenue">—</div>
+                <div style="font-size:12px;color:#75687f;margin-top:4px;">本月收入</div>
+              </div>
+              <div style="background:#fafafa;border-radius:12px;padding:16px;text-align:center;">
+                <div style="font-size:28px;font-weight:700;color:#8b5cf6;" id="todayRevenue">—</div>
+                <div style="font-size:12px;color:#75687f;margin-top:4px;">今日收入</div>
+              </div>
+            </div>
+            <div id="revenueNote" style="font-size:12px;color:#9ca3af;margin-top:12px;text-align:center;">
+              收入資料需要 Stripe 連接且已有付款記錄才會顯示
+            </div>
+          </div>
+          
+          <!-- Quick Actions -->
+          <div class="card">
+            <div class="card-title">⚡ 快速操作</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+              <a href="users.html" class="btn btn-secondary w-full">👥 會員管理</a>
+              <a href="payments.html" class="btn btn-secondary w-full">💳 付款記錄</a>
+              <a href="analytics.html" class="btn btn-secondary w-full">📊 流量分析</a>
+              <a href="audit-logs.html" class="btn btn-secondary w-full">📋 操作日誌</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Sidebar template -->
+  <template id="sidebarTemplate">
+    <a href="dashboard.html" class="sidebar-brand">
+      <div class="sidebar-brand-icon">管</div>
+      <div>
+        <div class="sidebar-brand-text">管理後台</div>
+        <div class="sidebar-brand-sub">Admin Panel</div>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">主選單</div>
+      <a href="dashboard.html" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        儀表板
+      </a>
+      <a href="users.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        會員管理
+      </a>
+      <a href="payments.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        付款記錄
+      </a>
+      <a href="analytics.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        流量分析
+      </a>
+      <a href="audit-logs.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        操作日誌
+      </a>
+      <div class="sidebar-section-label" style="margin-top:8px;">系統</div>
+      <a href="settings.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        系統設定
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-user-info">
+        <div class="admin-avatar" id="adminAvatar">—</div>
+        <div>
+          <div class="admin-name" id="adminName">載入中</div>
+          <div class="admin-role" id="adminRole">—</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="logoutBtn">🚪 登出</button>
+    </div>
+  </template>
+
+  <script type="module">
+    import AdminAuth from './js/admin-auth.js';
+    
+    const sidebarTemplate = document.getElementById('sidebarTemplate');
+    const sidebar = document.getElementById('sidebar');
+    sidebar.appendChild(sidebarTemplate.content.cloneNode(true));
+    
+    // Auth check
+    const user = await AdminAuth.checkAuth();
+    if (!user) {
+      window.location.href = 'login.html';
+    } else {
+      // Update sidebar user info
+      document.getElementById('adminName').textContent = user.displayName || user.email || 'Admin';
+      document.getElementById('adminRole').textContent = user.isSuperAdmin ? '⭐ 超級管理員' : '👤 管理員';
+      document.getElementById('adminAvatar').textContent = (user.displayName || user.email || 'A')[0].toUpperCase();
+      document.getElementById('pageSubtitle').textContent = `${user.email} · ${user.isSuperAdmin ? '超級管理員' : '管理員'}`;
+      
+      document.getElementById('logoutBtn').addEventListener('click', () => AdminAuth.signOut());
+    }
+    
+    // Load dashboard data
+    async function loadDashboard() {
+      try {
+        const data = await AdminAuth.api('adminGetDashboardStats');
+        
+        // Stats
+        document.getElementById('statTotalUsers').textContent = data.users?.total ?? 0;
+        document.getElementById('statTodayNew').textContent = data.users?.todayNew ?? 0;
+        document.getElementById('statTodayRevenue').textContent = AdminAuth.formatCurrency(data.revenue?.today ?? 0, data.revenue?.currency);
+        document.getElementById('statMonthRevenue').textContent = AdminAuth.formatCurrency(data.revenue?.month ?? 0, data.revenue?.currency);
+        document.getElementById('statSuccessPayments').textContent = data.payments?.successCount ?? 0;
+        document.getElementById('statFailedPayments').textContent = data.payments?.failedCount ?? 0;
+        
+        // Revenue
+        document.getElementById('totalRevenue').textContent = AdminAuth.formatCurrency(data.revenue?.total ?? 0, data.revenue?.currency);
+        document.getElementById('monthRevenue').textContent = AdminAuth.formatCurrency(data.revenue?.month ?? 0, data.revenue?.currency);
+        document.getElementById('todayRevenue').textContent = AdminAuth.formatCurrency(data.revenue?.today ?? 0, data.revenue?.currency);
+        
+        // Plan distribution
+        const planDist = data.planStats || {};
+        const planNames = {
+          guest: '遊客', free: '免費', vip_trial: '體驗',
+          vip_basic_monthly: 'Basic月費', vip_basic_lifetime: 'Basic終身',
+          vip_pro_monthly: 'Pro月費', vip_pro_lifetime: 'Pro終身'
+        };
+        const planColors = {
+          guest: '#9CA3AF', free: '#10B981', vip_trial: '#6B7280',
+          vip_basic_monthly: '#3B82F6', vip_basic_lifetime: '#6366F1',
+          vip_pro_monthly: '#F59E0B', vip_pro_lifetime: '#8B5CF6'
+        };
+        
+        const planHtml = Object.entries(planDist)
+          .filter(([_, count]) => count > 0)
+          .sort((a, b) => b[1] - a[1])
+          .map(([plan, count]) => {
+            const total = Object.values(planDist).reduce((s, v) => s + v, 0);
+            const pct = total > 0 ? Math.round(count / total * 100) : 0;
+            return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <span style="width:10px;height:10px;border-radius:50%;background:${planColors[plan] || '#9CA3AF'};flex-shrink:0;"></span>
+              <span style="flex:1;font-size:13px;">${planNames[plan] || plan}</span>
+              <span style="font-weight:600;font-size:13px;">${count}</span>
+              <span style="color:#9ca3af;font-size:12px;min-width:40px;text-align:right;">${pct}%</span>
+            </div>`;
+          }).join('');
+        document.getElementById('planDistribution').innerHTML = planHtml || '<div class="text-muted">尚無資料</div>';
+        
+        // Recent audit logs
+        const logs = data.recentAuditLogs || [];
+        const logsHtml = logs.length > 0 ? logs.map(log => `
+          <div class="log-entry">
+            <span class="log-time">${AdminAuth.formatDate(log.createdAt)}</span>
+            <span class="log-action">${log.action}</span>
+            <span class="log-admin">by ${log.adminEmail || 'system'}</span>
+          </div>
+        `).join('') : '<div class="text-muted" style="padding:12px 0;">尚無操作紀錄</div>';
+        document.getElementById('recentLogs').innerHTML = logsHtml;
+        
+      } catch (e) {
+        console.error('Dashboard load error:', e);
+        AdminAuth.showToast('載入失敗：' + e.message, 'error');
+      }
+    }
+    
+    loadDashboard();
+  </script>
+</body>
+</html>

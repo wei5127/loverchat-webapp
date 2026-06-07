@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>會員管理｜管理後台</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-content">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">👥 會員管理</h1>
+          <p class="page-subtitle" id="pageSubtitle">會員列表</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="location.reload()">🔄 重新整理</button>
+        </div>
+      </header>
+      
+      <div class="page-content">
+        <!-- SEARCH + FILTERS -->
+        <div class="filter-bar">
+          <div class="search-input-wrap" style="flex:1;max-width:400px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-input" id="searchInput" placeholder="搜尋 Email / UID...">
+          </div>
+          <select class="form-select" id="planFilter" style="width:auto;min-width:140px;">
+            <option value="">全部方案</option>
+            <option value="guest">遊客</option>
+            <option value="free">免費</option>
+            <option value="vip_trial">體驗</option>
+            <option value="vip_basic_monthly">Basic月費</option>
+            <option value="vip_basic_lifetime">Basic終身</option>
+            <option value="vip_pro_monthly">Pro月費</option>
+            <option value="vip_pro_lifetime">Pro終身</option>
+          </select>
+          <select class="form-select" id="roleFilter" style="width:auto;min-width:120px;">
+            <option value="">全部角色</option>
+            <option value="user">一般會員</option>
+            <option value="admin">管理員</option>
+            <option value="super_admin">超級管理員</option>
+          </select>
+          <select class="form-select" id="statusFilter" style="width:auto;min-width:120px;">
+            <option value="">全部狀態</option>
+            <option value="active">正常</option>
+            <option value="disabled">已停權</option>
+          </select>
+          <button class="btn btn-primary" id="searchBtn">🔍 搜尋</button>
+        </div>
+        
+        <!-- USER TABLE -->
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>會員</th>
+                <th>角色</th>
+                <th>方案</th>
+                <th>狀態</th>
+                <th>今日使用</th>
+                <th>訂閱狀態</th>
+                <th>註冊時間</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable">
+              <tr><td colspan="8" style="text-align:center;padding:40px;color:#9ca3af;">載入中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- PAGINATION -->
+        <div class="pagination">
+          <div class="pagination-info" id="paginationInfo">—</div>
+          <div class="pagination-buttons">
+            <button class="btn btn-secondary btn-sm" id="prevBtn" disabled>← 上一頁</button>
+            <button class="btn btn-secondary btn-sm" id="nextBtn" disabled>下一頁 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- USER EDIT MODAL -->
+  <div class="modal-overlay" id="editModal" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ 編輯會員</h3>
+        <button class="modal-close" onclick="closeEditModal()">×</button>
+      </div>
+      <div id="editModalContent">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="text" class="form-input" id="editEmail" disabled>
+          </div>
+          <div class="form-group">
+            <label class="form-label">UID</label>
+            <input type="text" class="form-input font-mono" id="editUid" disabled>
+          </div>
+        </div>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label">會員方案</label>
+            <select class="form-select" id="editPlan">
+              <option value="guest">遊客 Guest</option>
+              <option value="free">免費 Free</option>
+              <option value="vip_trial">體驗 VIP Trial</option>
+              <option value="vip_basic_monthly">Basic 月費</option>
+              <option value="vip_basic_lifetime">Basic 終身</option>
+              <option value="vip_pro_monthly">Pro 月費</option>
+              <option value="vip_pro_lifetime">Pro 終身</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">角色（僅 super_admin 可改）</label>
+            <select class="form-select" id="editRole">
+              <option value="user">一般會員</option>
+              <option value="admin">管理員</option>
+              <option value="super_admin">超級管理員</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">每日訊息上限</label>
+          <input type="number" class="form-input" id="editDailyLimit" min="-1" placeholder="-1 = 無限">
+          <div class="form-hint">-1 表示無限，數字表示每天限制</div>
+        </div>
+        
+        <div class="form-group" style="display:flex;align-items:center;gap:12px;">
+          <label class="switch">
+            <input type="checkbox" id="editDisabled">
+            <span class="switch-slider"></span>
+          </label>
+          <span id="editDisabledLabel">帳號正常</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeEditModal()">取消</button>
+        <button class="btn btn-primary" id="saveEditBtn">💾 儲存變更</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import AdminAuth from './js/admin-auth.js';
+    
+    // Sidebar
+    const sidebarTpl = document.getElementById('sidebarTemplate') || (() => {
+      const t = document.createElement('template');
+      t.innerHTML = document.querySelector('.sidebar')?.innerHTML || '';
+      return t;
+    })();
+    // Use same sidebar as dashboard - just copy the sidebar div from dashboard
+    // We use fetch to load the sidebar
+    (async () => {
+      try {
+        const res = await fetch('dashboard.html');
+        const html = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const sidebar = doc.querySelector('.sidebar');
+        if (sidebar) document.getElementById('sidebar').replaceWith(sidebar);
+      } catch (e) { console.warn('Sidebar load failed:', e); }
+    })();
+    
+    // Wait a bit for sidebar to load
+    await new Promise(r => setTimeout(r, 100));
+    
+    const user = await AdminAuth.checkAuth();
+    if (!user) window.location.href = 'login.html';
+    
+    // State
+    let currentPage = 1;
+    let currentSearch = '';
+    let currentPlanFilter = '';
+    let currentRoleFilter = '';
+    let currentStatusFilter = '';
+    let editingUser = null;
+    let totalUsers = 0;
+    
+    const planNames = {
+      guest: '遊客', free: '免費', vip_trial: '體驗',
+      vip_basic_monthly: 'Basic月費', vip_basic_lifetime: 'Basic終身',
+      vip_pro_monthly: 'Pro月費', vip_pro_lifetime: 'Pro終身'
+    };
+    const planColors = {
+      guest: '#9CA3AF', free: '#10B981', vip_trial: '#6B7280',
+      vip_basic_monthly: '#3B82F6', vip_basic_lifetime: '#6366F1',
+      vip_pro_monthly: '#F59E0B', vip_pro_lifetime: '#8B5CF6'
+    };
+    
+    async function loadUsers(page = 1) {
+      AdminAuth.showLoading('載入會員資料...');
+      try {
+        const data = await AdminAuth.api('adminGetUsers', {
+          page,
+          search: currentSearch,
+          planFilter: currentPlanFilter,
+          roleFilter: currentRoleFilter,
+          statusFilter: currentStatusFilter
+        });
+        
+        totalUsers = data.total;
+        currentPage = data.page;
+        
+        const tbody = document.getElementById('usersTable');
+        if (data.users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#9ca3af;">找不到符合條件的會員</td></tr>';
+        } else {
+          tbody.innerHTML = data.users.map(u => `
+            <tr>
+              <td>
+                <div style="font-weight:600;margin-bottom:2px;">${u.email || '（匿名）'}</div>
+                <div class="text-muted text-xs font-mono">${u.uid.slice(0, 16)}...</div>
+              </td>
+              <td>${roleBadge(u.role)}</td>
+              <td>${planBadge(u.plan, u.planName)}</td>
+              <td>${u.disabled ? '<span class="badge badge-danger">停權</span>' : '<span class="badge badge-success">正常</span>'}</td>
+              <td><span class="text-sm">${u.messagesUsedToday}</span> / <span class="text-muted text-sm">${u.dailyLimit === -1 ? '∞' : u.dailyLimit}</span></td>
+              <td>${subscriptionBadge(u.subscriptionStatus)}</td>
+              <td class="text-sm text-muted">${AdminAuth.formatDate(u.createdAt)}</td>
+              <td style="white-space:nowrap;">
+                <a href="user-detail.html?uid=${u.uid}" class="btn btn-secondary btn-sm" style="text-decoration:none;">👤 詳細</a>
+                <button class="btn btn-secondary btn-sm" onclick="openEditModal('${u.uid}')">✏️</button>
+                ${u.disabled ? 
+                  `<button class="btn btn-secondary btn-sm" onclick="toggleStatus('${u.uid}', false)">✅</button>` :
+                  `<button class="btn btn-danger btn-sm" onclick="toggleStatus('${u.uid}', true)">🚫</button>`
+                }
+              </td>
+            </tr>
+          `).join('');
+        }
+        
+        // Pagination
+        const start = (page - 1) * 20 + 1;
+        const end = Math.min(page * 20, totalUsers);
+        document.getElementById('paginationInfo').textContent = `顯示 ${start}-${end}，共 ${totalUsers} 筆`;
+        document.getElementById('prevBtn').disabled = page <= 1;
+        document.getElementById('nextBtn').disabled = !data.hasMore;
+        
+      } catch (e) {
+        AdminAuth.showToast('載入失敗：' + e.message, 'error');
+      } finally {
+        AdminAuth.hideLoading();
+      }
+    }
+    
+    function planBadge(plan, planName) {
+      const color = planColors[plan] || '#9CA3AF';
+      const name = planNames[plan] || planName || plan || '—';
+      return `<span class="badge" style="background:${color}22;color:${color};border:1px solid ${color}44;">${name}</span>`;
+    }
+    
+    function roleBadge(role) {
+      if (role === 'super_admin') return '<span class="badge badge-purple">⭐ 超級管理員</span>';
+      if (role === 'admin') return '<span class="badge badge-info">👤 管理員</span>';
+      return '<span class="badge badge-gray">👤 會員</span>';
+    }
+    
+    function subscriptionBadge(status) {
+      if (status === 'active') return '<span class="badge badge-success">已訂閱</span>';
+      if (status === 'cancelled') return '<span class="badge badge-warning">已取消</span>';
+      if (status === 'past_due') return '<span class="badge badge-danger">逾期</span>';
+      return '<span class="badge badge-gray">—</span>';
+    }
+    
+    window.openEditModal = async function(uid) {
+      try {
+        const data = await AdminAuth.api('adminGetUser', { uid });
+        editingUser = data;
+        
+        document.getElementById('editEmail').value = data.email || '（匿名）';
+        document.getElementById('editUid').value = data.uid;
+        document.getElementById('editPlan').value = data.plan;
+        document.getElementById('editRole').value = data.role;
+        document.getElementById('editDailyLimit').value = data.dailyLimit;
+        document.getElementById('editDisabled').checked = !!data.disabled;
+        document.getElementById('editDisabledLabel').textContent = data.disabled ? '帳號已停權' : '帳號正常';
+        
+        // 只有 super_admin 才能改 role
+        const roleSelect = document.getElementById('editRole');
+        roleSelect.disabled = !AdminAuth.isSuperAdmin;
+        
+        document.getElementById('editModal').style.display = 'flex';
+      } catch (e) {
+        AdminAuth.showToast('載入失敗：' + e.message, 'error');
+      }
+    };
+    
+    window.closeEditModal = function() {
+      document.getElementById('editModal').style.display = 'none';
+      editingUser = null;
+    };
+    
+    // Save edit
+    document.getElementById('saveEditBtn').addEventListener('click', async () => {
+      if (!editingUser) return;
+      
+      const updates = {
+        plan: document.getElementById('editPlan').value,
+        role: document.getElementById('editRole').value,
+        dailyLimit: parseInt(document.getElementById('editDailyLimit').value, 10),
+        disabled: document.getElementById('editDisabled').checked
+      };
+      
+      AdminAuth.showLoading('儲存中...');
+      try {
+        await AdminAuth.api('adminUpdateUser', { uid: editingUser.uid, updates });
+        AdminAuth.showToast('儲存成功！', 'success');
+        closeEditModal();
+        loadUsers(currentPage);
+      } catch (e) {
+        AdminAuth.showToast('儲存失敗：' + e.message, 'error');
+      } finally {
+        AdminAuth.hideLoading();
+      }
+    });
+    
+    // Toggle status
+    window.toggleStatus = async function(uid, disabled) {
+      if (!confirm(disabled ? '確定要停用此帳號嗎？' : '確定要啟用此帳號嗎？')) return;
+      try {
+        await AdminAuth.api('adminToggleUserStatus', { targetUid: uid, disabled });
+        AdminAuth.showToast(disabled ? '帳號已停權' : '帳號已啟用', 'success');
+        loadUsers(currentPage);
+      } catch (e) {
+        AdminAuth.showToast('操作失敗：' + e.message, 'error');
+      }
+    };
+    
+    // Search
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      currentSearch = document.getElementById('searchInput').value.trim();
+      currentPlanFilter = document.getElementById('planFilter').value;
+      currentRoleFilter = document.getElementById('roleFilter').value;
+      currentStatusFilter = document.getElementById('statusFilter').value;
+      loadUsers(1);
+    });
+    
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('searchBtn').click();
+    });
+    
+    // Pagination
+    document.getElementById('prevBtn').addEventListener('click', () => loadUsers(currentPage - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => loadUsers(currentPage + 1));
+    
+    // Load
+    loadUsers(1);
+  </script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💳 付款記錄｜管理後台</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebarInsert"></div>
+    <div class="main-content">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">💳 付款記錄</h1>
+          <p class="page-subtitle" id="pageSubtitle">所有付款交易</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="location.reload()">🔄 重新整理</button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- STATS -->
+        <div class="stats-grid" id="statsGrid" style="margin-bottom:24px;">
+          <div class="stat-card">
+            <div class="stat-icon blue">🧾</div>
+            <div>
+              <div class="stat-value" id="statTotalPayments">—</div>
+              <div class="stat-label">總付款筆數</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">💰</div>
+            <div>
+              <div class="stat-value" id="statTotalRevenue">—</div>
+              <div class="stat-label">總營收</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">✅</div>
+            <div>
+              <div class="stat-value" id="statSuccessRate">—</div>
+              <div class="stat-label">成功率</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">❌</div>
+            <div>
+              <div class="stat-value" id="statFailedCount">—</div>
+              <div class="stat-label">失敗筆數</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filter-bar">
+          <div class="search-input-wrap" style="flex:1;max-width:360px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-input" id="searchInput" placeholder="搜尋 Email...">
+          </div>
+          <select class="form-select" id="statusFilter" style="width:auto;min-width:140px;">
+            <option value="">全部狀態</option>
+            <option value="succeeded">已成功</option>
+            <option value="failed">已失敗</option>
+            <option value="pending">處理中</option>
+            <option value="refunded">已退款</option>
+          </select>
+          <select class="form-select" id="planFilter" style="width:auto;min-width:140px;">
+            <option value="">全部方案</option>
+            <option value="vip_basic_monthly">Basic月費</option>
+            <option value="vip_basic_lifetime">Basic終身</option>
+            <option value="vip_pro_monthly">Pro月費</option>
+            <option value="vip_pro_lifetime">Pro終身</option>
+          </select>
+          <select class="form-select" id="dateRange" style="width:auto;min-width:120px;">
+            <option value="">全部時間</option>
+            <option value="today">今日</option>
+            <option value="this_week">本週</option>
+            <option value="this_month">本月</option>
+          </select>
+          <button class="btn btn-primary" id="searchBtn">🔍 搜尋</button>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>付款 ID</th>
+                <th>用戶 Email</th>
+                <th>方案</th>
+                <th>金額</th>
+                <th>狀態</th>
+                <th>日期</th>
+                <th>收據</th>
+              </tr>
+            </thead>
+            <tbody id="paymentsTable">
+              <tr><td colspan="7" style="text-align:center;padding:40px;color:#9ca3af;">載入中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination">
+          <div class="pagination-info" id="paginationInfo">—</div>
+          <div class="pagination-buttons">
+            <button class="btn btn-secondary btn-sm" id="prevBtn" disabled>← 上一頁</button>
+            <button class="btn btn-secondary btn-sm" id="nextBtn" disabled>下一頁 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin-shared.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import AdminAuth from './js/admin-auth.js';
+
+    const user = await AdminAuth.checkAuth();
+    if (!user) window.location.href = 'login.html';
+    injectSidebar(user);
+
+    // State
+    let currentPage = 1;
+    let currentSearch = '';
+    let currentStatus = '';
+    let currentPlan = '';
+    let currentDateRange = '';
+
+    const planNames = {
+      vip_basic_monthly: 'Basic月費',
+      vip_basic_lifetime: 'Basic終身',
+      vip_pro_monthly: 'Pro月費',
+      vip_pro_lifetime: 'Pro終身'
+    };
+
+    const statusBadge = (status) => {
+      const map = {
+        succeeded: '<span class="badge badge-success">已成功</span>',
+        failed: '<span class="badge badge-danger">已失敗</span>',
+        pending: '<span class="badge badge-warning">處理中</span>',
+        refunded: '<span class="badge badge-gray">已退款</span>'
+      };
+      return map[status] || `<span class="badge badge-gray">${status || '—'}</span>`;
+    };
+
+    async function loadPayments(page = 1) {
+      AdminAuth.showLoading('載入付款記錄...');
+      try {
+        const data = await AdminAuth.api('adminGetPayments', {
+          page,
+          search: currentSearch,
+          status: currentStatus,
+          plan: currentPlan,
+          dateRange: currentDateRange
+        });
+
+        currentPage = data.page || page;
+
+        // Stats
+        document.getElementById('statTotalPayments').textContent = data.totalCount ?? 0;
+        document.getElementById('statTotalRevenue').textContent = AdminAuth.formatCurrency(data.totalRevenue ?? 0, data.currency);
+        const successRate = data.totalCount > 0
+          ? Math.round((data.successCount / data.totalCount) * 100) + '%'
+          : '—';
+        document.getElementById('statSuccessRate').textContent = successRate;
+        document.getElementById('statFailedCount').textContent = data.failedCount ?? 0;
+
+        const tbody = document.getElementById('paymentsTable');
+        if (!data.payments || data.payments.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#9ca3af;">找不到付款記錄</td></tr>';
+        } else {
+          tbody.innerHTML = data.payments.map(p => `
+            <tr>
+              <td><span class="font-mono text-sm">${(p.paymentId || p.id || '—').slice(0, 16)}...</span></td>
+              <td><div style="font-weight:500;">${p.userEmail || '—'}</div></td>
+              <td>${planNames[p.plan] || p.plan || '—'}</td>
+              <td><strong>${AdminAuth.formatCurrency(p.amount, p.currency)}</strong></td>
+              <td>${statusBadge(p.status)}</td>
+              <td class="text-sm text-muted">${AdminAuth.formatDate(p.createdAt)}</td>
+              <td>${p.receiptUrl ? `<a href="${p.receiptUrl}" target="_blank" class="btn btn-secondary btn-sm">📄</a>` : '<span class="text-muted text-sm">—</span>'}</td>
+            </tr>
+          `).join('');
+        }
+
+        // Pagination
+        const perPage = 50;
+        const start = (currentPage - 1) * perPage + 1;
+        const end = Math.min(currentPage * perPage, data.totalCount || 0);
+        document.getElementById('paginationInfo').textContent = data.totalCount > 0
+          ? `顯示 ${start}-${end}，共 ${data.totalCount} 筆`
+          : '共 0 筆';
+        document.getElementById('prevBtn').disabled = currentPage <= 1;
+        document.getElementById('nextBtn').disabled = !data.hasMore;
+
+      } catch (e) {
+        AdminAuth.showToast('載入失敗：' + e.message, 'error');
+      } finally {
+        AdminAuth.hideLoading();
+      }
+    }
+
+    // Search
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      currentSearch = document.getElementById('searchInput').value.trim();
+      currentStatus = document.getElementById('statusFilter').value;
+      currentPlan = document.getElementById('planFilter').value;
+      currentDateRange = document.getElementById('dateRange').value;
+      loadPayments(1);
+    });
+
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('searchBtn').click();
+    });
+
+    // Pagination
+    document.getElementById('prevBtn').addEventListener('click', () => loadPayments(currentPage - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => loadPayments(currentPage + 1));
+
+    loadPayments(1);
+  </script>
+</body>
+</html>
