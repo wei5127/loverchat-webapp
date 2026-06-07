@@ -169,6 +169,12 @@
     const auth = getAuth(app);
     const functions = getFunctions(app);
     
+    // Helper to check if plan is VIP tier (pro or basic, monthly or lifetime)
+    const isVIP = (plan) => plan && (plan.startsWith('vip_') && plan !== 'vip_trial');
+    const isLifetime = (plan) => plan && (plan === 'vip_basic_lifetime' || plan === 'vip_pro_lifetime');
+    const isBasic = (plan) => plan && (plan === 'vip_basic_monthly' || plan === 'vip_basic_lifetime');
+    const isPro = (plan) => plan && (plan === 'vip_pro_monthly' || plan === 'vip_pro_lifetime');
+    
     const PLAN_FEATURES = {
       guest: [
         { text: '每天 30 則訊息', included: true },
@@ -184,7 +190,27 @@
         { text: '收藏聊天紀錄', included: true },
         { text: '修改個人資料', included: true }
       ],
-      vip: [
+      vip_trial: [
+        { text: '每天 30 則訊息', included: true },
+        { text: '所有公開角色', included: true },
+        { text: '建立私人角色（最多3個）', included: true },
+        { text: '收藏聊天紀錄', included: true }
+      ],
+      vip_basic_monthly: [
+        { text: '每日訊息無上限', included: true },
+        { text: '所有角色開放', included: true },
+        { text: '建立私人角色（最多3個）', included: true },
+        { text: '收藏聊天紀錄', included: true }
+      ],
+      vip_basic_lifetime: [
+        { text: '每日訊息無上限', included: true },
+        { text: '所有角色開放', included: true },
+        { text: '建立私人角色（最多3個）', included: true },
+        { text: '收藏聊天紀錄', included: true },
+        { text: '永久有效', included: true },
+        { text: '不需續費', included: true }
+      ],
+      vip_pro_monthly: [
         { text: '每日訊息無上限', included: true },
         { text: '所有角色開放', included: true },
         { text: '建立私人角色（無限）', included: true },
@@ -193,8 +219,14 @@
         { text: '優先回應速度', included: true },
         { text: '搶先體驗新功能', included: true }
       ],
-      lifetime: [
-        { text: '擁有 VIP 所有功能', included: true },
+      vip_pro_lifetime: [
+        { text: '每日訊息無上限', included: true },
+        { text: '所有角色開放', included: true },
+        { text: '建立私人角色（無限）', included: true },
+        { text: '建立公開角色', included: true },
+        { text: '長期聊天記憶', included: true },
+        { text: '優先回應速度', included: true },
+        { text: '搶先體驗新功能', included: true },
         { text: '永久有效', included: true },
         { text: '不需續費', included: true },
         { text: '未來所有新功能自動獲得', included: true }
@@ -246,19 +278,23 @@
       
       // Status
       let statusText = '';
+      // Plan status text
+      let statusText = '遊客身份';
       if (status.plan === 'guest') statusText = '遊客身份';
       else if (status.plan === 'free') statusText = '免費會員';
-      else if (status.plan === 'vip') statusText = 'VIP 月費會員';
-      else if (status.plan === 'lifetime') statusText = '終身會員';
+      else if (status.plan === 'vip_trial') statusText = '體驗會員';
+      else if (isBasic(status.plan)) statusText = isLifetime(status.plan) ? 'Basic 終身會員' : 'Basic 月費會員';
+      else if (isPro(status.plan)) statusText = isLifetime(status.plan) ? 'Pro 終身會員' : 'Pro 月費會員';
       if (status.subscriptionStatus === 'cancelled') statusText += '（已取消）';
       document.getElementById('planStatus').textContent = statusText;
       
-      // Usage
+      // Usage - VIP tiers show unlimited
       const usageCard = document.getElementById('usageCard');
-      if (status.plan === 'vip' || status.plan === 'lifetime') {
+      if (isVIP(status.plan)) {
+        const planLabel = isPro(status.plan) ? 'Pro' : 'Basic';
         usageCard.innerHTML = `
           <h3>今日使用量</h3>
-          <p style="color: #75687f; font-size: 14px;">✨ ${status.planName} 會員無訊息上限</p>
+          <p style="color: #75687f; font-size: 14px;">✨ ${planLabel} 會員無訊息上限</p>
           <p style="color: #75687f; font-size: 14px; margin-top: 8px;">今日已使用 ${status.usageToday} 則</p>
         `;
       } else {
@@ -278,23 +314,20 @@
       if (status.plan === 'guest' || status.plan === 'free') {
         upgradeBtn.textContent = '升級 VIP';
         upgradeBtn.href = 'pricing.html';
-      } else if (status.plan === 'vip') {
-        upgradeBtn.textContent = '升級終身會員';
-        upgradeBtn.href = 'pricing.html';
-        portalBtn.style.display = 'block';
-        portalBtn.onclick = async () => {
-          try {
-            const portal = httpsCallable(functions, 'createPortalSession');
-            const result = await portal({});
-            if (result.data.url) window.location.href = result.data.url;
-          } catch (e) {
-            alert('無法開啟管理頁面，請稍後再試');
-          }
-        };
-      } else if (status.plan === 'lifetime') {
-        upgradeBtn.style.display = 'none';
-        portalBtn.style.display = 'block';
-        portalBtn.textContent = '管理帳戶';
+      } else if (isVIP(status.plan)) {
+        // VIP user - show upgrade to lifetime or manage subscription
+        if (isLifetime(status.plan)) {
+          // Already lifetime, show manage account
+          upgradeBtn.style.display = 'none';
+          portalBtn.style.display = 'block';
+          portalBtn.textContent = '管理帳戶';
+        } else {
+          // Monthly VIP, offer lifetime upgrade
+          upgradeBtn.textContent = '升級終身會員';
+          upgradeBtn.href = 'pricing.html';
+          portalBtn.style.display = 'block';
+          portalBtn.textContent = '管理訂閱';
+        }
         portalBtn.onclick = async () => {
           try {
             const portal = httpsCallable(functions, 'createPortalSession');
