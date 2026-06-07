@@ -2752,6 +2752,15 @@ About what you said: ${state.englishHint}. ${isQuestion ? "I would avoid giving 
       document.querySelectorAll(".lang-dropdown button").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.lang === lang);
       });
+      
+      // Re-render current screen with new language
+      if (!categoryScreen.classList.contains('active') && !personalityScreen.classList.contains('active')) {
+        // On welcome screen or chat screen - no need to re-render grid
+      } else if (categoryScreen.classList.contains('active')) {
+        renderCategories();
+      } else if (personalityScreen.classList.contains('active') && state.category) {
+        renderPersonalities(state.category);
+      }
     }
 
     const langSwitchBtn = document.getElementById("langSwitchBtn");
