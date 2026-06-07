@@ -2115,11 +2115,6 @@ About what you said: ${state.englishHint}. ${isQuestion ? "I would avoid giving 
         typing.innerHTML = "<span></span><span></span><span></span>";
         messages.appendChild(typing);
         scrollToBottom();
-        if (userStatus && userStatus.remaining <= 0) {
-          typing.remove();
-          showLimitReachedModal();
-          return;
-        }
         const chatFunction = httpsCallable(functions, 'sendMessage');
         const characterName = state.character;
         const characterDesc = getCharacterDescription(characterName);
@@ -2230,8 +2225,8 @@ About what you said: ${state.englishHint}. ${isQuestion ? "I would avoid giving 
       if (userPlanBadge) userPlanBadge.textContent = (status.plan || 'free').toUpperCase();
       if (userRemaining) userRemaining.textContent = status.remaining;
       
-      // Check if limit reached
-      if (status.remaining <= 0) {
+      // Check if limit reached (skip for unlimited plans where dailyLimit === -1)
+      if (status.dailyLimit !== -1 && status.remaining <= 0) {
         showLimitReachedModal();
       }
     }

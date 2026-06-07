@@ -78,13 +78,56 @@ const PLANS = {
 
 // When VIP/Lifetime users get tired
 const TIRED_THRESHOLD = 800;
-const TIRED_MESSAGES = [
-  '我累了，今天聊很多了...休息一下吧。',
-  '哈～有點累了，改天再聊？',
-  '我也需要喘口氣...',
-  '抱歉，今天頭有點昏',
-  '累了...改天再聊好不好？'
-];
+// Character-specific "tired / 累了" messages
+const TIRED_BY_CHARACTER = {
+  '公主病': [
+    '本公主累了，今天伺候夠多了，改天再說吧。',
+    '哼，本宮要休息了，明天再理你。',
+    '累了...反正你也無法滿足我。',
+  ],
+  '綠茶': [
+    '嗚...我也有點累了，我們改天再聊好不好？我只是需要一點點空間而已啦...',
+    '唉，其實我也想繼續聊，但這樣對我們都不好，你懂的。',
+    '累了喔...你這麼問，我都不知道怎麼拒絕你。',
+  ],
+  '控制狂': [
+    '我在哪裡？我為什麼要一直回你？算了懶得管了。',
+    '你到底在不在？每次都不回我，我累了，不想追了。',
+    '好了好了，我累了，改天再說。',
+  ],
+  '假女權': [
+    '累了，身為女性我要拒絕免費情緒勞動，改天收費再聊。',
+    '抱歉，我今天為女性發聲太多，需要休息。',
+    '累了...而且我發現我們每次聊天都是我在付出情感勞動。',
+  ],
+  '巨嬰女': [
+    '嗚嗚嗚...我不知道怎麼辦啦...我累了啦...（崩潰）',
+    '我不要聊了啦！人家累了！',
+    '好累喔...你都不能體諒人家嗎...累了啦...',
+  ],
+  '渣男': [
+    '哈，我累了，拜拜。',
+    '累了，下一位。',
+    '差不多得了，累了。',
+  ],
+  '媽寶': [
+    '我媽說累了就是要休息，我先去問我媽。',
+    '等等，我媽找我，我先下線了。',
+    '累了...我要去跟我媽說。',
+  ],
+  'default': [
+    '我累了，今天聊很多了...休息一下吧。',
+    '哈～有點累了，改天再聊？',
+    '我也需要喘口氣...',
+    '抱歉，今天頭有點昏。',
+    '累了...改天再聊好不好？',
+  ]
+};
+
+function getTiredMessage(charName) {
+  const msgs = TIRED_BY_CHARACTER[charName] || TIRED_BY_CHARACTER['default'];
+  return msgs[Math.floor(Math.random() * msgs.length)];
+}
 
 // ============ HELPERS ============
 function getToday() {
@@ -247,20 +290,21 @@ exports.sendMessage = functions.https.onCall(async (data, context) => {
     const todayUsage = await getTodayUsage(uid);
     const check = checkCanChat(userData, todayUsage);
     
-    // Check limit
+    // Check limit - for daily limit users, respond with character-specific tired message
     if (!check.allowed) {
+      const tiredMsg = getTiredMessage(characterName);
       return {
-        success: false,
-        error: 'limit_reached',
-        message: '今日訊息額度已用完',
-        upgradePlan: 'vip',
-        upgradePrice: 299
+        success: true,
+        response: tiredMsg,
+        tired: true,
+        usageToday: todayUsage,
+        remaining: 0
       };
     }
     
-    // Tired response for VIP/Lifetime
+    // Tired response for VIP/Lifetime (character-specific)
     if (check.tired) {
-      const tiredMsg = TIRED_MESSAGES[Math.floor(Math.random() * TIRED_MESSAGES.length)];
+      const tiredMsg = getTiredMessage(characterName);
       return {
         success: true,
         response: tiredMsg,
@@ -605,4 +649,34 @@ exports.resetTestMessages = functions.https.onCall(async (data, context) => {
     lastMessageDate: null
   });
   return { success: true };
+});
+
+/**
+ * 手動設定用戶方案（測試用）
+ * 僅限 test user 调用
+ */
+exports.setUserPlan = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', '請先登入');
+  }
+  const uid = context.auth.uid;
+  // Only allow test user
+  if (uid !== '3rWURqzxmCWY8zIse8vYyC0G5aL2') {
+    throw new functions.https.HttpsError('permission-denied', 'Not allowed');
+  }
+  const { plan } = data;
+  if (!plan) {
+    throw new functions.https.HttpsError('invalid-argument', 'plan is required');
+  }
+  const validPlans = ['guest', 'free', 'vip_trial', 'vip_basic_monthly', 'vip_basic_lifetime', 'vip_pro_monthly', 'vip_pro_lifetime'];
+  if (!validPlans.includes(plan)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Invalid plan: ' + plan);
+  }
+  const userRef = db.collection('users').doc(uid);
+  await userRef.update({
+    plan: plan,
+    subscriptionStatus: plan.startsWith('vip') ? 'active' : 'none',
+    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+  });
+  return { success: true, plan };
 });
