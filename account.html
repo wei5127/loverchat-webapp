@@ -88,6 +88,8 @@
       <h1>人生練習場</h1>
     </a>
     <div class="header-actions">
+      <a href="index.html" class="btn-outline">首頁</a>
+      <a href="index.html#categories" class="btn-outline">選角色</a>
       <a href="pricing.html" class="btn-outline">方案</a>
       <button class="logout-btn" id="logoutBtn">登出</button>
     </div>
@@ -108,7 +110,7 @@
           <img src="" alt="Plan Badge" id="planBadgeImg" style="width:80px;height:80px;display:none;border-radius:16px;">
           <div class="plan-badge" id="planBadgeFallback" style="background: #9CA3AF;">Guest</div>
           <div class="plan-info">
-            <div class="plan-name" id="planName">Guest</div>
+            <div class="plan-name" id="planName"></div>
             <div class="plan-status" id="planStatus">遊客身份</div>
           </div>
         </div>
@@ -229,10 +231,18 @@
       } else {
         badgeImg.style.display = 'none';
         badgeFallback.style.display = 'flex';
-        badgeFallback.textContent = status.planName;
+        const badgeLabels = {
+          'guest': '遊客', 'free': '免費',
+          'vip_trial': '體驗', 'vip_basic_monthly': 'Basic', 'vip_basic_lifetime': 'Basic',
+          'vip_pro_monthly': 'Pro', 'vip_pro_lifetime': 'Pro'
+        };
+        badgeFallback.textContent = badgeLabels[status.plan] || status.planName;
         badgeFallback.style.background = status.planColor;
       }
-      document.getElementById('planName').textContent = status.planName;
+      const displayName = status.plan === 'guest' ? '' : status.plan === 'free' ? '免費會員' : status.planName;
+      const planNameEl = document.getElementById('planName');
+      planNameEl.textContent = displayName;
+      planNameEl.style.display = displayName ? '' : 'none';
       
       // Status
       let statusText = '';
